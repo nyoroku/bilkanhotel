@@ -4,6 +4,7 @@ from .views import PurchaseOrderCreateView, PurchaseOrderDetailView
 
 app_name = 'pos'
 urlpatterns = [
+    path('', views.pos, name='pos_index'),
     path('pos/', views.pos, name='pos'),
     path('suppliers/', views.supplier_list, name='supplier_list'),
     path('suppliers/add/', views.supplier_add, name='supplier_add'),
