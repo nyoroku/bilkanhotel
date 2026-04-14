@@ -764,7 +764,7 @@ def po_variance_report_all(request):
 
     # Fetch all purchase orders that were marked as received within the date range
     completed_pos = PurchaseOrder.objects.filter(
-        status=PurchaseOrder.Status.PARTIALLY_RECEIVED,
+        status__in=[PurchaseOrder.Status.PARTIALLY_RECEIVED, PurchaseOrder.Status.FULLY_RECEIVED],
         order_date__range=[start_date, end_date]
     ).order_by('-order_date')
 
@@ -807,7 +807,7 @@ def po_variance_report_supplier(request, pk):
     # Fetch purchase orders for this specific supplier within the date range
     completed_pos = PurchaseOrder.objects.filter(
         supplier=supplier,
-        status=PurchaseOrder.Status.PARTIALLY_RECEIVED,
+        status__in=[PurchaseOrder.Status.PARTIALLY_RECEIVED, PurchaseOrder.Status.FULLY_RECEIVED],
         order_date__range=[start_date, end_date]
     ).order_by('-order_date')
 
