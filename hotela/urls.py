@@ -40,9 +40,9 @@ admin.site.site_url = reverse_lazy('pos:pos')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("", include("core.urls")),
-    path("", include("julifarm.urls")),
     path("", include("pos.urls")),
+    path("farm/", include("julifarm.urls")),
+    path("core/", include("core.urls")),
     path("", include("payroll.urls")),
     path("", include("schedule.urls")),
     path("", include("trucks.urls")),
