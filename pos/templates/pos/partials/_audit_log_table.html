@@ -1,0 +1,91 @@
+<div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
+    <table class="w-full text-left border-collapse">
+        <thead>
+            <tr class="bg-gray-50 border-bottom border-gray-200">
+                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Timestamp</th>
+                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
+                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">User</th>
+                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Description</th>
+                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Variance</th>
+                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Details</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for log in page_obj %}
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ log.timestamp|date:"M d, Y H:i" }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-bold
+                        {% if log.action_type == 'Price Change' %} bg-blue-100 text-blue-700
+                        {% elif log.action_type == 'Stock Adjustment' %} bg-yellow-100 text-yellow-700
+                        {% elif log.action_type == 'Order Cancellation' %} bg-red-100 text-red-700
+                        {% elif log.action_type == 'Delivery Received' %} bg-green-100 text-green-700
+                        {% else %} bg-gray-100 text-gray-700 {% endif %}">
+                        {{ log.action_type }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap t">
+                    <div class="flex items-center">
+                        <div class="w-7 h-7 bg-indigo-500 text-white rounded-md flex items-center justify-center text-xs font-bold mr-2">
+                            {{ log.user.get_short_name|first|upper }}
+                        </div>
+                        <span class="text-sm font-medium text-gray-900">{{ log.user.get_full_name|default:"System" }}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
+                    {{ log.description }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {% if log.variance != None %}
+                        <span class="text-sm font-bold {% if log.variance < 0 %}text-red-600{% elif log.variance > 0 %}text-green-600{% else %}text-gray-500{% endif %}">
+                            {{ log.variance|floatformat:2 }}{% if log.action_type == 'Stock Adjustment' or log.action_type == 'Delivery Received' %}{% else %}{% endif %}
+                        </span>
+                    {% else %}
+                        <span class="text-gray-300">-</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button class="text-indigo-600 hover:text-indigo-900" 
+                            onclick="alert('JSON Data: ' + JSON.stringify({{ log.data_after|default:'{}'|safe }}, null, 2))">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">
+                    No audit logs found matching your filters.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="mt-6 flex items-center justify-between">
+    <div class="text-sm text-gray-500">
+        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+    </div>
+    <div class="inline-flex rounded-md shadow-sm">
+        {% if page_obj.has_previous %}
+        <button hx-get="?page={{ page_obj.previous_page_number }}&user={{ selected_user }}&action_type={{ selected_action }}&start_date={{ start_date }}&end_date={{ end_date }}"
+                hx-target="#audit-log-container"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+            Previous
+        </button>
+        {% endif %}
+        
+        {% if page_obj.has_next %}
+        <button hx-get="?page={{ page_obj.next_page_number }}&user={{ selected_user }}&action_type={{ selected_action }}&start_date={{ start_date }}&end_date={{ end_date }}"
+                hx-target="#audit-log-container"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+            Next
+        </button>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

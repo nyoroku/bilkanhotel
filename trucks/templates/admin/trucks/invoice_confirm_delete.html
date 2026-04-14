@@ -1,0 +1,30 @@
+{% extends "trucks/base.html" %}
+{% load static %}
+
+{% block title %}Delete Invoice{% endblock %}
+{% block page_title %}Delete Invoice{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 lg:max-w-7xl">
+    <div class="bg-white rounded-lg shadow-md p-6 mb-4 has-background-danger-light">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4 is-4">Confirm Deletion</h2>
+        <p class="mb-4">Are you sure you want to deactivate this invoice?</p>
+        <p><strong>Invoice #:</strong> {{ invoice.invoice_number }}</p>
+        <p><strong>Transporter:</strong> {{ invoice.transporter.name }}</p>
+        <p><strong>Balance:</strong> ${{ invoice.balance|floatformat:2 }}</p>
+        <p class="text-red-500 mt-2"><strong>Note:</strong> This action deactivates the invoice but does not delete it permanently.</p>
+
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            <div class="mb-4 flex space-x-2">
+                <div class="relative">
+                    <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white">Deactivate</button>
+                </div>
+                <div class="relative">
+                    <a href="{% url 'trucks:invoice_detail' invoice.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

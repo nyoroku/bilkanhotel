@@ -1,0 +1,170 @@
+{% load humanize %}
+{% if page_obj.object_list %}
+<div class="profitability-card">
+  <div class="level">
+    <div class="level-left">
+      <div class="level-item">
+        <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5">
+          Trip Profitability Analysis
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">{{ page_obj.paginator.count }} trips</span>
+        </h3>
+      </div>
+    </div>
+    <div class="level-right">
+      <div class="level-item">
+        <div class="mb-4 flex space-x-2">
+          <div class="relative">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white">Excellent: >20%</span>
+          </div>
+          <div class="relative">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500 hover:bg-sky-600 text-white">Good: 10-20%</span>
+          </div>
+          <div class="relative">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-600 hover:bg-red-700 text-white">Poor: <10%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="flex flex-wrap -mx-3">
+    <div class="w-full px-3">
+      <div class="text-center">
+        <p class="text-2xl font-bold text-gray-900 mb-4 is-4 profit-positive">
+          KES {{ totals.total_revenue|floatformat:2|intcomma }}
+        </p>
+        <p class="text-lg text-gray-600 mb-4 is-6">Total Revenue</p>
+      </div>
+    </div>
+    <div class="w-full px-3">
+      <div class="text-center">
+        <p class="text-2xl font-bold text-gray-900 mb-4 is-4 profit-neutral">
+          KES {{ totals.total_cost|floatformat:2|intcomma }}
+        </p>
+        <p class="text-lg text-gray-600 mb-4 is-6">Total Costs</p>
+      </div>
+    </div>
+    <div class="w-full px-3">
+      <div class="text-center">
+        <p class="text-2xl font-bold text-gray-900 mb-4 is-4 {% if totals.total_profit >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
+          KES {{ totals.total_profit|floatformat:2|intcomma }}
+        </p>
+        <p class="text-lg text-gray-600 mb-4 is-6">Total Profit</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trip Details Table -->
+  <div class="table-container">
+    <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+      <thead>
+        <tr>
+          <th>Trip</th>
+          <th>Date</th>
+          <th>Truck</th>
+          <th>Destination</th>
+          <th>Tonnage</th>
+          <th>Revenue</th>
+          <th>Fuel Cost</th>
+          <th>Other Expenses</th>
+          <th>Total Cost</th>
+          <th>Profit</th>
+          <th>Margin</th>
+          <th>Revenue/Ton</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for trip_data in page_obj.object_list %}
+        <tr class="trip-row {% if trip_data.margin >= 20 %}margin-excellent{% elif 10 %}margin-good{% < %}margin-poor{% endif %}">
+          <td>
+            <a href="{% url 'trucks:trip_detail' trip_data.trip.pk %}" class="has-text-link">
+              <strong>{{ trip_data.trip.trip_number }}</strong>
+            </a>
+          </td>
+          <td>
+            {% if trip_data.trip.actual_departure %}
+              {{ trip_data.trip.actual_departure|date:"M d, Y" }}
+            {% else %}
+              {{ trip_data.trip.planned_departure|date:"M d, Y" }}
+            {% endif %}
+          </td>
+          <td>{{ trip_data.trip.truck.truck_number }}</td>
+          <td>{{ trip_data.trip.destination.name|truncatechars:20 }}</td>
+          <td>{{ trip_data.trip.weight_tons|floatformat:1|default:"—" }}</td>
+          <td class="has-text-weight-bold">
+            KES {{ trip_data.revenue|floatformat:2|intcomma }}
+          </td>
+          <td class="text-red-500">
+            KES {{ trip_data.fuel_cost|floatformat:2|intcomma }}
+          </td>
+          <td class="text-yellow-500">
+            KES {{ trip_data.trip_expenses|floatformat:2|intcomma }}
+          </td>
+          <td class="has-text-weight-bold">
+            KES {{ trip_data.total_cost|floatformat:2|intcomma }}
+          </td>
+          <td class="{% if trip_data.profit >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
+            KES {{ trip_data.profit|floatformat:2|intcomma }}
+          </td>
+          <td>
+            <span class="profit-indicator {% if trip_data.margin >= 20 %}has-background-success has-text-white elif 10 %}has-background-info 0 %}has-background-warning else %}has-background-danger has-text-white{% endif %}">
+              {{ trip_data.margin|floatformat:1 }}%
+            </span>
+          </td>
+          <td>
+            {% if trip_data.revenue_per_ton > 0 %}
+              KES {{ trip_data.revenue_per_ton|floatformat:2 }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <nav class="pagination is-centered" role="navigation">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}&start_date={{ start_date }}&end_date={{ end_date }}&truck={{ truck_filter }}&transporter={{ transporter_filter }}"
+         class="pagination-previous">Previous</a>
+    {% endif %}
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}&start_date={{ start_date }}&end_date={{ end_date }}&truck={{ truck_filter }}&transporter={{ transporter_filter }}"
+         class="pagination-next">Next</a>
+    {% endif %}
+
+    <ul class="pagination-list">
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <li><a class="pagination-link is-current">{{ num }}</a></li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <li>
+            <a href="?page={{ num }}&start_date={{ start_date }}&end_date={{ end_date }}&truck={{ truck_filter }}&transporter={{ transporter_filter }}"
+               class="pagination-link">{{ num }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </nav>
+  {% endif %}
+
+</div>
+
+{% else %}
+<div class="profitability-card">
+  <div class="text-center">
+    <span class="icon text-xl px-8 py-4 has-text-grey-light">
+      <i class="fas fa-chart-line fa-3x"></i>
+    </span>
+    <p class="text-lg text-gray-600 mb-4">No completed trips found for the selected criteria</p>
+    <p class="content">
+      Try adjusting your date range or filters above to see trip profitability analysis.
+    </p>
+  </div>
+</div>
+{% endif %}

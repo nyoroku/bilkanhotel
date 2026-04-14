@@ -1,0 +1,17 @@
+
+{% for customer in customers %}
+<a href="#" class="dropdown-item"
+   onclick="event.preventDefault(); selectCustomer({{ customer.id }}, '{{ customer.name|escapejs }}')">
+    <p>
+        <strong>{{ customer.name }}</strong>
+        <br>
+        <small class="has-text-grey">{{ customer.phone_number|default:'No phone number' }}</small>
+    </p>
+</a>
+{% endfor %}
+
+{% if not customers and request.GET.q %}
+<div class="dropdown-item">
+    <p class="has-text-grey-light">No customers found.</p>
+</div>
+{% endif %}

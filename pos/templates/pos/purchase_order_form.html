@@ -1,0 +1,107 @@
+{% extends 'pos/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create Purchase Order{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap -mx-3 is-centered">
+    <div class="w-full px-3 md:w-2/3">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <p class="text-lg font-bold text-gray-800 is-centered text-2xl font-semibold">
+                    Create Purchase Order
+                </p>
+            </header>
+            <div class="p-6">
+                <form method="post" id="purchase-order-form">
+                    {% csrf_token %}
+
+                    {# Main purchase order form #}
+                    {{ form|crispy }}
+
+                    <hr class="my-4">
+
+                    {# Formset for items #}
+                    <h5 class="text-2xl font-bold text-gray-900 mb-4 is-5">Order Items</h5>
+                    {{ formset.management_form }}
+
+                    <div id="items-form-container">
+                        {% for item_form in formset %}
+                        <div class="item-form bg-white rounded-lg shadow-md p-6 mb-4">
+                            <div class="flex flex-wrap -mx-3 is-multiline">
+                                <div class="w-full px-3 is-8">
+                                    {{ item_form.menu_item|as_crispy_field }}
+                                </div>
+                                <div class="w-full px-3 is-3">
+                                    {{ item_form.quantity_ordered|as_crispy_field }}
+                                </div>
+                                <div class="w-full px-3 is-1 text-center">
+                                    {% if formset.can_delete %}
+                                    <label class="checkbox mt-5">
+                                        {{ item_form.DELETE }} Remove
+                                    </label>
+                                    {% endif %}
+                                </div>
+                                {% for hidden in item_form.hidden_fields %}
+                                    {{ hidden }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="text-center mb-5">
+                        <button type="button" id="add-item-btn" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white text-xs px-2.5 py-1.5">
+                            <span class="icon"><i class="fas fa-plus"></i></span>
+                            <span>Add Item</span>
+                        </button>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="mb-4 flex space-x-2 is-grouped-centered">
+                        <div class="relative">
+                            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white text-lg px-6 py-3">
+                                <span class="icon"><i class="fas fa-save"></i></span>
+                                <span>Save Purchase Order</span>
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <a href="{% if back_url %}{% url back_url %}{% else %}{% url 'pos:purchase_order_list' %}{% endif %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light text-lg px-6 py-3">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add new item form
+    document.getElementById('add-item-btn').addEventListener('click', function() {
+        const formCount = parseInt(document.getElementById('id_items-TOTAL_FORMS').value);
+        const container = document.getElementById('items-form-container');
+        const newForm = container.querySelector('.item-form').cloneNode(true);
+
+        // Update all the IDs and names in the cloned form
+        const regex = new RegExp('items-\\d+-', 'g');
+        const newFormHtml = newForm.innerHTML.replace(regex, `items-${formCount}-`);
+        newForm.innerHTML = newFormHtml;
+
+        // Clear the values
+        const inputs = newForm.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            if (input.type !== 'hidden' && !input.name.includes('DELETE')) {
+                input.value = '';
+            }
+        });
+
+        container.appendChild(newForm);
+        document.getElementById('id_items-TOTAL_FORMS').value = formCount + 1;
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar Docket - Order #{{ order.id }}</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            margin: 0;
+            padding: 10px;
+            background: white;
+            color: black;
+        }
+
+        .docket-container {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .docket-header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .docket-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+            background: #6f42c1;
+            color: white;
+            padding: 5px;
+            text-transform: uppercase;
+        }
+
+        .order-info {
+            margin: 10px 0;
+        }
+
+        .order-info div {
+            margin: 5px 0;
+        }
+
+        .order-number {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #6f42c1;
+        }
+
+        .table-info {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .items-section {
+            margin: 15px 0;
+        }
+
+        .item {
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ccc;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .item-name {
+            flex: 1;
+        }
+
+        .item-quantity {
+            font-size: 16px;
+            font-weight: bold;
+            background: #6f42c1;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+
+        .item-status {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .item-notes {
+            font-size: 11px;
+            color: #444;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .drink-strength {
+            font-size: 11px;
+            color: #6f42c1;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .docket-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #6f42c1;
+            font-size: 11px;
+        }
+
+        .priority-urgent {
+            background: #ffcccc;
+            border: 2px solid #ff0000;
+        }
+
+        .priority-high {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+
+        .category-badge {
+            display: inline-block;
+            background: #6f42c1;
+            color: white;
+            padding: 2px 6px;
+            font-size: 10px;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+
+        .alcohol-indicator {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 5px;
+            }
+
+            .docket-container {
+                max-width: none;
+            }
+
+            @page {
+                size: 80mm auto;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="docket-container">
+        <div class="docket-header">
+            <h1 class="docket-title">🍹 BAR DOCKET</h1>
+        </div>
+
+        <div class="order-number">
+            ORDER #{{ order.id }}
+        </div>
+
+        <div class="table-info">
+            {% if order.table %}
+                TABLE {{ order.table.table_number }}
+            {% else %}
+                TAKEAWAY
+            {% endif %}
+        </div>
+
+        <div class="order-info">
+            <div><strong>Waiter:</strong> {{ order.waiter.get_full_name|default:"N/A" }}</div>
+            <div><strong>Time:</strong> {{ order.created_at|date:"H:i" }}</div>
+            <div><strong>Status:</strong> {{ order.status }}</div>
+            <div><strong>Items:</strong> {{ total_items }}</div>
+        </div>
+
+        <div class="items-section">
+            <h3 style="margin: 15px 0 10px 0; text-align: center; text-transform: uppercase;">BAR ITEMS</h3>
+
+            {% for item in items %}
+            <div class="item {% if item.status == 'URGENT' %}priority-urgent{% elif 'HIGH' %}priority-high{% endif %}">
+                <div class="item-header">
+                    <div class="item-name">
+                        {{ item.menu_item.name }}
+                        <span class="category-badge">{{ item.menu_item.category.name }}</span>
+                        {% if item.menu_item.is_alcoholic %}
+                            <span class="alcohol-indicator">🍺</span>
+                        {% endif %}
+                    </div>
+                    <div class="item-quantity">{{ item.quantity|floatformat:0 }}</div>
+                </div>
+
+                <div class="item-status">
+                    Status: {{ item.status }}
+                </div>
+
+                {% if item.drink_strength %}
+                <div class="drink-strength">
+                    Strength: {{ item.drink_strength }}
+                </div>
+                {% endif %}
+
+                {% if item.notes %}
+                <div class="item-notes">
+                    Notes: {{ item.notes }}
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div style="text-align: center; color: #666; margin: 20px 0;">
+                No bar items in this order
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="docket-footer">
+            <div><strong>Printed:</strong> {{ print_time|date:"d/m/Y H:i:s" }}</div>
+            <div style="margin-top: 10px; font-size: 10px;">
+                ═══════════════════════════════
+            </div>
+            <div style="margin-top: 5px; font-weight: bold;">
+                BAR COPY
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-print when page loads
+        window.onload = function() {
+            window.print();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends 'pos/base.html' %}
+{% block title %}Stock Requisitions{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between"><p class="text-lg font-bold text-gray-800">Pending Stock Requests</p></header>
+    <div class="p-6">
+        <div class="table-container">
+            <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white">
+                <thead><tr><th>Item</th><th>Qty</th><th>Requested By</th><th>Date</th><th>Action</th></tr></thead>
+                <tbody>
+                    {% for req in pending_requests %}
+                    <tr>
+                        <td>{{ req.menu_item.name }}</td>
+                        <td>{{ req.quantity }}</td>
+                        <td>{{ req.requested_by_user.get_full_name|default:'N/A' }}</td>
+                        <td>{{ req.request_timestamp|date:"d M, H:i" }}</td>
+                        <td>
+                            <form method="post" action="{% url 'pos:fulfill_stock_request' req.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white">Fulfill</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center">No pending requests.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

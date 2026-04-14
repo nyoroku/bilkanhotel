@@ -1,0 +1,90 @@
+<div class="table-container">
+    <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50 is-size-7">
+        <thead>
+            <tr>
+                <th>PO #</th>
+                <th>Supplier</th>
+                <th>Date</th>
+                <th class="text-center">Section</th>
+                <th class="text-right">Total Cost</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for po in page_obj.object_list %}
+                <tr>
+                    <td style="vertical-align: middle;">
+                        <strong>#{{ po.id }}</strong>
+                    </td>
+                    <td style="vertical-align: middle;">{{ po.supplier.name }}</td>
+                    <td style="vertical-align: middle;">{{ po.order_date|date:"Y-m-d" }}</td>
+                    <td class="text-center" style="vertical-align: middle;">
+                        {{ po.get_requested_for_section_display }}
+                    </td>
+                    <td class="text-right" style="vertical-align: middle;">
+                        {{ po.total_cost|floatformat:2 }} KES
+                    </td>
+                    <td class="text-center" style="vertical-align: middle;">
+                        {% if po.status == 'Pending' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500 hover:bg-yellow-600 text-black is-light">{{ po.get_status_display }}</span>
+                        {% elif po.status == 'Partially Received' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500 hover:bg-sky-600 text-white is-light">{{ po.get_status_display }}</span>
+                        {% elif po.status == 'Fully Received' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white is-light">{{ po.get_status_display }}</span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">{{ po.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center" style="vertical-align: middle;">
+                        <div class="buttons are-small is-justify-content-center">
+                            <a href="{% url 'pos:purchase_order_detail' po.pk %}"
+                               class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-indigo-600 hover:bg-indigo-700 text-white is-light"
+                               title="View Details">
+                                <span class="icon"><i class="fas fa-eye"></i></span>
+                            </a>
+                            {% if po.status == 'Pending' %}
+                            <a href=""
+                               class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white is-light"
+                               title="Edit">
+                                <span class="icon"><i class="fas fa-edit"></i></span>
+                            </a>
+                            {% endif %}
+                            {% if po.status != 'Fully Received' %}
+                            <a href="{% url 'pos:receive_delivery_from_po' po.pk %}"
+                               class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white is-light"
+                               title="Receive Delivery">
+                                <span class="icon"><i class="fas fa-truck"></i></span>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No purchase orders match your filters.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination Links -->
+{% if page_obj.has_other_pages %}
+<nav class="pagination is-centered mt-4" role="navigation" aria-label="pagination"
+     hx-get="{% url 'pos:purchase_order_list' %}"
+     hx-target="#po-table-container"
+     hx-swap="innerHTML"
+     hx-include="#po-filters">
+
+    <ul class="pagination-list">
+        {% for num in page_obj.paginator.page_range %}
+            <li>
+                <a href="?page={{ num }}" class="pagination-link {% if page_obj.number == num %}is-current{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}

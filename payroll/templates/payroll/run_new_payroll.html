@@ -1,0 +1,6 @@
+{% extends 'pos/base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Run New Payroll{% endblock %}
+{% block content %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden"><header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between"><p class="text-lg font-bold text-gray-800">Run New Payroll Period</p></header><div class="p-6"><form method="post">{% csrf_token %}{{ form|crispy }}<hr><button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">Create Period & Generate Payslips</button></form></div></div>
+{% endblock %}

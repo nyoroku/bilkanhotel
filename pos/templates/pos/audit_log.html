@@ -1,0 +1,71 @@
+{% extends 'pos/base.html' %}
+{% load static %}
+
+{% block title %}System Audit Logs | Hotela{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">System Audit Logs</h1>
+            <p class="mt-2 text-sm text-gray-500">Track critical actions, stock variances, and administrative changes across the system.</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex gap-3">
+            <button onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-print mr-2"></i> Print Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats & Filters Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+        <form hx-get="{% url 'pos:audit_log' %}" 
+              hx-target="#audit-log-container" 
+              hx-trigger="change, keyup delay:300ms"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Performant By</label>
+                <select name="user" class="block w-full border-gray-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">All Staff</option>
+                    {% for u in users %}
+                    <option value="{{ u.id }}" {% if selected_user == u.id|stringformat:"i" %}selected{% endif %}>{{ u.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Action Type</label>
+                <select name="action_type" class="block w-full border-gray-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">All Actions</option>
+                    {% for code, label in action_types %}
+                    <option value="{{ code }}" {% if selected_action == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Start Date</label>
+                <input type="date" name="start_date" value="{{ start_date }}" class="block w-full border-gray-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">End Date</label>
+                <input type="date" name="end_date" value="{{ end_date }}" class="block w-full border-gray-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <div class="flex items-end">
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" name="has_variance" value="1" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                    <span class="text-sm font-medium text-gray-700">Highlights Only</span>
+                </label>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table Container -->
+    <div id="audit-log-container">
+        {% include 'pos/partials/_audit_log_table.html' %}
+    </div>
+</div>
+{% endblock %}

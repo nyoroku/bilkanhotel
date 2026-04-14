@@ -1,0 +1,20 @@
+<div class="modal is-active">
+  <div class="modal-background" hx-get hx-target="#modal" hx-swap="innerHTML"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Confirm Deactivation</p>
+      <button class="delete" hx-get hx-target="#modal" hx-swap="innerHTML" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <p>Are you sure you want to deactivate <strong>{{ object.name }}</strong>?</p>
+      <p>This will hide it from lists but preserve its data.</p>
+    </section>
+    <footer class="modal-card-foot">
+      <form method="post" hx-post hx-target="#modal" hx-swap="innerHTML">
+        {% csrf_token %}
+        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white">Yes, Deactivate</button>
+      </form>
+      <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150" hx-get hx-target="#modal" hx-swap="innerHTML">Cancel</button>
+    </footer>
+  </div>
+</div>

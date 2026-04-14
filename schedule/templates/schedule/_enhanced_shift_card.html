@@ -1,0 +1,61 @@
+<!-- templates/schedule/_enhanced_shift_card.html -->
+{% load static %}
+{% load schedule_extra %}
+
+<div class="shift-card">
+  <div class="shift-header">
+    <h3 class="shift-title">{{ assignment.shift.name }}</h3>
+    <div class="shift-schedule">{{ assignment.shift.schedule.name }}</div>
+  </div>
+
+  <div class="shift-details">
+    <div class="shift-detail">
+      <div class="shift-detail-icon icon-date">📅</div>
+      <span class="shift-detail-text">{{ assignment.shift.start_datetime|date:"l, M j, Y" }}</span>
+    </div>
+
+    <div class="shift-detail">
+      <div class="shift-detail-icon icon-time">🕐</div>
+      <span class="shift-detail-text">
+        {{ assignment.shift.start_datetime|time:"g:i A" }} - {{ assignment.shift.end_datetime|time:"g:i A" }}
+      </span>
+    </div>
+
+    <div class="shift-detail">
+      <div class="shift-detail-icon icon-duration">⏱️</div>
+      <span class="shift-detail-text">
+        {{ assignment.shift.start_datetime|duration_hours:assignment.shift.end_datetime }}
+      </span>
+    </div>
+  </div>
+
+  {% if assignment.notes %}
+    <div class="shift-notes" style="margin: 1rem 0; padding: 0.75rem; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #667eea;">
+      <strong>Notes:</strong> {{ assignment.notes }}
+    </div>
+  {% endif %}
+
+  <!-- Status Badge -->
+  {% with assignment.shift|shift_status as status %}
+    {% if status == 'upcoming' %}
+      <span class="status-badge status-upcoming">Upcoming</span>
+    {% elif status == 'active' %}
+      <span class="status-badge status-active">Active Now</span>
+    {% else %}
+      <span class="status-badge status-past">Completed</span>
+    {% endif %}
+  {% endwith %}
+
+  <div class="shift-actions">
+    {% if assignment.shift|is_shift_upcoming %}
+      <form method="post" action="{% url 'schedule:create_swap_request' assignment.shift.pk %}" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn-action btn-swap">
+          🔄 Request Swap
+        </button>
+      </form>
+    {% endif %}
+
+
+  </div>
+</div>

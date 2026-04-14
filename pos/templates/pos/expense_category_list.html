@@ -1,0 +1,35 @@
+{% extends 'pos/base.html' %}
+{% block title %}Expense Categories{% endblock %}
+
+{% block content %}
+<div class="level mb-5">
+    <div class="level-left"><h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Expense Categories</h1></div>
+    <div class="level-right"><a href="{% url 'pos:expense_category_add' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white text-lg px-6 py-3"><span>Add New Category</span></a></div>
+</div>
+
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+    <form method="get"><div class="mb-4 has-addons"><div class="relative is-expanded"><input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" type="search" name="q" placeholder="Search categories..." value="{{ search_query }}"></div><div class="relative"><button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white">Search</button></div></div></form>
+</div>
+
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+    <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+        <thead><tr><th>Category Name</th><th>Description</th><th class="text-right">Actions</th></tr></thead>
+        <tbody>
+            {% for cat in categories %}
+            <tr>
+                <td><strong>{{ cat.name }}</strong></td>
+                <td>{{ cat.description|default:"N/A" }}</td>
+                <td class="text-right">
+                    <div class="buttons is-right">
+                        <a href="{% url 'pos:expense_category_edit' cat.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white is-light">Edit</a>
+                        <a href="{% url 'pos:expense_category_delete' cat.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white is-light">Delete</a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center p-4">No expense categories found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

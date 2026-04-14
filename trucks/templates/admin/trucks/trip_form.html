@@ -1,0 +1,199 @@
+{% extends "trucks/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - LogiTrack{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+  <form method="post" {% if request.htmx %}hx-post="" hx-target="#modal-content" hx-swap="innerHTML"{% endif %}>
+    {% csrf_token %}
+    <div class="flex flex-wrap -mx-3">
+      <div class="w-full px-3">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Trip Number</label>
+          <div class="relative">
+            {{ form.trip_number }}
+            {% if form.trip_number.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.trip_number.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Truck</label>
+          <div class="relative">
+            {{ form.truck }}
+            {% if form.truck.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.truck.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Driver</label>
+          <div class="relative">
+            {{ form.driver }}
+            {% if form.driver.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.driver.errors }}</p>{% endif %}
+            <p class="help">Leave blank to auto-assign from truck's current driver.</p>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Transporter</label>
+          <div class="relative">
+            {{ form.transporter }}
+            {% if form.transporter.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.transporter.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Origin</label>
+          <div class="relative">
+            {{ form.origin }}
+            {% if form.origin.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.origin.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Destination</label>
+          <div class="relative">
+            {{ form.destination }}
+            {% if form.destination.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.destination.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Cargo Type</label>
+          <div class="relative">
+            {{ form.cargo_type }}
+            {% if form.cargo_type.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.cargo_type.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Cargo Description</label>
+          <div class="relative">
+            {{ form.cargo_description }}
+            {% if form.cargo_description.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.cargo_description.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Weight (Tons)</label>
+          <div class="relative">
+            {{ form.weight_tons }}
+            {% if form.weight_tons.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.weight_tons.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Delivered Weight</label>
+          <div class="relative">
+            {{ form.delivered_weight }}
+            {% if form.delivered_weight.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.delivered_weight.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Rate per Ton</label>
+          <div class="relative">
+            {{ form.rate_per_ton }}
+            {% if form.rate_per_ton.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.rate_per_ton.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Transport Amount</label>
+          <div class="relative">
+            {{ form.transport_amount }}
+            {% if form.transport_amount.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.transport_amount.errors }}</p>{% endif %}
+          </div>
+        </div>
+
+        <!-- ✅ ADDED: Fuel Fields -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Fuel Litres</label>
+          <div class="relative">
+            {{ form.fuel_litres }}
+            {% if form.fuel_litres.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.fuel_litres.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Fuel Cost per Litre</label>
+          <div class="relative">
+            {{ form.fuel_cost_per_litre }}
+            {% if form.fuel_cost_per_litre.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.fuel_cost_per_litre.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Fuel Total Cost</label>
+          <div class="relative">
+            {{ form.fuel_total_cost }}
+            {% if form.fuel_total_cost.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.fuel_total_cost.errors }}</p>{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="w-full px-3">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Planned Departure</label>
+          <div class="relative">
+            {{ form.planned_departure }}
+            {% if form.planned_departure.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.planned_departure.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Planned Arrival</label>
+          <div class="relative">
+            {{ form.planned_arrival }}
+            {% if form.planned_arrival.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.planned_arrival.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Actual Departure</label>
+          <div class="relative">
+            {{ form.actual_departure }}
+            {% if form.actual_departure.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.actual_departure.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Actual Arrival</label>
+          <div class="relative">
+            {{ form.actual_arrival }}
+            {% if form.actual_arrival.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.actual_arrival.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Distance (KM)</label>
+          <div class="relative">
+            {{ form.distance_km }}
+            {% if form.distance_km.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.distance_km.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <div class="relative">
+            {{ form.status }}
+            {% if form.status.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.status.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Status</label>
+          <div class="relative">
+            {{ form.delivery_status }}
+            {% if form.delivery_status.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.delivery_status.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+          <div class="relative">
+            {{ form.remarks }}
+            {% if form.remarks.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.remarks.errors }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Source Document</label>
+          <div class="relative">
+            {{ form.source_document }}
+            {% if form.source_document.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.source_document.errors }}</p>{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mb-4 flex space-x-2">
+      <div class="relative">
+        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">Save</button>
+      </div>
+      <div class="relative">
+        <a href="{% url 'trucks:trip_list' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

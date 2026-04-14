@@ -1,0 +1,177 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}{{ display_title }}{% endblock %}
+
+{% block styles %}
+<style>
+    /* A dark, low-glare theme perfect for a kitchen or bar environment */
+    body { background-color: #2c3e50; color: #ecf0f1; }
+    .main-content { padding: 1.5rem; }
+
+    /* Polished Page Header */
+    .display-header h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #ffffff;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        border-bottom: 2px solid var(--theme-yellow);
+        display: inline-block;
+        padding-bottom: 0.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* The main grid for holding all the order tickets */
+    .ticket-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 2rem;
+    }
+
+    /* The individual ticket card - the core of the polished design */
+    .ticket {
+        background: #34495e; /* A slightly lighter dark blue for the card */
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Ensures footer button fits the rounded corners */
+        border-left: 8px solid #48c774; /* Default: Bulma's green for new orders */
+        transition: border-color 0.5s ease;
+    }
+
+    /* Color-coding for aging tickets */
+    .ticket.aging { border-left-color: #ffdd57; } /* Bulma's yellow for orders > 7 minutes */
+    .ticket.late { border-left-color: #f14668; }  /* Bulma's red for orders > 15 minutes */
+
+    .ticket-header {
+        padding: 1rem 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #ffffff;
+        background-color: #2c3e50;
+    }
+
+    .ticket-header .table-name { font-size: 2rem; font-weight: 700; }
+    .ticket-header .order-age { font-size: 1rem; font-weight: 600; }
+
+    .ticket-body { padding: 1.25rem; flex-grow: 1; }
+    .ticket-item {
+        display: flex;
+        align-items: baseline;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #4a6279;
+    }
+    .ticket-item:last-child { border-bottom: none; margin-bottom: 0; }
+
+    /* Polished quantity indicator */
+    .ticket-item .qty {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-right: 1.5rem;
+        color: var(--theme-yellow);
+        min-width: 50px;
+        text-align: center;
+    }
+    .ticket-item .item-name { font-size: 1.5rem; }
+
+    .ticket-footer { padding: 0; }
+    .btn-complete {
+        font-size: 1.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        width: 100%;
+        background-color: #34495e;
+        color: #48c774; /* Success green for the text */
+        border: none;
+        padding: 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-top: 1px solid #4a6279;
+    }
+    .btn-complete:hover { background-color: #4a6279; color: #fff; }
+
+    /* A more engaging "empty" message */
+    .empty-message { color: #7f8c8d; text-align: center; grid-column: 1 / -1; margin-top: 5rem; }
+    .empty-message .icon { font-size: 4rem; margin-bottom: 1rem; }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="text-center display-header">
+    <h1>{{ display_title }}</h1>
+</div>
+
+<div id="ticket-grid" class="ticket-grid"
+     hx-get="{% if module_type == 'Kitchen' %}{% url 'pos:kitchen_display' %}{% else %}{% url 'pos:bar_display' %}{% endif %}"
+     hx-trigger="every 15s"
+     hx-swap="innerHTML">
+<!-- Stock buttons – do NOT edit anything else -->
+<div class="text-center mb-4">
+  <a href="{% url 'schedule:shift_stock_open' 'Kitchen' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white is-light mr-2">
+    <span class="icon"><i class="fas fa-file-import"></i></span>
+    <span>Kitchen Opening Stock</span>
+  </a>
+  <a href="{% url 'schedule:shift_stock_close' 'Kitchen' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-yellow-500 hover:bg-yellow-600 text-black is-light mr-2">
+    <span class="icon"><i class="fas fa-file-export"></i></span>
+    <span>Kitchen Closing Stock</span>
+  </a>
+
+  <a href="{% url 'schedule:shift_stock_open' 'Bar' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white is-light mr-2">
+    <span class="icon"><i class="fas fa-file-import"></i></span>
+    <span>Bar Opening Stock</span>
+  </a>
+  <a href="{% url 'schedule:shift_stock_close' 'Bar' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-yellow-500 hover:bg-yellow-600 text-black is-light">
+    <span class="icon"><i class="fas fa-file-export"></i></span>
+    <span>Bar Closing Stock</span>
+  </a>
+</div>
+    {% for order in orders %}
+    <div class="ticket {% if order.age_minutes > 15 %}late{% elif 7 %}aging{% endif %}" id="ticket-{{ order.id }}">
+
+        <div class="ticket-header">
+            <span class="table-name">{{ order.table.table_number|default:'Takeaway' }}</span>
+            <div class="text-right">
+                <div class="order-age">
+                    <span class="icon text-xs px-2.5 py-1.5"><i class="far fa-clock"></i></span>
+                    <span>{{ order.created_at|timesince }} ago</span>
+                </div>
+                <a href="{% url 'pos:print_order_receipt' order.id %}" target="_blank" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light text-xs px-2.5 py-1.5 bg-transparent border-2 mt-2" title="Print Docket">
+                    <span class="icon"><i class="fas fa-print"></i></span>
+                </a>
+            </div>
+        </div>
+
+        <div class="ticket-body">
+            {% for item in order.module_items %}
+                <div class="ticket-item">
+                    <div class="qty">{{ item.quantity|floatformat:0 }}x</div>
+                    <div class="item-name">{{ item.menu_item.name }}</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="ticket-footer">
+            <button class="btn-complete"
+                    hx-post="{% url 'pos:htmx_mark_items_ready' order.id module_type %}"
+                    hx-target="#ticket-{{ order.id }}"
+                    hx-swap="outerHTML">
+                <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-check-circle"></i></span>
+                <span>Complete</span>
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if not orders %}
+    <div class="empty-message">
+        <p class="icon"><i class="fas fa-glass-cheers"></i></p>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4 is-3 has-text-white">All Orders Cleared!</h2>
+        <p class="text-lg text-gray-600 mb-4 is-5 has-text-grey-light">No pending orders for this station.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

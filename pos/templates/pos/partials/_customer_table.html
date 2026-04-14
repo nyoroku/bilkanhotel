@@ -1,0 +1,72 @@
+{% comment %}
+This partial renders ONLY the table rows and pagination and now includes
+the loyalty points column and updated colspans.
+{% endcomment %}
+
+{% for customer in page_obj %}
+<tr>
+    <td><strong>{{ customer.name }}</strong></td>
+    <td>{{ customer.phone_number|default:"N/A" }}</td>
+    <td class="text-right has-text-weight-semibold {% if customer.credit_balance > 0 %}has-text-danger{% endif %}">
+        {{ customer.credit_balance|floatformat:2 }}
+    </td>
+    <td class="text-right {% if customer.credit_limit > 0 %}has-text-info{% endif %}">
+        {{ customer.credit_limit|floatformat:2 }}
+    </td>
+
+    <td class="text-right has-text-weight-bold has-text-warning-dark">
+        <span class="icon-text">
+            <span class="icon"><i class="fas fa-star"></i></span>
+            <span>{{ customer.loyalty_points }}</span>
+        </span>
+    </td>
+
+    <td class="text-right">
+        <div class="buttons is-right">
+
+            <a href="{% url 'pos:customer_edit' customer.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white is-light">Edit</a>
+            <a href="{% url 'pos:customer_delete' customer.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white is-light">Delete</a>
+        </div>
+    </td>
+</tr>
+{% endfor %}
+
+{% if not page_obj %}
+<tr>
+    <td colspan="6" class="text-center p-4">No customers found matching your search.</td>
+</tr>
+{% endif %}
+
+{% if page_obj.has_other_pages %}
+<tr id="pagination-row">
+    <td colspan="6">
+        <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+            <ul class="pagination-list">
+                {% if page_obj.has_previous %}
+                <li>
+                    <a class="pagination-link"
+                       hx-get="{% url 'pos:customer_list' %}?page={{ page_obj.previous_page_number }}&q={{ search_query }}"
+                       hx-target="#customer-table-content"
+                       hx-swap="innerHTML">
+                        {{ page_obj.previous_page_number }}
+                    </a>
+                </li>
+                {% endif %}
+                <li>
+                    <a class="pagination-link is-current" aria-current="page">{{ page_obj.number }}</a>
+                </li>
+                {% if page_obj.has_next %}
+                <li>
+                    <a class="pagination-link"
+                       hx-get="{% url 'pos:customer_list' %}?page={{ page_obj.next_page_number }}&q={{ search_query }}"
+                       hx-target="#customer-table-content"
+                       hx-swap="innerHTML">
+                        {{ page_obj.next_page_number }}
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </td>
+</tr>
+{% endif %}

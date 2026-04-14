@@ -1,0 +1,26 @@
+{% comment %}
+This wrapper contains both the print button and the report content,
+allowing them to be updated together in a single HTMX swap.
+{% endcomment %}
+
+<div class="level mb-5">
+    <div class="level-left">
+        <div class="level-item">
+            <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Credit Activity Report</h1>
+        </div>
+    </div>
+    <div class="level-right">
+        <div class="level-item">
+            <a href="{% url 'pos:print_credit_sales_report' %}?start_date={{ start_date }}&end_date={{ end_date }}&customer={{ customer_filter }}"
+               target="_blank"
+               class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-indigo-600 hover:bg-indigo-700 text-white text-lg px-6 py-3">
+                <span class="icon"><i class="fas fa-print"></i></span>
+                <span>Print This Report</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="report-content">
+    {% include 'pos/partials/_credit_sales_table.html' %}
+</div>

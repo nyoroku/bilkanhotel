@@ -1,0 +1,58 @@
+<div class="table-container">
+  <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+    <thead>
+      <tr>
+        <th>Trip #</th>
+        <th>Truck</th>
+        <th>Driver</th>
+        <th>Origin</th>
+        <th>Destination</th>
+        <th>Status</th>
+        <th>Weight (Tons)</th>
+        <th>Transport Amt</th>
+        <th>Fuel Amt</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for trip in page_obj %}
+        <tr>
+          <td><a href="{% url 'trucks:trip_detail' trip.pk %}">{{ trip.trip_number }}</a></td>
+          <td>{{ trip.truck.truck_number }}</td>
+          <td>{{ trip.driver.full_name|default:"Unassigned" }}</td>
+          <td>{{ trip.origin.name }}</td>
+          <td>{{ trip.destination.name }}</td>
+          <td><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-{{ trip.status }}">{{ trip.get_status_display }}</span></td>
+          <td>{{ trip.weight_tons }}</td>
+          <td>{{ trip.transport_amount }}</td>
+          <td>{{ trip.fuel_total_cost|default:"0.00" }}</td>
+          <td>
+            <a href="{% url 'trucks:trip_edit' trip.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-black">Edit</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="10">No trips found for the selected filters.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+  <nav class="pagination text-xs px-2.5 py-1.5" role="navigation" aria-label="pagination">
+    {% if page_obj.has_previous %}
+      <a class="pagination-previous" hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" hx-target="#logistics-table-container" hx-swap="innerHTML">Previous</a>
+    {% endif %}
+    <span class="pagination-ellipsis">&hellip;</span>
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <span class="pagination-link is-current">{{ num }}</span>
+      {% else %}
+        <a class="pagination-link" hx-get="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" hx-target="#logistics-table-container" hx-swap="innerHTML">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    <span class="pagination-ellipsis">&hellip;</span>
+    {% if page_obj.has_next %}
+      <a class="pagination-next" hx-get="?page={{ page_obj.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" hx-target="#logistics-table-container" hx-swap="innerHTML">Next</a>
+    {% endif %}
+  </nav>
+{% endif %}

@@ -1,0 +1,38 @@
+<!-- templates/pos/partials/_error_message.html -->
+<div class="inline-error-message error-message" id="error-message-{{ error_type }}-{{ forloop.counter0|default:'0' }}">
+    <div class="is-flex is-align-items-center">
+        <i class="fas fa-exclamation-circle mr-3" style="font-size: 1.25rem;"></i>
+        <div class="is-flex-grow-1">
+            <div class="has-text-weight-bold">
+                {% if error_type == 'validation' %}
+                    Validation Error
+                {% elif error_type == 'stock' %}
+                    Stock Issue
+                {% elif error_type == 'business_logic' %}
+                    Business Rule Error
+                {% elif error_type == 'system' %}
+                    System Error
+                {% else %}
+                    Error
+                {% endif %}
+            </div>
+            <div class="is-size-7 mt-1">{{ error_message }}</div>
+            {% if debug_info and settings.DEBUG %}
+            <div class="is-size-7 has-text-grey mt-2">Debug: {{ debug_info }}</div>
+            {% endif %}
+        </div>
+        <button class="delete text-xs px-2.5 py-1.5" onclick="dismissMessage('error-message-{{ error_type }}-{{ forloop.counter0|default:'0' }}')"></button>
+    </div>
+
+    <!-- Auto-hide progress bar for errors -->
+    <div class="auto-hide-countdown">
+        <div class="countdown-bar" style="background: linear-gradient(90deg, #ef4444, #f87171);"></div>
+    </div>
+</div>
+
+<script>
+    // Auto-hide error messages after 6 seconds (longer than success messages)
+    setTimeout(() => {
+        dismissMessage('error-message-{{ error_type }}-{{ forloop.counter0|default:'0' }}');
+    }, 6000);
+</script>

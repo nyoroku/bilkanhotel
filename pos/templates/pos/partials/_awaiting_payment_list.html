@@ -1,0 +1,497 @@
+<!-- Integrated Order Management Template -->
+<!-- orders/order_list.html or similar -->
+
+
+
+    <!-- Orders Awaiting Payment - Quick Action Table -->
+    <div class="mt-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4 is-3">Orders Awaiting Payment - Quick Actions</h2>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-4" style="background-color: #34495e; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);">
+            <table class="min-w-full divide-y divide-gray-200 is-fullwidth hover:bg-gray-50" style="background: transparent;">
+                <thead>
+                    <tr>
+                        <th style="color: #bdc3c7; border-color: #4a6279;">Order #</th>
+                        <th style="color: #bdc3c7; border-color: #4a6279;">Table</th>
+                        <th style="color: #bdc3c7; border-color: #4a6279;">Waiter</th>
+                        <th style="color: #bdc3c7; border-color: #4a6279;" class="text-right">Amount Due</th>
+                        <th style="color: #bdc3c7; border-color: #4a6279;" class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td style="border-color: #4a6279; color: white; vertical-align: middle;">#{{ order.id }}</td>
+                        <td style="border-color: #4a6279; color: white; vertical-align: middle;">{{ order.table.table_number|default:'Takeaway' }}</td>
+                        <td style="border-color: #4a6279; color: white; vertical-align: middle;">{{ order.waiter.first_name|default:'N/A' }}</td>
+
+                        <td style="border-color: #4a6279; color: #f1c40f; vertical-align: middle;" class="text-right has-text-weight-bold text-xl font-medium">
+                            {{ order.total_amount|floatformat:2 }} KES
+                        </td>
+
+                        <td style="border-color: #4a6279;" class="text-center">
+                            <div class="buttons is-centered">
+                                <!-- Single Payment Button -->
+                                <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light"
+                                        hx-get="{% url 'pos:htmx_payment_modal' order.id %}"
+                                        hx-target="#payment-overlay-container"
+                                        hx-swap="innerHTML">
+                                    <span class="icon"><i class="fas fa-dollar-sign"></i></span>
+                                    <span>Single Payment</span>
+                                </button>
+
+                                <!-- Multi Payment Button -->
+                                <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-yellow-500 hover:bg-yellow-600 text-black"
+                                        hx-get="{% url 'pos:htmx_multi_payment_modal' order.id %}"
+                                        hx-target="#payment-overlay-container"
+                                        hx-swap="innerHTML">
+                                    <span class="icon"><i class="fas fa-coins"></i></span>
+                                    <span>Multi Payment</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center has-text-grey p-5">
+                            No orders are currently awaiting payment.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal Container -->
+<div id="payment-overlay-container"></div>
+<div id="order-details-modal"></div>
+<div id="edit-order-modal"></div>
+
+<!-- Enhanced JavaScript for robust order management -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle successful payment completion
+    document.body.addEventListener('htmx:afterRequest', function(event) {
+        const xhr = event.detail.xhr;
+        const target = event.detail.target;
+
+        // Check if it's a payment completion request
+        if (xhr.responseURL && (xhr.responseURL.includes('complete-multi-payment') || xhr.responseURL.includes('complete-payment'))) {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        // Show success message
+                        showNotification(response.message, 'success');
+
+                        // Refresh the order list after a short delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        showNotification(response.message || 'Payment failed', 'danger');
+                    }
+                } catch (e) {
+                    // Handle non-JSON responses (like redirect responses)
+                    if (xhr.status === 200) {
+                        showNotification('Payment processed successfully', 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    }
+                }
+            }
+        }
+
+        // Handle order cancellation
+        if (xhr.responseURL && xhr.responseURL.includes('cancel-order')) {
+            if (xhr.status === 200) {
+                showNotification('Order cancelled successfully', 'warning');
+            }
+        }
+
+        // Handle order editing
+        if (xhr.responseURL && xhr.responseURL.includes('edit-order')) {
+            if (xhr.status === 200) {
+                showNotification('Order updated successfully', 'info');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            }
+        }
+    });
+
+    // Handle HTMX errors
+    document.body.addEventListener('htmx:responseError', function(event) {
+        const xhr = event.detail.xhr;
+        if (xhr.status === 403) {
+            showNotification('You do not have permission to perform this action', 'danger');
+        } else if (xhr.status === 404) {
+            showNotification('Order not found', 'danger');
+        } else if (xhr.status >= 500) {
+            showNotification('Server error occurred. Please try again.', 'danger');
+        } else {
+            showNotification('An error occurred. Please try again.', 'danger');
+        }
+    });
+
+    // Handle HTMX network errors
+    document.body.addEventListener('htmx:sendError', function(event) {
+        showNotification('Network error. Please check your connection.', 'danger');
+    });
+
+    // Handle modal close events
+    document.body.addEventListener('click', function(event) {
+        if (event.target.classList.contains('modal-background') ||
+            event.target.classList.contains('modal-close') ||
+            event.target.closest('.modal-close')) {
+
+            const modal = event.target.closest('.modal');
+            if (modal) {
+                modal.classList.remove('is-active');
+                // Clear modal content after animation
+                setTimeout(() => {
+                    modal.innerHTML = '';
+                }, 300);
+            }
+        }
+    });
+
+    // Handle keyboard events for modals
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const activeModal = document.querySelector('.modal.is-active');
+            if (activeModal) {
+                activeModal.classList.remove('is-active');
+                setTimeout(() => {
+                    activeModal.innerHTML = '';
+                }, 300);
+            }
+        }
+    });
+
+    // Auto-refresh order list every 30 seconds to keep data current
+    let autoRefreshInterval;
+
+    function startAutoRefresh() {
+        autoRefreshInterval = setInterval(() => {
+            // Only refresh if no modals are open
+            const activeModal = document.querySelector('.modal.is-active');
+            if (!activeModal) {
+                htmx.trigger(document.body, 'refresh-orders');
+            }
+        }, 30000); // 30 seconds
+    }
+
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+    }
+
+    // Start auto-refresh
+    startAutoRefresh();
+
+    // Stop auto-refresh when page is hidden
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            stopAutoRefresh();
+        } else {
+            startAutoRefresh();
+        }
+    });
+
+    // Utility function for notifications with improved styling
+    function showNotification(message, type = 'info', duration = 5000) {
+        const notification = document.createElement('div');
+        notification.className = `notification is-${type}`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1002;
+            max-width: 400px;
+            min-width: 300px;
+            animation: slideInRight 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        `;
+
+        // Add icon based on type
+        let icon = '';
+        switch(type) {
+            case 'success':
+                icon = '<i class="fas fa-check-circle"></i>';
+                break;
+            case 'danger':
+                icon = '<i class="fas fa-exclamation-triangle"></i>';
+                break;
+            case 'warning':
+                icon = '<i class="fas fa-exclamation-circle"></i>';
+                break;
+            case 'info':
+                icon = '<i class="fas fa-info-circle"></i>';
+                break;
+        }
+
+        notification.innerHTML = `
+            <button class="delete"></button>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.2em;">${icon}</span>
+                <p style="margin: 0;">${message}</p>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Auto remove
+        const timeout = setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, duration);
+
+        // Manual close
+        notification.querySelector('.delete').addEventListener('click', () => {
+            clearTimeout(timeout);
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        });
+    }
+
+    // Add progress indicators for long-running requests
+    document.body.addEventListener('htmx:beforeRequest', function(event) {
+        const trigger = event.detail.elt;
+
+        // Add loading state to payment buttons
+        if (trigger.textContent.includes('Payment')) {
+            trigger.classList.add('is-loading');
+        }
+    });
+
+    document.body.addEventListener('htmx:afterRequest', function(event) {
+        const trigger = event.detail.elt;
+
+        // Remove loading state
+        if (trigger.classList.contains('is-loading')) {
+            trigger.classList.remove('is-loading');
+        }
+    });
+
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .payment-modal-backdrop {
+            backdrop-filter: blur(2px);
+            transition: backdrop-filter 0.3s ease;
+        }
+
+        .card.processing {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .button.is-loading {
+            color: transparent;
+        }
+
+        .button.is-loading::after {
+            animation: spinAround 500ms infinite linear;
+            border: 2px solid #dbdbdb;
+            border-radius: 50%;
+            border-right-color: transparent;
+            border-top-color: transparent;
+            content: "";
+            display: block;
+            height: 1em;
+            position: relative;
+            width: 1em;
+            position: absolute;
+            left: calc(50% - (1em / 2));
+            top: calc(50% - (1em / 2));
+        }
+
+        @keyframes spinAround {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(359deg);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+});
+
+// Enhanced payment method analytics with more detailed tracking
+function trackPaymentMethod(method, amount, orderId) {
+    const timestamp = new Date().toISOString();
+    const usage = JSON.parse(localStorage.getItem('paymentMethodUsage') || '{}');
+
+    if (!usage[method]) {
+        usage[method] = {
+            count: 0,
+            totalAmount: 0,
+            averageAmount: 0,
+            lastUsed: null
+        };
+    }
+
+    usage[method].count += 1;
+    usage[method].totalAmount += parseFloat(amount);
+    usage[method].averageAmount = usage[method].totalAmount / usage[method].count;
+    usage[method].lastUsed = timestamp;
+
+    localStorage.setItem('paymentMethodUsage', JSON.stringify(usage));
+
+    // Log for analytics
+    console.log(`Payment processed: ${method} - ${amount} KES for Order #${orderId}`);
+
+    // You could send this data to your analytics service
+    // analyticsService.track('payment_processed', {
+    //     method: method,
+    //     amount: amount,
+    //     orderId: orderId,
+    //     timestamp: timestamp
+    // });
+}
+
+// Utility function to get payment method statistics
+function getPaymentMethodStats() {
+    return JSON.parse(localStorage.getItem('paymentMethodUsage') || '{}');
+}
+</script>
+
+<!-- Additional Styles for Better UX -->
+<style>
+.order-management-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.card {
+    transition: all 0.3s ease;
+    border: 1px solid #e6e9ed;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.card-footer .buttons {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.card-footer .button {
+    margin-bottom: 0.5rem;
+}
+
+/* Status-based styling */
+.order-status-pending {
+    border-left: 4px solid #f1c40f;
+}
+
+.order-status-ready {
+    border-left: 4px solid #3498db;
+}
+
+.order-status-completed {
+    border-left: 4px solid #27ae60;
+}
+
+/* Awaiting Payment Table Hover Effects */
+.box table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Button grouping in awaiting payment section */
+.buttons.is-centered {
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+}
+
+.buttons.is-centered .button {
+    margin-bottom: 0;
+    flex-shrink: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .order-management-section {
+        padding: 1rem;
+    }
+
+    .card-footer .buttons {
+        flex-direction: column;
+    }
+
+    .card-footer .button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Responsive awaiting payment buttons */
+    .buttons.is-centered {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .buttons.is-centered .button {
+        width: 100%;
+    }
+}
+
+/* Loading states */
+.htmx-request .button {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.htmx-request .button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1rem;
+    height: 1rem;
+    margin: -0.5rem 0 0 -0.5rem;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>

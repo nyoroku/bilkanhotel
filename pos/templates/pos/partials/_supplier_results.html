@@ -1,0 +1,8 @@
+{% for supplier in suppliers %}
+<div class="supplier-result bg-white rounded-lg shadow-md p-6 mb-4 is-clickable mb-2" data-id="{{ supplier.id }}">
+    <p class="has-text-weight-bold">{{ supplier.name }}</p>
+    <p class="is-size-7">{{ supplier.contact_person }} | {{ supplier.phone_number }}</p>
+</div>
+{% empty %}
+<div class="notification is-light">No suppliers found</div>
+{% endfor %}

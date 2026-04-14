@@ -1,0 +1,59 @@
+<div class="table-container">
+  <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+    <thead>
+      <tr>
+        <th>Truck #</th>
+        <th>Make & Model</th>
+        <th>Type</th>
+        <th>Capacity</th>
+        <th>Fuel Tank</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for truck in page_obj %}
+        <tr>
+          <td><a href="{% url 'trucks:truck_detail' truck.pk %}">{{ truck.truck_number }}</a></td>
+          <td>{{ truck.make|default:"-" }} {{ truck.model|default:"-" }}</td>
+          <td>{{ truck.get_truck_type_display }}</td>
+          <td>{{ truck.capacity_tons|default:"-" }} tons</td>
+          <td>{{ truck.fuel_tank_capacity|default:"-" }} L</td>
+          <td>
+            {% if truck.is_active %}
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white">Active</span>
+            {% else %}
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-600 hover:bg-red-700 text-white">Inactive</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'trucks:truck_edit' truck.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-black">Edit</a>
+            <a href="{% url 'trucks:truck_delete' truck.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white" hx-get hx-target="#modal" hx-swap="innerHTML">Delete</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7">No trucks found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+  <nav class="pagination text-xs px-2.5 py-1.5" role="navigation" aria-label="pagination">
+    {% if page_obj.has_previous %}
+      <a class="pagination-previous" hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" hx-target="#truck-list-container" hx-swap="innerHTML">Previous</a>
+    {% endif %}
+    <span class="pagination-ellipsis">&hellip;</span>
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <span class="pagination-link is-current">{{ num }}</span>
+      {% else %}
+        <a class="pagination-link" hx-get="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" hx-target="#truck-list-container" hx-swap="innerHTML">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    <span class="pagination-ellipsis">&hellip;</span>
+    {% if page_obj.has_next %}
+      <a class="pagination-next" hx-get="?page={{ page_obj.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" hx-target="#truck-list-container" hx-swap="innerHTML">Next</a>
+    {% endif %}
+  </nav>
+{% endif %}

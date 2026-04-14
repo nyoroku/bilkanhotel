@@ -1,0 +1,65 @@
+{% extends "trucks/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - LogiTrack{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+  <h2 class="text-2xl font-bold text-gray-900 mb-4 is-4">Apply Credit to Invoice #{{ invoice.invoice_number }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Credit Type</label>
+      <div class="relative">
+        {{ form.credit_type }}
+        {% if form.credit_type.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.credit_type.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Trip (Optional)</label>
+      <div class="relative">
+        {{ form.trip }}
+        {% if form.trip.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.trip.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+      <div class="relative">
+        {{ form.description }}
+        {% if form.description.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.description.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Quantity (Optional)</label>
+      <div class="relative">
+        {{ form.quantity }}
+        {% if form.quantity.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.quantity.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+      <div class="relative">
+        {{ form.amount }}
+        {% if form.amount.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.amount.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+      <div class="relative">
+        {{ form.remarks }}
+        {% if form.remarks.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.remarks.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4 flex space-x-2">
+      <div class="relative">
+        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-yellow-500 hover:bg-yellow-600 text-black">Apply Credit</button>
+      </div>
+      <div class="relative">
+        <a href="{% url 'trucks:invoice_detail' invoice.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

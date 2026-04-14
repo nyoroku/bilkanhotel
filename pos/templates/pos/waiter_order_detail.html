@@ -1,0 +1,49 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Manage Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <p class="text-lg font-bold text-gray-800 text-2xl font-semibold">Manage Items for Order #{{ order.id }}</p>
+    </header>
+    <div class="p-6">
+        <p><strong>Table:</strong> {{ order.table.table_number|default:"Takeaway" }}</p>
+        <hr>
+
+        <div id="order-item-list">
+            {% include 'pos/partials/_order_item_list.html' %}
+        </div>
+    </div>
+    <footer class="border-t border-gray-200 bg-gray-50 flex">
+        <!-- Back to Table -->
+        <a href="{% url 'pos:table_detail' order.table.id %}" class="flex-1 text-center py-3 text-blue-600 hover:bg-gray-100">
+            <span class="icon"><i class="fas fa-arrow-left"></i></span>
+            <span>Back to Table</span>
+        </a>
+
+        <!-- Back to Dashboard -->
+        <a href="{% url 'pos:waiter_dashboard' %}" class="flex-1 text-center py-3 text-blue-600 hover:bg-gray-100">
+            <span class="icon"><i class="fas fa-th"></i></span>
+            <span>Back to Dashboard</span>
+        </a>
+
+        <!-- Role-based Cancellation Actions -->
+
+            <a href="#" class="flex-1 text-center py-3 text-blue-600 hover:bg-gray-100 text-red-500"
+               onclick="openRequestCancelModal(
+                    {{ order.id }},
+                    '{{ order.table.table_number|default:'Takeaway' }}',
+                    {{ order.total_amount }}
+                )">
+                <span class="icon"><i class="fas fa-exclamation-triangle"></i></span>
+                <span>Request Cancellation</span>
+            </a>
+
+
+    </footer>
+</div>
+
+<!-- Include modals at the bottom -->
+{% include 'pos/partials/_cancel_authorization_modals.html' %}
+{% endblock %}

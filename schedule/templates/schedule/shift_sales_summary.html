@@ -1,0 +1,59 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}{{ section_name }} Shift Sales Summary{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <p class="text-lg font-bold text-gray-800 text-2xl font-semibold">
+            Sales Summary for {{ section_name }} Station
+        </p>
+    </header>
+    <div class="p-6">
+        <div class="content">
+            <p>
+                Showing all sales for the current active shift: <strong>{{ shift.name }}</strong>
+                <br>
+                <small>Staff on Duty: {{ assignment.user.get_full_name }} | Shift Started: {{ shift.start_datetime|date:"d M, H:i" }}</small>
+            </p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+            <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white">
+                <thead>
+                    <tr>
+                        <th>Payment Method</th>
+                        <th class="text-right">Total Sales</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Cash Sales</td>
+                        <td class="text-right">{{ summary_data.Cash|floatformat:2 }} KES</td>
+                    </tr>
+                    <tr>
+                        <td>M-Pesa Sales</td>
+                        <td class="text-right">{{ summary_data.Mpesa|floatformat:2 }} KES</td>
+                    </tr>
+                    <tr>
+                        <td>Credit Sales</td>
+                        <td class="text-right">{{ summary_data.Credit|floatformat:2 }} KES</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th class="text-xl font-medium">Grand Total for Shift</th>
+                        <th class="text-right text-xl font-medium">{{ summary_data.grand_total|floatformat:2 }} KES</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <footer class="border-t border-gray-200 bg-gray-50 flex">
+        <a href="{% url 'pos:unified_station_view' section_name|lower %}" class="flex-1 text-center py-3 text-blue-600 hover:bg-gray-100">
+            <span class="icon"><i class="fas fa-arrow-left"></i></span>
+            <span>Back to {{ section_name }} Station</span>
+        </a>
+    </footer>
+</div>
+{% endblock %}

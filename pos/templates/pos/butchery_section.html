@@ -1,0 +1,1946 @@
+<!-- templates/pos/butchery_section.html -->
+{% extends 'pos/base.html' %}
+{% load static %}
+{% block title %}Butchery Section{% endblock %}
+{% block styles %}
+<style>
+:root {
+/* Navy Palette */
+--navy-primary: #0f172a;
+--navy-light: #1e293b;
+--navy-medium: #334155;
+--navy-accent: #475569;
+--navy-soft: #64748b;
+/* Yellow Palette */
+--yellow-primary: #eab308;
+--yellow-light: #facc15;
+--yellow-bright: #fde047;
+--yellow-soft: #fef08a;
+--yellow-pale: #fefce8;
+/* Enhanced Gradients */
+--gradient-primary: linear-gradient(135deg, #eab308 0%, #f59e0b 100%);
+--gradient-navy: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+--gradient-hero: linear-gradient(135deg, #0f172a 0%, #334155 50%, #475569 100%);
+--gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+/* Modern Shadows */
+--shadow-modern: 0 10px 25px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+--shadow-hover: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
+--shadow-yellow: 0 8px 25px rgba(234, 179, 8, 0.3);
+--shadow-navy: 0 8px 25px rgba(15, 23, 42, 0.25);
+/* Spacing & Borders */
+--radius-modern: 16px;
+--radius-large: 24px;
+--transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+--transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+/* Base Styling */
+body {
+background: linear-gradient(135deg, var(--yellow-pale) 0%, #f1f5f9 100%);
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+/* Override Bulma's primary color to use our yellow theme */
+.button.is-primary,
+.tag.is-primary,
+.pagination-previous,
+.pagination-next,
+.pagination-link,
+.is-primary[disabled],
+fieldset[disabled] .is-primary {
+background: var(--gradient-primary) !important;
+border: none !important;
+color: white !important;
+border-radius: 12px;
+font-weight: 600;
+text-transform: none;
+letter-spacing: 0.025em;
+position: relative;
+overflow: hidden;
+transition: all var(--transition-smooth);
+}
+.button.is-primary::before {
+content: '';
+position: absolute;
+top: 0;
+left: -100%;
+width: 100%;
+height: 100%;
+background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+transition: all 0.5s ease;
+}
+.button.is-primary:hover {
+transform: translateY(-3px) scale(1.02);
+box-shadow: 0 15px 35px rgba(234, 179, 8, 0.4) !important;
+background: linear-gradient(135deg, var(--yellow-light) 0%, var(--yellow-primary) 100%) !important;
+}
+.button.is-primary:hover::before {
+left: 100%;
+}
+/* Hero Section Enhancement */
+.hero-gradient {
+background: var(--gradient-hero);
+position: relative;
+overflow: hidden;
+padding: 2rem 0;
+}
+.hero-gradient::before {
+content: '';
+position: absolute;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background: radial-gradient(circle at 30% 20%, rgba(234, 179, 8, 0.15) 0%, transparent 60%);
+pointer-events: none;
+}
+.hero-gradient::after {
+content: '';
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+height: 4px;
+background: var(--gradient-primary);
+}
+/* Enhanced Bulma Card Styling */
+.card {
+border-radius: var(--radius-modern);
+box-shadow: var(--shadow-modern);
+border: 1px solid rgba(15, 23, 42, 0.08);
+transition: all var(--transition-smooth);
+overflow: hidden;
+background: var(--gradient-card);
+}
+.card:hover {
+box-shadow: var(--shadow-hover);
+transform: translateY(-4px) scale(1.01);
+border-color: var(--yellow-light);
+}
+/* Stats Cards */
+.stats-card {
+background: var(--gradient-primary);
+border-radius: var(--radius-large);
+color: white;
+padding: 2rem;
+text-align: center;
+position: relative;
+overflow: hidden;
+box-shadow: var(--shadow-yellow);
+transition: all var(--transition-smooth);
+}
+.stats-card::before {
+content: '';
+position: absolute;
+top: -50%;
+right: -50%;
+width: 100%;
+height: 100%;
+background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+animation: shimmer 4s ease-in-out infinite;
+}
+.stats-card:hover {
+transform: translateY(-6px) scale(1.05);
+box-shadow: 0 20px 40px rgba(234, 179, 8, 0.4);
+}
+.stats-card-navy {
+background: var(--gradient-navy);
+box-shadow: var(--shadow-navy);
+}
+.stats-card-navy:hover {
+box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3);
+}
+@keyframes shimmer {
+0%, 100% { transform: rotate(0deg) translateX(-100%) scale(0.5); opacity: 0; }
+50% { transform: rotate(180deg) translateX(50%) scale(1); opacity: 1; }
+}
+/* Enhanced Input Styling */
+.input, .select select {
+border-radius: 12px;
+border: 2px solid #e2e8f0;
+transition: all var(--transition-smooth);
+background: rgba(255, 255, 255, 0.95);
+backdrop-filter: blur(10px);
+}
+.input:focus, .select select:focus {
+border-color: var(--yellow-primary) !important;
+box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.15) !important;
+transform: translateY(-2px);
+}
+.input::placeholder {
+color: var(--navy-soft);
+opacity: 0.7;
+}
+/* Enhanced Button Styling */
+.button.is-success {
+background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+border: none;
+border-radius: 12px;
+font-weight: 600;
+transition: all var(--transition-smooth);
+}
+.button.is-success:hover {
+transform: translateY(-3px) scale(1.02);
+box-shadow: 0 15px 35px rgba(5, 150, 105, 0.4);
+background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+}
+/* Enhanced Table Styling */
+.table {
+border-radius: var(--radius-modern);
+overflow: hidden;
+box-shadow: var(--shadow-modern);
+background: white;
+}
+.table thead th {
+background: var(--gradient-navy);
+color: white;
+font-weight: 600;
+border: none;
+position: relative;
+}
+.table thead::after {
+content: '';
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+height: 3px;
+background: var(--gradient-primary);
+}
+.table tbody tr {
+transition: all 0.2s ease;
+border-bottom: 1px solid #f1f5f9;
+}
+.table tbody tr:hover {
+background: linear-gradient(135deg, var(--yellow-pale), var(--yellow-soft));
+transform: scale(1.01);
+}
+/* Status Badges with Bulma Integration */
+.tag.status-badge {
+padding: 8px 16px;
+border-radius: 20px;
+font-size: 0.75rem;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+min-width: 80px;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 0.25rem;
+}
+.tag.status-requested {
+background: var(--gradient-primary);
+color: white;
+animation: pulse-gold 2s infinite;
+}
+.tag.status-fulfilled {
+background: linear-gradient(135deg, #059669, #10b981);
+color: white;
+}
+.tag.status-rejected {
+background: linear-gradient(135deg, #dc2626, #ef4444);
+color: white;
+}
+@keyframes pulse-gold {
+0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
+50% { box-shadow: 0 0 0 8px rgba(234, 179, 8, 0); }
+}
+/* Stock Indicators */
+.tag.stock-indicator {
+display: inline-flex;
+align-items: center;
+gap: 0.5rem;
+padding: 8px 16px;
+border-radius: 20px;
+font-size: 0.8rem;
+font-weight: 600;
+text-transform: uppercase;
+letter-spacing: 0.3px;
+}
+.tag.stock-good {
+background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.25));
+color: #065f46;
+border: 2px solid rgba(16, 185, 129, 0.3);
+}
+.tag.stock-low {
+background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(252, 165, 165, 0.25));
+color: #7f1d1d;
+border: 2px solid rgba(239, 68, 68, 0.3);
+animation: pulse-warning 2s infinite;
+}
+@keyframes pulse-warning {
+0%, 100% {
+box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+}
+50% {
+box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+transform: scale(1.05);
+}
+}
+/* Enhanced Bulma Notification Styling */
+.notification.is-success {
+background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.15));
+border: 2px solid rgba(16, 185, 129, 0.3);
+color: #065f46;
+border-radius: 12px;
+animation: slideInDown var(--transition-bounce);
+backdrop-filter: blur(10px);
+}
+.notification.is-danger {
+background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(252, 165, 165, 0.15));
+border: 2px solid rgba(239, 68, 68, 0.3);
+color: #7f1d1d;
+border-radius: 12px;
+animation: slideInDown var(--transition-bounce);
+backdrop-filter: blur(10px);
+}
+@keyframes slideInDown {
+from {
+transform: translateY(-20px) scale(0.95);
+opacity: 0;
+}
+to {
+transform: translateY(0) scale(1);
+opacity: 1;
+}
+}
+/* Form Sections */
+.form-section {
+background: linear-gradient(145deg, rgba(234, 179, 8, 0.05), rgba(234, 179, 8, 0.1));
+border-radius: 12px;
+padding: 1.5rem;
+margin: 1rem 0;
+border: 2px solid rgba(234, 179, 8, 0.15);
+transition: all var(--transition-smooth);
+backdrop-filter: blur(10px);
+}
+.form-section:hover {
+border-color: rgba(234, 179, 8, 0.3);
+background: linear-gradient(145deg, rgba(234, 179, 8, 0.08), rgba(234, 179, 8, 0.12));
+transform: translateY(-2px);
+}
+.form-section-success {
+background: linear-gradient(145deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.1));
+border-color: rgba(16, 185, 129, 0.2);
+}
+.form-section-success:hover {
+border-color: rgba(16, 185, 129, 0.3);
+background: linear-gradient(145deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.12));
+}
+/* Item Headers */
+.item-header {
+background: var(--gradient-navy);
+color: white;
+padding: 1.5rem;
+margin: -0.75rem -0.75rem 1rem -0.75rem;
+position: relative;
+border-radius: var(--radius-modern) var(--radius-modern) 0 0;
+}
+.item-header::after {
+content: '';
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+height: 4px;
+background: var(--gradient-primary);
+}
+/* Quick Stats Styling */
+.quick-stats {
+background: linear-gradient(145deg, rgba(234, 179, 8, 0.08), rgba(234, 179, 8, 0.12));
+border-radius: 12px;
+padding: 1.5rem;
+margin-bottom: 2rem;
+border: 2px solid rgba(234, 179, 8, 0.2);
+backdrop-filter: blur(10px);
+}
+/* Price Display */
+.price-display {
+background: var(--gradient-primary);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+font-weight: 800;
+}
+/* Loading Spinner */
+.loading-spinner {
+display: none;
+width: 16px;
+height: 16px;
+border: 2px solid rgba(255, 255, 255, 0.3);
+border-radius: 50%;
+border-top-color: white;
+animation: spin 0.8s linear infinite;
+margin-right: 0.5rem;
+}
+@keyframes spin {
+to { transform: rotate(360deg); }
+}
+/* Section Divider */
+.section-divider {
+height: 4px;
+background: var(--gradient-primary);
+border: none;
+border-radius: 3px;
+margin: 3rem 0;
+position: relative;
+overflow: hidden;
+}
+.section-divider::before {
+content: '';
+position: absolute;
+top: 0;
+left: -100%;
+width: 100%;
+height: 100%;
+background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+animation: slide 2s infinite;
+}
+@keyframes slide {
+0% { left: -100%; }
+100% { left: 100%; }
+}
+/* Floating Elements */
+.floating-action {
+position: fixed;
+bottom: 1.5rem;
+right: 1.5rem;
+z-index: 1000;
+border-radius: 50%;
+width: 60px;
+height: 60px;
+background: var(--gradient-primary);
+color: white;
+border: none;
+box-shadow: var(--shadow-yellow);
+animation: float 3s ease-in-out infinite;
+transition: all var(--transition-smooth);
+font-size: 1.2rem;
+}
+.floating-action:hover {
+transform: scale(1.1);
+box-shadow: 0 20px 40px rgba(234, 179, 8, 0.5);
+}
+@keyframes float {
+0%, 100% { transform: translateY(0px); }
+50% { transform: translateY(-8px); }
+}
+.toggle-view {
+position: fixed;
+top: 50%;
+right: 1.5rem;
+transform: translateY(-50%);
+z-index: 999;
+background: var(--gradient-navy);
+border: none;
+border-radius: 50%;
+width: 50px;
+height: 50px;
+color: white;
+font-size: 1.1rem;
+box-shadow: var(--shadow-navy);
+transition: all var(--transition-smooth);
+}
+.toggle-view:hover {
+transform: translateY(-50%) scale(1.1);
+box-shadow: 0 15px 35px rgba(15, 23, 42, 0.4);
+}
+/* Enhanced Typography */
+.has-text-navy-dark {
+color: var(--navy-primary) !important;
+}
+.has-text-yellow-primary {
+color: var(--yellow-primary) !important;
+}
+/* Custom Field Labels */
+.field-label-mobile {
+font-size: 0.9rem;
+font-weight: 600;
+color: var(--navy-primary);
+margin-bottom: 0.5rem;
+display: flex;
+align-items: center;
+gap: 0.5rem;
+}
+.field-label-success {
+color: #059669;
+}
+/* Input Groups for Mobile */
+.input-group {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 0.75rem;
+}
+/* Enhanced Animation Classes */
+.card-enter {
+animation: cardEnter 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+@keyframes cardEnter {
+from {
+transform: translateY(30px) scale(0.9);
+opacity: 0;
+}
+to {
+transform: translateY(0) scale(1);
+opacity: 1;
+}
+}
+.fade-in {
+animation: fadeIn 0.8s ease-out;
+}
+@keyframes fadeIn {
+from {
+opacity: 0;
+transform: translateY(20px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+/* Table Toggle Button */
+.table-toggle-btn {
+background: rgba(255, 255, 255, 0.15);
+border: 1px solid rgba(255, 255, 255, 0.2);
+border-radius: 8px;
+color: white;
+padding: 0.5rem 0.75rem;
+transition: all var(--transition-smooth);
+backdrop-filter: blur(10px);
+}
+.table-toggle-btn:hover {
+background: rgba(255, 255, 255, 0.25);
+transform: scale(1.05);
+}
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+.hero-gradient {
+padding: 1.5rem 0;
+}
+.stats-card {
+padding: 1.5rem;
+margin-bottom: 1rem;
+}
+.form-section {
+padding: 1rem;
+}
+.item-header {
+padding: 1rem;
+}
+.input-group {
+grid-template-columns: 1fr;
+gap: 0.75rem;
+}
+.floating-action {
+bottom: 1rem;
+right: 1rem;
+width: 50px;
+height: 50px;
+font-size: 1.1rem;
+}
+.toggle-view {
+right: 1rem;
+width: 45px;
+height: 45px;
+font-size: 1rem;
+}
+.table-container {
+font-size: 0.85rem;
+}
+.button {
+padding: 0.75rem 1rem;
+font-size: 0.9rem;
+}
+}
+@media (max-width: 480px) {
+.stats-card {
+padding: 1rem;
+}
+.form-section {
+padding: 0.875rem;
+}
+.item-header {
+padding: 0.875rem;
+}
+.quick-stats {
+padding: 1rem;
+}
+.floating-action {
+width: 45px;
+height: 45px;
+font-size: 1rem;
+}
+.toggle-view {
+width: 40px;
+height: 40px;
+font-size: 0.9rem;
+}
+}
+/* Focus and Accessibility */
+.input:focus,
+.select select:focus,
+.button:focus {
+outline: 3px solid rgba(234, 179, 8, 0.3);
+outline-offset: 2px;
+}
+/* Utility Classes */
+.opacity-90 { opacity: 0.9; }
+.opacity-80 { opacity: 0.8; }
+.opacity-70 { opacity: 0.7; }
+/* Glassmorphism Effect */
+.glass-effect {
+backdrop-filter: blur(20px);
+background: rgba(255, 255, 255, 0.8);
+border: 1px solid rgba(255, 255, 255, 0.2);
+}
+/* Animation Delays for Staggered Effects */
+.card-enter:nth-child(1) { animation-delay: 0s; }
+.card-enter:nth-child(2) { animation-delay: 0.1s; }
+.card-enter:nth-child(3) { animation-delay: 0.2s; }
+.card-enter:nth-child(4) { animation-delay: 0.3s; }
+/* High Contrast and Accessibility */
+@media (prefers-reduced-motion: reduce) {
+*, *::before, *::after {
+animation-duration: 0.01ms !important;
+animation-iteration-count: 1 !important;
+transition-duration: 0.01ms !important;
+}
+}
+@media (prefers-contrast: high) {
+.card {
+border: 2px solid var(--navy-medium);
+}
+.button {
+border: 2px solid transparent;
+}
+.input, .select select {
+border-width: 3px;
+}
+}
+/* Message Styling */
+.message-success {
+background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.15));
+border: 2px solid rgba(16, 185, 129, 0.3);
+color: #065f46;
+border-radius: 12px;
+padding: 1rem;
+margin: 0.5rem 0;
+animation: slideInDown var(--transition-bounce);
+backdrop-filter: blur(10px);
+}
+.message-error {
+background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(252, 165, 165, 0.15));
+border: 2px solid rgba(239, 68, 68, 0.3);
+color: #7f1d1d;
+border-radius: 12px;
+padding: 1rem;
+margin: 0.5rem 0;
+animation: slideInDown var(--transition-bounce);
+backdrop-filter: blur(10px);
+}
+.success-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeInOverlay 0.3s ease forwards;
+}
+
+.success-modal {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    transform: scale(0.8) translateY(-20px);
+    animation: modalEnter 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+
+@keyframes fadeInOverlay {
+    to { opacity: 1; }
+}
+
+@keyframes modalEnter {
+    to {
+        transform: scale(1) translateY(0);
+    }
+}
+
+.success-icon {
+    color: #10b981;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    animation: bounce 0.8s ease;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+.inline-success-message {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.2));
+    border: 2px solid rgba(16, 185, 129, 0.4);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin: 1rem 0;
+    color: #065f46;
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+    animation: slideInFromTop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2);
+}
+
+.inline-error-message {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(252, 165, 165, 0.2));
+    border: 2px solid rgba(239, 68, 68, 0.4);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin: 1rem 0;
+    color: #7f1d1d;
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+    animation: slideInFromTop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.2);
+}
+
+@keyframes slideInFromTop {
+    from {
+        transform: translateY(-20px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.form-disabled {
+    pointer-events: none;
+    opacity: 0.6;
+    position: relative;
+}
+
+.form-disabled::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(2px);
+    border-radius: 12px;
+    z-index: 10;
+}
+
+.processing-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(16, 185, 129, 0.3);
+    border-radius: 50%;
+    border-top-color: #10b981;
+    animation: spin 0.8s linear infinite;
+    margin-right: 0.5rem;
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+}
+
+.stock-update-flash {
+    animation: stockFlash 1.5s ease;
+}
+
+@keyframes stockFlash {
+    0% {
+        background: linear-gradient(135deg, rgba(234, 179, 8, 0.3), rgba(234, 179, 8, 0.4));
+        transform: scale(1.05);
+    }
+    100% {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.25));
+        transform: scale(1);
+    }
+}
+
+.auto-hide-countdown {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.countdown-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    width: 100%;
+    transform-origin: right;
+    animation: countdown 5s linear forwards;
+}
+
+@keyframes countdown {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+/* New row animations */
+.new-sale-row {
+    animation: newRowSlideIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.15));
+}
+
+.new-transfer-row {
+    animation: newRowSlideIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.1), rgba(234, 179, 8, 0.15));
+}
+
+@keyframes newRowSlideIn {
+    from {
+        transform: translateX(-20px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Form processing states */
+.form-processing {
+    transform: scale(0.98);
+    filter: blur(1px);
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+}
+
+.form-processing::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(2px);
+    border-radius: 12px;
+    z-index: 5;
+}
+
+.form-success {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.12));
+    border-color: rgba(16, 185, 129, 0.3);
+    transform: scale(1.02);
+    transition: all 0.4s ease;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="hero-gradient py-5 mb-5">
+<div class="container mx-auto px-4 lg:max-w-7xl">
+<div class="text-center text-white">
+<h1 class="text-2xl font-bold text-gray-900 mb-4 is-2 has-text-white mb-3">Butchery Section</h1>
+<p class="text-lg text-gray-600 mb-4 is-4 has-text-white-ter opacity-90">Professional meat processing & distribution center</p>
+</div>
+</div>
+</div>
+<div class="container mx-auto px-4 lg:max-w-7xl is-fluid">
+<!-- Quick Stats Row -->
+<div class="flex flex-wrap -mx-3 is-multiline mb-6 fade-in">
+<!-- Total Transferred Today -->
+<div class="w-full px-3 is-6-desktop is-12-tablet">
+<div class="stats-card card-enter" id="total-transferred-today">
+<div class="content">
+<div class="is-flex is-align-items-center is-justify-content-center mb-3">
+<span class="icon text-xl px-8 py-4 mr-4">
+<i class="fas fa-arrow-right fa-2x"></i>
+</span>
+<div class="text-left">
+<p class="text-2xl font-bold text-gray-900 mb-4 is-6 has-text-white mb-2 opacity-90">Transferred Today</p>
+<p class="text-2xl font-bold text-gray-900 mb-4 is-1 has-text-white has-text-weight-bold">{{ total_transferred_today|floatformat:2 }}</p>
+<p class="text-lg text-gray-600 mb-4 is-6 has-text-white-ter">kilograms</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Today's Sales Summary -->
+<div class="w-full px-3 is-6-desktop is-12-tablet">
+<div id="sales-stats-container" class="stats-card stats-card-navy card-enter">
+<div class="content">
+<div class="is-flex is-align-items-center is-justify-content-center mb-3">
+<span class="icon text-xl px-8 py-4 mr-4">
+<i class="fas fa-cash-register fa-2x"></i>
+</span>
+<div class="text-left">
+<p class="text-2xl font-bold text-gray-900 mb-4 is-6 has-text-white mb-2 opacity-90">Sales Today</p>
+<p class="text-2xl font-bold text-gray-900 mb-4 is-1 has-text-white has-text-weight-bold">{{ total_sales_today|floatformat:2 }}</p>
+<p class="text-lg text-gray-600 mb-4 is-6 has-text-white-ter">
+{% if total_quantity_sold_today %}
+{{ total_quantity_sold_today|floatformat:2 }}kg sold
+{% else %}
+No sales yet
+{% endif %}
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Actions Summary -->
+<div class="quick-stats mb-6 fade-in">
+<div class="flex flex-wrap -mx-3 is-mobile is-multiline">
+<div class="w-full px-3 is-4-desktop is-6-mobile">
+<div class="text-center">
+<p class="text-2xl font-bold text-gray-900 mb-4 is-6 has-text-navy-dark mb-2">Available Items</p>
+<p class="text-2xl font-bold text-gray-900 mb-4 is-3 price-display">{{ butchery_items|length }}</p>
+</div>
+</div>
+<div class="w-full px-3 is-4-desktop is-6-mobile">
+<div class="text-center">
+<p class="text-2xl font-bold text-gray-900 mb-4 is-6 has-text-navy-dark mb-2">Today</p>
+<p class="text-2xl font-bold text-gray-900 mb-4 is-5 has-text-navy-dark">{{ now|date:"d M Y" }}</p>
+</div>
+</div>
+<div class="w-full px-3 is-4-desktop is-12-mobile">
+<div class="text-center">
+<p class="text-2xl font-bold text-gray-900 mb-4 is-6 has-text-navy-dark mb-2">Last Updated</p>
+<p class="text-2xl font-bold text-gray-900 mb-4 is-5 has-text-navy-dark">{{ now|time:"H:i" }}</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Items Grid -->
+{% if butchery_items %}
+<div class="mb-6 fade-in">
+<h2 class="text-2xl font-bold text-gray-900 mb-4 is-3 has-text-navy-dark mb-3">Available Items</h2>
+<p class="text-lg text-gray-600 mb-4 is-5 has-text-grey">Manage inventory transfers and direct sales</p>
+</div>
+<div class="flex flex-wrap -mx-3 is-multiline fade-in">
+{% for item in butchery_items %}
+<div class="w-full px-3 is-6-desktop is-12-tablet">
+<div class="bg-white rounded-lg shadow-md overflow-hidden item-card card-enter">
+<div class="p-6">
+<!-- Item Header -->
+<div class="item-header">
+<div class="is-flex is-align-items-center">
+<span class="icon text-xl px-8 py-4 mr-4">
+<i class="fas fa-drumstick-bite fa-2x"></i>
+</span>
+<div class="is-flex-grow-1">
+<p class="text-2xl font-bold text-gray-900 mb-4 is-5 has-text-white mb-2">{{ item.name }}</p>
+<p class="text-2xl font-bold text-gray-900 mb-4 is-2 has-text-white has-text-weight-bold">
+KES {{ item.selling_price|floatformat:2 }}<span class="text-lg text-gray-600 mb-4 is-5 has-text-white-ter opacity-80">/kg</span>
+</p>
+</div>
+</div>
+</div>
+<!-- Stock Status -->
+<div class="mb-4">
+{% if item.stock_quantity is not None %}
+<!-- This div now has a unique ID for HTMX swapping -->
+<div id="stock-indicator-container-{{ item.id }}" class="is-flex is-align-items-center is-justify-content-between mb-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium stock-indicator {% if item.stock_quantity <= item.low_stock_threshold %}stock-low{% else %}stock-good{% endif %}">
+<i class="fas fa-cubes"></i>
+<span>{{ item.stock_quantity|floatformat:2 }} kg</span>
+</span>
+{% if item.stock_quantity <= item.low_stock_threshold and item.stock_quantity >= 0 %}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-600 hover:bg-red-700 text-white is-light">
+<i class="fas fa-exclamation-triangle mr-2"></i>
+Low Stock
+</span>
+{% endif %}
+</div>
+{% else %}
+<div class="mb-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">
+<i class="fas fa-infinity mr-2"></i>
+Stock not tracked
+</span>
+</div>
+{% endif %}
+</div>
+<!-- Messages Areas -->
+<div id="transfer-message-{{ item.id }}" class="mb-3"></div>
+<div id="sell-message-{{ item.id }}" class="mb-3"></div>
+<!-- Transfer Form -->
+<div class="form-section mb-4">
+<h6 class="field-label-mobile mb-4">
+<i class="fas fa-exchange-alt"></i>
+<span>Transfer Request</span>
+</h6>
+<form id="transfer-form-{{ item.id }}"
+hx-post="{% url 'pos:butchery_transfer' %}"
+hx-target="#transfer-message-{{ item.id }}"
+hx-swap="innerHTML"
+hx-indicator="#transfer-spinner-{{ item.id }}">
+{% csrf_token %}
+<input type="hidden" name="item_id" value="{{ item.id }}">
+<!-- Quantity/Amount Input -->
+<div class="mb-4">
+<label class="field-label-mobile mb-3">Transfer Amount:</label>
+<div class="input-group">
+<div class="relative">
+<input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+type="number"
+step="0.001"
+name="quantity"
+placeholder="Quantity (kg)"
+autocomplete="off">
+</div>
+<div class="relative">
+<input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+type="number"
+step="0.01"
+name="amount"
+placeholder="Amount (KES)"
+autocomplete="off">
+</div>
+</div>
+<p class="help is-size-7 has-text-grey mt-2">Enter either quantity OR amount</p>
+</div>
+<!-- Destination -->
+<div class="mb-4">
+<label class="field-label-mobile mb-3">Destination:</label>
+<div class="relative">
+<div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border is-fullwidth">
+<select name="destination_section" required>
+<option value="">Select Section</option>
+{% for section_value, section_label in destination_sections %}
+<option value="{{ section_value }}">{{ section_label }}</option>
+{% endfor %}
+</select>
+</div>
+</div>
+</div>
+<!-- Assignment -->
+<div class="mb-4 mb-5">
+<label class="field-label-mobile mb-3">Assign To:</label>
+<div class="relative">
+<div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border is-fullwidth">
+<select name="transferred_to_user">
+<option value="">Any Available Staff</option>
+{% for user in kitchen_grill_staff %}
+<option value="{{ user.id }}">{{ user.get_full_name|default:user.email }}</option>
+{% endfor %}
+</select>
+</div>
+</div>
+</div>
+<div class="relative">
+<button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white is-fullwidth" type="submit">
+<span id="transfer-spinner-{{ item.id }}" class="loading-spinner"></span>
+<span class="icon">
+<i class="fas fa-paper-plane"></i>
+</span>
+<span>Request Transfer</span>
+</button>
+</div>
+</form>
+</div>
+<!-- Quick Sell Form -->
+<div class="form-section form-section-success">
+<h6 class="field-label-mobile field-label-success mb-4">
+<i class="fas fa-cash-register"></i>
+<span>Quick Sale</span>
+</h6>
+<form id="quick-sell-form-{{ item.id }}"
+hx-post="{% url 'pos:butchery_section_quick_sell' %}"
+hx-target="#sell-message-{{ item.id }}"
+hx-swap="innerHTML"
+hx-indicator="#sell-spinner-{{ item.id }}">
+{% csrf_token %}
+<input type="hidden" name="item_id" value="{{ item.id }}">
+<!-- Quantity/Amount Input -->
+<div class="mb-4">
+<label class="field-label-mobile mb-3">Sale Amount:</label>
+<div class="input-group">
+<div class="relative">
+<input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+type="number"
+step="0.001"
+name="quantity"
+placeholder="Qty (kg)"
+autocomplete="off">
+</div>
+<div class="relative">
+<input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+type="number"
+step="0.01"
+name="amount"
+placeholder="Amount (KES)"
+autocomplete="off">
+</div>
+</div>
+</div>
+<!-- Payment Method -->
+<div class="mb-4">
+<label class="field-label-mobile mb-3">Payment Method:</label>
+<div class="relative">
+<div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border is-fullwidth">
+<select name="payment_method"
+id="payment-method-select-{{ item.id }}"
+onchange="toggleMpesaCodeField(this, '{{ item.id }}')">
+<option value="">Select Payment Method</option>
+{% for method_value, method_label in sale_payment_methods %}
+<option value="{{ method_value }}">{{ method_label }}</option>
+{% endfor %}
+</select>
+</div>
+</div>
+</div>
+<!-- M-Pesa Code Field (Hidden by default) -->
+<div class="mb-4 mb-5" id="mpesa-code-field-{{ item.id }}" style="display: none;">
+<label class="field-label-mobile field-label-success mb-3">
+<i class="fas fa-mobile-alt"></i>
+<span>M-Pesa Transaction Code:</span>
+</label>
+<div class="relative">
+<input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+type="text"
+name="mpesa_code"
+placeholder="e.g., QHJ41HSA12"
+style="border-color: #10b981;"
+autocomplete="off">
+</div>
+<p class="help is-size-7 text-green-500 mt-2">Required for M-Pesa payments</p>
+</div>
+<div class="relative">
+<button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white is-fullwidth" type="submit">
+<span id="sell-spinner-{{ item.id }}" class="loading-spinner"></span>
+<span class="icon">
+<i class="fas fa-shopping-cart"></i>
+</span>
+<span>Complete Sale</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden fade-in">
+<div class="p-6 text-center">
+<span class="icon text-xl px-8 py-4 has-text-grey-light">
+<i class="fas fa-store-slash fa-3x"></i>
+</span>
+<p class="text-2xl font-bold text-gray-900 mb-4 is-4 has-text-navy-dark mt-4">No Active Items</p>
+<p class="text-lg text-gray-600 mb-4 is-6 has-text-grey">No butchery items are currently available</p>
+</div>
+</div>
+{% endif %}
+<hr class="section-divider">
+<!-- Recent Activity Tables (Mobile Collapsible) -->
+<div class="mb-6 fade-in">
+<!-- Sales Table -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden mb-5 card-enter">
+<header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between" style="background: var(--gradient-navy); position: relative;">
+<div class="text-lg font-bold text-gray-800 has-text-white is-flex is-justify-content-space-between is-align-items-center" style="width: 100%;">
+<h2 class="text-2xl font-bold text-gray-900 mb-4 is-4 has-text-white mb-0">ðŸ’° Today's Sales Activity</h2>
+<button class="table-toggle-btn" onclick="toggleTable('sales-table')">
+<span class="icon">
+<i class="fas fa-chevron-down" id="sales-table-icon"></i>
+</span>
+</button>
+</div>
+<div style="position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--gradient-primary);"></div>
+</header>
+<div class="p-6 p-0" id="sales-table" style="display: block;">
+<div class="table-container">
+<table class="min-w-full divide-y divide-gray-200 is-fullwidth hover:bg-gray-50" style="margin-bottom: 0;">
+<thead style="background: var(--gradient-navy);">
+<tr>
+<th class="has-text-white">Time</th>
+<th class="has-text-white">Item</th>
+<th class="has-text-white">Qty (kg)</th>
+<th class="has-text-white">Amount</th>
+<th class="has-text-white">Payment</th>
+<th class="has-text-white is-hidden-mobile">Sold By</th>
+<th class="has-text-white">Status</th>
+</tr>
+</thead>
+<tbody id="sales-tbody">
+{% for sale_item in sales_today_list %}
+<tr>
+<td>
+{% if sale_item.order.sales.first %}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light py-1.5">{{ sale_item.order.sales.first.processed_at|date:"H:i" }}</span>
+{% else %}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light py-1.5">N/A</span>
+{% endif %}
+</td>
+<td>
+<div class="has-text-weight-bold">{{ sale_item.menu_item.name|truncatechars:15 }}</div>
+</td>
+<td>
+<span class="has-text-weight-semibold">{{ sale_item.quantity|floatformat:2 }}</span>
+</td>
+<td>
+<span class="price-display has-text-weight-bold">{{ sale_item.calculated_total|floatformat:2 }}</span>
+</td>
+<td>
+{% if sale_item.order.sales.first %}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white is-light py-1.5">{{ sale_item.order.sales.first.get_payment_method_display|truncatechars:8 }}</span>
+{% else %}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light py-1.5">N/A</span>
+{% endif %}
+</td>
+<td class="is-hidden-mobile">
+<span class="is-size-7 has-text-grey">
+{% if sale_item.order.waiter %}
+{{ sale_item.order.waiter.get_full_name|default:sale_item.order.waiter.email|default:"Unknown"|truncatechars:12 }}
+{% else %}
+Unknown
+{% endif %}
+</span>
+</td>
+<td>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-badge status-fulfilled">
+<i class="fas fa-check mr-1"></i>
+<span>Done</span>
+</span>
+</td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="7" class="text-center p-5">
+<span class="icon text-xl px-8 py-4 has-text-grey-light">
+<i class="fas fa-shopping-cart fa-2x"></i>
+</span>
+<p class="text-2xl font-bold text-gray-900 mb-4 is-5 has-text-navy-dark mt-3 mb-2">No sales today</p>
+<p class="text-lg text-gray-600 mb-4 is-6 has-text-grey">Sales will appear here</p>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% if sales_today_list %}
+<div class="p-3 has-background-light">
+<p class="is-size-7 has-text-grey">{{ sales_today_list|length }} sale{{ sales_today_list|length|pluralize }} today</p>
+</div>
+{% endif %}
+</div>
+</div>
+<!-- Transfers Table -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden card-enter">
+<header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between" style="background: var(--gradient-navy); position: relative;">
+<div class="text-lg font-bold text-gray-800 has-text-white is-flex is-justify-content-space-between is-align-items-center" style="width: 100%;">
+<h2 class="text-2xl font-bold text-gray-900 mb-4 is-4 has-text-white mb-0">ðŸ“¦ Today's Transfer Activity</h2>
+<button class="table-toggle-btn" onclick="toggleTable('transfers-table')">
+<span class="icon">
+<i class="fas fa-chevron-down" id="transfers-table-icon"></i>
+</span>
+</button>
+</div>
+<div style="position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--gradient-primary);"></div>
+</header>
+<div class="p-6 p-0" id="transfers-table" style="display: block;">
+<div class="table-container">
+<table class="min-w-full divide-y divide-gray-200 is-fullwidth hover:bg-gray-50" style="margin-bottom: 0;">
+<thead style="background: var(--gradient-navy);">
+<tr>
+<th class="has-text-white">Time</th>
+<th class="has-text-white">Item</th>
+<th class="has-text-white">Qty (kg)</th>
+<th class="has-text-white">To</th>
+<th class="has-text-white is-hidden-mobile">Assigned</th>
+<th class="has-text-white">Status</th>
+</tr>
+</thead>
+<tbody id="transfers-tbody">
+{% for transfer in transfers_today_list %}
+<tr>
+<td>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light py-1.5">{{ transfer.request_timestamp|date:"H:i" }}</span>
+</td>
+<td>
+<div class="has-text-weight-bold">{{ transfer.menu_item.name|truncatechars:15 }}</div>
+</td>
+<td>
+<span class="has-text-weight-semibold">{{ transfer.quantity|floatformat:2 }}</span>
+</td>
+<td>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500 hover:bg-sky-600 text-white is-light py-1.5">{{ transfer.get_requested_by_section_display|truncatechars:8 }}</span>
+</td>
+<td class="is-hidden-mobile">
+<span class="is-size-7 has-text-grey">
+{% if transfer.transferred_to_user %}
+{{ transfer.transferred_to_user.get_full_name|default:transfer.transferred_to_user.email|default:"Unknown"|truncatechars:12 }}
+{% else %}
+Any
+{% endif %}
+</span>
+</td>
+<td>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-badge {% if transfer.status == 'Requested' %}status-requested{% elif 'Fulfilled' %}status-fulfilled{% 'Rejected' %}status-rejected{% endif %}">
+{% if transfer.status == 'Requested' %}
+<i class="fas fa-clock mr-1"></i>
+{% elif transfer.status == 'Fulfilled' %}
+<i class="fas fa-check mr-1"></i>
+{% elif transfer.status == 'Rejected' %}
+<i class="fas fa-times mr-1"></i>
+{% endif %}
+<span>{{ transfer.get_status_display|truncatechars:8 }}</span>
+</span>
+</td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="6" class="text-center p-5">
+<span class="icon text-xl px-8 py-4 has-text-grey-light">
+<i class="fas fa-inbox fa-2x"></i>
+</span>
+<p class="text-2xl font-bold text-gray-900 mb-4 is-5 has-text-navy-dark mt-3 mb-2">No transfers today</p>
+<p class="text-lg text-gray-600 mb-4 is-6 has-text-grey">Requests will appear here</p>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% if transfers_today_list %}
+<div class="p-3 has-background-light">
+<p class="is-size-7 has-text-grey">{{ transfers_today_list|length }} transfer{{ transfers_today_list|length|pluralize }} today</p>
+</div>
+{% endif %}
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action Button -->
+<button class="floating-action" onclick="scrollToTop()" title="Back to Top">
+<i class="fas fa-arrow-up"></i>
+</button>
+<script>
+// Enhanced notification management with better UX
+document.addEventListener('click', (event) => {
+if (event.target.classList.contains('delete')) {
+const notification = event.target.parentNode;
+if (notification && notification.classList.contains('notification')) {
+notification.style.transform = 'translateX(100%) scale(0.8)';
+notification.style.opacity = '0';
+setTimeout(() => notification.remove(), 300);
+}
+}
+});
+// Toggle M-Pesa code field with smooth animation
+function toggleMpesaCodeField(selectElement, itemId) {
+const selectedValue = selectElement.value;
+const mpesaField = document.getElementById(`mpesa-code-field-${itemId}`);
+if (mpesaField) {
+if (selectedValue === 'Mpesa') {
+mpesaField.style.display = 'block';
+mpesaField.style.opacity = '0';
+mpesaField.style.transform = 'translateY(-15px) scale(0.95)';
+requestAnimationFrame(() => {
+mpesaField.style.transition = 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+mpesaField.style.opacity = '1';
+mpesaField.style.transform = 'translateY(0) scale(1)';
+});
+} else {
+mpesaField.style.transition = 'all 0.3s ease';
+mpesaField.style.opacity = '0';
+mpesaField.style.transform = 'translateY(-15px) scale(0.95)';
+setTimeout(() => {
+mpesaField.style.display = 'none';
+}, 300);
+}
+}
+}
+// Enhanced form handling with better feedback
+document.body.addEventListener('htmx:afterSwap', function(event) {
+const target = event.detail.target;
+// Handle successful sales - update stats and clear forms
+if (target.id.includes('sell-message') && event.detail.xhr.status === 200) {
+const itemId = target.id.replace('sell-message-', '');
+const form = document.getElementById(`quick-sell-form-${itemId}`);
+if (form) {
+// Clear form with animation
+setTimeout(() => {
+form.style.transition = 'all 0.3s ease';
+form.style.transform = 'scale(0.98)';
+setTimeout(() => {
+form.reset();
+form.style.transform = 'scale(1)';
+// Hide M-Pesa field
+const mpesaField = document.getElementById(`mpesa-code-field-${itemId}`);
+if (mpesaField) mpesaField.style.display = 'none';
+// Reset input opacities
+const inputs = form.querySelectorAll('.input');
+inputs.forEach(input => {
+input.style.opacity = '1';
+input.style.transform = 'scale(1)';
+});
+}, 150);
+}, 500);
+}
+}
+// Handle successful transfers - clear forms
+if (target.id.includes('transfer-message') && event.detail.xhr.status === 200) {
+const itemId = target.id.replace('transfer-message-', '');
+const form = document.getElementById(`transfer-form-${itemId}`);
+if (form) {
+setTimeout(() => {
+form.style.transition = 'all 0.3s ease';
+form.style.transform = 'scale(0.98)';
+setTimeout(() => {
+form.reset();
+form.style.transform = 'scale(1)';
+// Reset input opacities
+const inputs = form.querySelectorAll('.input');
+inputs.forEach(input => {
+input.style.opacity = '1';
+input.style.transform = 'scale(1)';
+});
+}, 150);
+}, 500);
+}
+}
+});
+// Enhanced loading states
+document.body.addEventListener('htmx:beforeSend', function(event) {
+const spinner = event.detail.elt.querySelector('.loading-spinner');
+const button = event.detail.elt.querySelector('button[type="submit"]');
+if (spinner) {
+spinner.style.display = 'inline-block';
+spinner.style.animation = 'spin 0.8s linear infinite';
+}
+if (button) {
+button.style.transform = 'scale(0.95)';
+button.style.opacity = '0.7';
+button.disabled = true;
+}
+});
+document.body.addEventListener('htmx:afterRequest', function(event) {
+const spinner = event.detail.elt.querySelector('.loading-spinner');
+const button = event.detail.elt.querySelector('button[type="submit"]');
+if (spinner) {
+setTimeout(() => {
+spinner.style.display = 'none';
+}, 400);
+}
+if (button) {
+button.style.transform = 'scale(1)';
+button.style.opacity = '1';
+button.disabled = false;
+}
+});
+// Table toggle functionality for mobile
+function toggleTable(tableId) {
+const table = document.getElementById(tableId);
+const icon = document.getElementById(`${tableId}-icon`);
+if (table.style.display === 'none') {
+table.style.display = 'block';
+table.style.opacity = '0';
+table.style.transform = 'translateY(-10px)';
+icon.className = 'fas fa-chevron-down';
+requestAnimationFrame(() => {
+table.style.transition = 'all 0.4s ease';
+table.style.opacity = '1';
+table.style.transform = 'translateY(0)';
+});
+} else {
+table.style.transition = 'all 0.3s ease';
+table.style.opacity = '0';
+table.style.transform = 'translateY(-10px)';
+icon.className = 'fas fa-chevron-right';
+setTimeout(() => {
+table.style.display = 'none';
+}, 300);
+}
+}
+// Smooth scroll to top
+function scrollToTop() {
+window.scrollTo({
+top: 0,
+behavior: 'smooth'
+});
+}
+// Auto-hide success messages after delay
+function autoHideMessage(element) {
+if (element && element.innerHTML.includes('success')) {
+setTimeout(() => {
+element.style.transition = 'all 0.5s ease';
+element.style.opacity = '0';
+element.style.transform = 'translateY(-20px) scale(0.95)';
+setTimeout(() => {
+element.innerHTML = '';
+element.style.opacity = '1';
+element.style.transform = 'translateY(0) scale(1)';
+}, 500);
+}, 3000);
+}
+}
+// Enhanced HTMX event handling for sales updates
+document.body.addEventListener('htmx:afterSwap', function(event) {
+// Auto-hide success messages
+autoHideMessage(event.detail.target);
+// Update sales stats when sale is successful
+if (event.detail.target.id.includes('sell-message') &&
+event.detail.xhr.status === 200 &&
+event.detail.target.innerHTML.includes('success')) {
+// Trigger update of sales statistics
+updateSalesStats();
+}
+});
+// Function to update sales statistics via HTMX
+function updateSalesStats() {
+// This would typically be handled by the backend response
+// For now, we'll rely on the backend to return updated stats
+console.log('Sales stats should be updated by backend response');
+}
+// Real-time form validation with enhanced UX
+document.addEventListener('input', function(event) {
+const input = event.target;
+// Validate quantity/amount exclusivity
+if (input.name === 'quantity' || input.name === 'amount') {
+const form = input.closest('form');
+const quantityInput = form.querySelector('[name="quantity"]');
+const amountInput = form.querySelector('[name="amount"]');
+if (input.name === 'quantity' && input.value) {
+amountInput.value = '';
+amountInput.style.opacity = '0.5';
+amountInput.style.transform = 'scale(0.98)';
+quantityInput.style.opacity = '1';
+quantityInput.style.transform = 'scale(1)';
+} else if (input.name === 'amount' && input.value) {
+quantityInput.value = '';
+quantityInput.style.opacity = '0.5';
+quantityInput.style.transform = 'scale(0.98)';
+amountInput.style.opacity = '1';
+amountInput.style.transform = 'scale(1)';
+} else if (!quantityInput.value && !amountInput.value) {
+quantityInput.style.opacity = '1';
+amountInput.style.opacity = '1';
+quantityInput.style.transform = 'scale(1)';
+amountInput.style.transform = 'scale(1)';
+}
+}
+});
+// Prevent double submissions
+document.addEventListener('submit', function(event) {
+const button = event.target.querySelector('button[type="submit"]');
+if (button && button.disabled) {
+event.preventDefault();
+return false;
+}
+if (button) {
+button.disabled = true;
+setTimeout(() => {
+button.disabled = false;
+}, 2000);
+}
+});
+// Mobile-friendly form validation feedback
+function showFieldError(fieldName, message) {
+const field = document.querySelector(`[name="${fieldName}"]`);
+if (field) {
+field.style.borderColor = '#ef4444';
+field.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.15)';
+// Create or update error message
+let errorEl = field.parentNode.querySelector('.field-error');
+if (!errorEl) {
+errorEl = document.createElement('p');
+errorEl.className = 'field-error help has-text-danger is-size-7';
+field.parentNode.appendChild(errorEl);
+}
+errorEl.textContent = message;
+// Remove error styling after user interaction
+field.addEventListener('input', function clearError() {
+field.style.borderColor = '#e2e8f0';
+field.style.boxShadow = 'none';
+if (errorEl) errorEl.remove();
+field.removeEventListener('input', clearError);
+});
+}
+}
+// Initialize mobile-responsive features
+document.addEventListener('DOMContentLoaded', function() {
+// Set initial table states for mobile
+if (window.innerWidth < 768) {
+const salesTable = document.getElementById('sales-table');
+const transfersTable = document.getElementById('transfers-table');
+if (salesTable) {
+salesTable.style.display = 'none';
+document.getElementById('sales-table-icon').className = 'fas fa-chevron-right';
+}
+if (transfersTable) {
+transfersTable.style.display = 'none';
+document.getElementById('transfers-table-icon').className = 'fas fa-chevron-right';
+}
+}
+// Add entrance animations with staggered delays
+const cards = document.querySelectorAll('.card-enter');
+cards.forEach((card, index) => {
+card.style.animationDelay = `${index * 0.1}s`;
+});
+});
+// Enhanced accessibility and touch interactions
+document.addEventListener('focusin', function(event) {
+if (event.target.matches('.input, .select select')) {
+const control = event.target.closest('.control, .field');
+if (control) {
+control.style.transform = 'translateY(-2px)';
+control.style.transition = 'transform 0.2s ease';
+}
+}
+});
+document.addEventListener('focusout', function(event) {
+if (event.target.matches('.input, .select select')) {
+const control = event.target.closest('.control, .field');
+if (control) {
+control.style.transform = 'translateY(0)';
+}
+}
+});
+// Touch-friendly interactions for mobile devices
+if ('ontouchstart' in window) {
+document.addEventListener('touchstart', function(event) {
+if (event.target.closest('.card')) {
+event.target.closest('.card').style.transform = 'scale(0.98)';
+}
+});
+document.addEventListener('touchend', function(event) {
+if (event.target.closest('.card')) {
+event.target.closest('.card').style.transform = 'scale(1)';
+}
+});
+}
+// Performance optimization - throttled resize handler
+let resizeTimeout;
+window.addEventListener('resize', function() {
+clearTimeout(resizeTimeout);
+resizeTimeout = setTimeout(() => {
+const isMobile = window.innerWidth < 768;
+const salesTable = document.getElementById('sales-table');
+const transfersTable = document.getElementById('transfers-table');
+if (isMobile) {
+if (salesTable && salesTable.style.display === 'block') {
+salesTable.style.display = 'none';
+document.getElementById('sales-table-icon').className = 'fas fa-chevron-right';
+}
+if (transfersTable && transfersTable.style.display === 'block') {
+transfersTable.style.display = 'none';
+document.getElementById('transfers-table-icon').className = 'fas fa-chevron-right';
+}
+}
+}, 100);
+});
+// Enhanced visual feedback for form validation
+document.addEventListener('input', function(event) {
+const input = event.target;
+// Add visual feedback for valid inputs
+if (input.value && input.checkValidity()) {
+input.style.borderColor = '#10b981';
+input.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+} else if (input.value && !input.checkValidity()) {
+input.style.borderColor = '#ef4444';
+input.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+} else {
+input.style.borderColor = '#e2e8f0';
+input.style.boxShadow = 'none';
+}
+});
+// Keyboard shortcuts for better accessibility
+document.addEventListener('keydown', function(event) {
+// ESC key to close messages
+if (event.key === 'Escape') {
+const messages = document.querySelectorAll('.message-success, .message-error, .notification');
+messages.forEach(msg => {
+if (msg.style.display !== 'none') {
+msg.style.opacity = '0';
+msg.style.transform = 'scale(0.9)';
+setTimeout(() => msg.remove(), 300);
+}
+});
+}
+});
+function showSaleSuccessModal(itemId) {
+    const overlay = document.getElementById(`sale-success-overlay-${itemId}`);
+    if (overlay) {
+        overlay.style.display = 'flex';
+
+        // Auto-close after 5 seconds
+        setTimeout(() => {
+            closeSaleSuccessModal(itemId);
+        }, 5000);
+    }
+}
+
+function closeSaleSuccessModal(itemId) {
+    const overlay = document.getElementById(`sale-success-overlay-${itemId}`);
+    if (overlay) {
+        overlay.style.animation = 'fadeInOverlay 0.3s ease reverse';
+        const modal = overlay.querySelector('.success-modal');
+        modal.style.animation = 'modalEnter 0.3s ease reverse';
+        setTimeout(() => {
+            overlay.remove();
+        }, 300);
+    }
+}
+
+// Message dismissal
+function dismissMessage(messageId) {
+    const message = document.getElementById(messageId);
+    if (message) {
+        message.classList.add('fade-out');
+        setTimeout(() => {
+            message.remove();
+        }, 300);
+    }
+}
+
+// Enhanced HTMX event handlers
+document.body.addEventListener('htmx:beforeSend', function(event) {
+    const form = event.detail.elt.closest('.form-section');
+    const spinner = event.detail.elt.querySelector('.loading-spinner');
+    const button = event.detail.elt.querySelector('button[type="submit"]');
+
+    // Add processing state to form
+    if (form) {
+        form.classList.add('form-processing');
+    }
+
+    // Show loading spinner
+    if (spinner) {
+        spinner.style.display = 'inline-block';
+    }
+
+    // Update button state
+    if (button) {
+        const originalText = button.innerHTML;
+        button.dataset.originalText = originalText;
+
+        if (button.classList.contains('is-success')) {
+            button.innerHTML = `
+                <span class="processing-spinner"></span>
+                Processing Sale...
+            `;
+        } else if (button.classList.contains('is-primary')) {
+            button.innerHTML = `
+                <span class="processing-spinner"></span>
+                Sending Request...
+            `;
+        }
+
+        button.disabled = true;
+        button.style.transform = 'scale(0.95)';
+        button.style.opacity = '0.8';
+    }
+});
+
+document.body.addEventListener('htmx:afterRequest', function(event) {
+    const form = event.detail.elt.closest('.form-section');
+    const spinner = event.detail.elt.querySelector('.loading-spinner');
+    const button = event.detail.elt.querySelector('button[type="submit"]');
+
+    // Remove processing state from form
+    if (form) {
+        form.classList.remove('form-processing');
+
+        // Add success state for successful requests
+        if (event.detail.xhr.status === 200) {
+            form.classList.add('form-success');
+
+            // Remove success state after delay
+            setTimeout(() => {
+                form.classList.remove('form-success');
+            }, 3000);
+        }
+    }
+
+    // Hide loading spinner
+    if (spinner) {
+        setTimeout(() => {
+            spinner.style.display = 'none';
+        }, 400);
+    }
+
+    // Reset button state
+    if (button) {
+        const originalText = button.dataset.originalText;
+        if (originalText) {
+            if (event.detail.xhr.status === 200) {
+                // Show success state briefly
+                if (button.classList.contains('is-success')) {
+                    button.innerHTML = `
+                        <i class="fas fa-check mr-2"></i>
+                        Sale Completed!
+                    `;
+                } else if (button.classList.contains('is-primary')) {
+                    button.innerHTML = `
+                        <i class="fas fa-check mr-2"></i>
+                        Request Sent!
+                    `;
+                }
+
+                // Reset to original after delay
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                }, 2000);
+            } else {
+                // Reset immediately on error
+                button.innerHTML = originalText;
+            }
+        }
+
+        button.disabled = false;
+        button.style.transform = 'scale(1)';
+        button.style.opacity = '1';
+    }
+});
+
+// Enhanced form submission handling
+document.body.addEventListener('htmx:afterSwap', function(event) {
+    const target = event.detail.target;
+
+    // Clear forms on successful submission
+    if (event.detail.xhr.status === 200) {
+        // Clear sale forms
+        if (target.id.includes('sell-message')) {
+            const itemId = target.id.replace('sell-message-', '');
+            const form = document.getElementById(`quick-sell-form-${itemId}`);
+            if (form) {
+                setTimeout(() => {
+                    form.reset();
+                    // Hide M-Pesa field if visible
+                    const mpesaField = document.getElementById(`mpesa-code-field-${itemId}`);
+                    if (mpesaField) {
+                        mpesaField.style.display = 'none';
+                    }
+                }, 1000);
+            }
+        }
+
+        // Clear transfer forms
+        if (target.id.includes('transfer-message')) {
+            const itemId = target.id.replace('transfer-message-', '');
+            const form = document.getElementById(`transfer-form-${itemId}`);
+            if (form) {
+                setTimeout(() => {
+                    form.reset();
+                }, 1000);
+            }
+        }
+    }
+
+    // Add fade-in animation to new table rows
+    const newRows = document.querySelectorAll('.new-sale-row, .new-transfer-row');
+    newRows.forEach(row => {
+        setTimeout(() => {
+            row.classList.remove('new-sale-row', 'new-transfer-row');
+        }, 1000);
+    });
+});
+
+// Keyboard shortcuts for modal management
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        // Close any open success modals
+        const modals = document.querySelectorAll('.success-overlay');
+        modals.forEach(modal => {
+            const itemId = modal.id.replace('sale-success-overlay-', '');
+            closeSaleSuccessModal(itemId);
+        });
+
+        // Dismiss any visible messages
+        const messages = document.querySelectorAll('.inline-success-message, .inline-error-message');
+        messages.forEach(msg => {
+            if (msg.id) {
+                dismissMessage(msg.id);
+            }
+        });
+    }
+});
+
+// Click outside to close modal
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('success-overlay')) {
+        const itemId = event.target.id.replace('sale-success-overlay-', '');
+        closeSaleSuccessModal(itemId);
+    }
+});
+
+// Prevent double form submissions
+document.addEventListener('submit', function(event) {
+    const button = event.target.querySelector('button[type="submit"]');
+    if (button && button.disabled) {
+        event.preventDefault();
+        return false;
+    }
+});
+
+// Enhanced form validation with visual feedback
+document.addEventListener('input', function(event) {
+    const input = event.target;
+
+    // Validate quantity/amount exclusivity with better UX
+    if (input.name === 'quantity' || input.name === 'amount') {
+        const form = input.closest('form');
+        const quantityInput = form.querySelector('[name="quantity"]');
+        const amountInput = form.querySelector('[name="amount"]');
+
+        if (input.name === 'quantity' && input.value) {
+            amountInput.value = '';
+            amountInput.style.opacity = '0.5';
+            amountInput.style.transform = 'scale(0.98)';
+            quantityInput.style.opacity = '1';
+            quantityInput.style.transform = 'scale(1)';
+            quantityInput.style.borderColor = '#10b981';
+        } else if (input.name === 'amount' && input.value) {
+            quantityInput.value = '';
+            quantityInput.style.opacity = '0.5';
+            quantityInput.style.transform = 'scale(0.98)';
+            amountInput.style.opacity = '1';
+            amountInput.style.transform = 'scale(1)';
+            amountInput.style.borderColor = '#10b981';
+        } else if (!quantityInput.value && !amountInput.value) {
+            [quantityInput, amountInput].forEach(inp => {
+                inp.style.opacity = '1';
+                inp.style.transform = 'scale(1)';
+                inp.style.borderColor = '#e2e8f0';
+            });
+        }
+    }
+
+    // General input validation feedback
+    if (input.value && input.checkValidity()) {
+        input.style.borderColor = '#10b981';
+        input.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+    } else if (input.value && !input.checkValidity()) {
+        input.style.borderColor = '#ef4444';
+        input.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+    } else {
+        input.style.borderColor = '#e2e8f0';
+        input.style.boxShadow = 'none';
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "pos/base.html" %}
+{% block title %}PO #{{ po.id }} Details{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap -mx-3 is-centered">
+    <div class="w-full px-3 md:w-3/4">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <p class="text-lg font-bold text-gray-800">
+                    PO #{{ po.id }} - {{ po.supplier.name }}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-lg px-6 py-3 ml-3 {% if po.status == 'Fully Received' %}is-success{% elif 'Partially %}is-warning{% else %}is-light{% endif %}">
+                        {{ po.get_status_display }}
+                    </span>
+                </p>
+            </header>
+
+            <div class="p-6">
+                <div class="flex flex-wrap -mx-3">
+                    <div class="w-full px-3">
+                        <div class="content">
+                            <p><strong>Order Date:</strong> {{ po.order_date|date:"Y-m-d" }}</p>
+                            <p><strong>Created By:</strong> {{ po.created_by.get_full_name }}</p>
+                        </div>
+                    </div>
+                    <div class="w-full px-3">
+                        <div class="content">
+                            <p><strong>Total Ordered:</strong> {{ po.total_ordered }}</p>
+                            <p><strong>Total Received:</strong> {{ po.total_received }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-2xl font-bold text-gray-900 mb-4 is-4">Items</h3>
+                <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Ordered</th>
+                            <th>Received</th>
+                            <th>Pending</th>
+                            <th>Unit Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in po.items.all %}
+                        <tr>
+                            <td>{{ item.menu_item.name }}</td>
+                            <td>{{ item.quantity_ordered }}</td>
+                            <td class="{% if item.quantity_received == item.quantity_ordered %}has-text-success{% elif > 0 %}has-text-warning{% endif %}">
+                                {{ item.quantity_received }}
+                            </td>
+                            <td>{{ item.quantity_remaining }}</td>
+                            <td>{{ item.unit_price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if po.deliveries.exists %}
+                <h3 class="text-2xl font-bold text-gray-900 mb-4 is-4 mt-5">Delivery History</h3>
+                <table class="min-w-full divide-y divide-gray-200 is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Received By</th>
+                            <th>Note</th>
+                            <th>Items</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for delivery in po.deliveries.all %}
+                        <tr>
+                            <td>{{ delivery.received_at|date:"Y-m-d" }}</td>
+                            <td>{{ delivery.received_by.get_full_name }}</td>
+                            <td>{{ delivery.delivery_note|default:"-" }}</td>
+                            <td>{{ delivery.items.count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+
+            <footer class="border-t border-gray-200 bg-gray-50 flex">
+                <a href="{% url 'pos:purchase_order_list' %}" class="flex-1 text-center py-3 text-blue-600 hover:bg-gray-100">Back to List</a>
+                {% if po.status != 'Fully Received' %}
+                <a href="{% url 'pos:receive_delivery_from_po' po.id %}" class="flex-1 text-center py-3 text-blue-600 hover:bg-gray-100">Receive Delivery</a>
+                {% endif %}
+            </footer>
+        </div>
+    </div>
+</div>
+{% endblock %}

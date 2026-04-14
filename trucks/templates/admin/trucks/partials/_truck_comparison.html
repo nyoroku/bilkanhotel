@@ -1,0 +1,251 @@
+<!-- Fixed templates/admin/trucks/partials/_truck_comparison_results.html -->
+{% load humanize %}
+
+{% if trucks_data %}
+<div class="truck-comparison-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+  {% for truck_data in trucks_data %}
+    <div class="truck-card" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; padding: 2rem; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
+      <!-- Truck Header -->
+      <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h3 style="font-size: 1.5rem; font-weight: 700; color: #2d3748; margin: 0;">
+          {{ truck_data.truck.truck_number }}
+        </h3>
+        {% if truck_data.truck.make %}
+          <span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500;">
+            {{ truck_data.truck.make }} {{ truck_data.truck.model }}
+          </span>
+        {% endif %}
+      </div>
+
+      <!-- Metrics Grid -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <div style="text-align: center; padding: 1rem; border-radius: 8px; background: #eff6ff; border: 1px solid #3b82f6;">
+          <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.5rem; text-transform: uppercase;">Trips</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: #2563eb;">{{ truck_data.trip_count }}</div>
+        </div>
+
+        <div style="text-align: center; padding: 1rem; border-radius: 8px; background: #ecfdf5; border: 1px solid #10b981;">
+          <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.5rem; text-transform: uppercase;">Revenue</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: #059669;">KES {{ truck_data.total_revenue|floatformat:0|intcomma }}</div>
+        </div>
+
+        <div style="text-align: center; padding: 1rem; border-radius: 8px; background: {% if truck_data.net_profit >= 0 %}#ecfdf5; border: 1px solid #10b981{% else %}#fef2f2; border: 1px solid #ef4444{% endif %};">
+          <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.5rem; text-transform: uppercase;">Net Profit</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: {% if truck_data.net_profit >= 0 %}#059669{% else %}#dc2626{% endif %};">
+            KES {{ truck_data.net_profit|floatformat:0|intcomma }}
+          </div>
+        </div>
+
+        <div style="text-align: center; padding: 1rem; border-radius: 8px; background: #fffbeb; border: 1px solid #f59e0b;">
+          <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.5rem; text-transform: uppercase;">Fuel Cost</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: #d97706;">KES {{ truck_data.total_fuel_cost|floatformat:0|intcomma }}</div>
+        </div>
+
+        <div style="text-align: center; padding: 1rem; border-radius: 8px; background: #f0f9ff; border: 1px solid #0ea5e9;">
+          <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.5rem; text-transform: uppercase;">Trip Exp.</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: #0284c7;">KES {{ truck_data.trip_expenses|floatformat:0|intcomma }}</div>
+        </div>
+
+        <div style="text-align: center; padding: 1rem; border-radius: 8px; background: #f0fdf4; border: 1px solid #16a34a;">
+          <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.5rem; text-transform: uppercase;">Truck Exp.</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: #15803d;">KES {{ truck_data.truck_expenses|floatformat:0|intcomma }}</div>
+        </div>
+      </div>
+
+      <!-- Chart Section -->
+      <div style="margin-bottom: 2rem;">
+        <h4 style="font-size: 1rem; font-weight: 600; color: #4a5568; margin-bottom: 1rem;">Expense Breakdown</h4>
+        <div style="height: 200px; position: relative; background: white; border-radius: 8px; padding: 1rem; border: 1px solid #e2e8f0;">
+          <canvas class="expense-chart" id="chart-{{ truck_data.truck.id }}" width="300" height="150"></canvas>
+        </div>
+      </div>
+
+      <!-- Top Categories -->
+      <div style="margin-bottom: 1.5rem;">
+        <h5 style="font-size: 0.9rem; font-weight: 600; color: #4a5568; margin-bottom: 1rem;">Top Expense Categories</h5>
+        <div style="max-height: 150px; overflow-y: auto;">
+          {% for cat in truck_data.expense_categories %}
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
+              <span style="font-size: 0.9rem; color: #4a5568;">{{ cat.category__name }}</span>
+              <span style="font-weight: 600; color: #2d3748;">KES {{ cat.total_amount|floatformat:0|intcomma }}</span>
+            </div>
+          {% empty %}
+            <div style="color: #9ca3af; font-style: italic; text-align: center; padding: 1rem;">No expense categories</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid #e2e8f0;">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+          <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
+            <span style="font-size: 0.9rem; color: #4a5568;">Profit Margin:</span>
+            <span style="font-weight: 600; color: {% if truck_data.profit_margin >= 0 %}#059669{% else %}#dc2626{% endif %};">
+              {{ truck_data.profit_margin|floatformat:1 }}%
+            </span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
+            <span style="font-size: 0.9rem; color: #4a5568;">Cost/Ton:</span>
+            <span style="font-weight: 600; color: #2d3748;">KES {{ truck_data.cost_per_ton|floatformat:0|intcomma }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<script>
+// Wait for all content to be loaded, then initialize charts
+setTimeout(function() {
+  initializeTruckCharts();
+}, 100);
+
+function initializeTruckCharts() {
+  console.log('Initializing charts...');
+
+  // Chart data for each truck
+  const truckData = [
+    {% for truck_data in trucks_data %}
+    {
+      truckId: {{ truck_data.truck.id }},
+      categories: [
+        {% for cat in truck_data.expense_categories %}
+        {
+          name: "{{ cat.category__name|escapejs }}",
+          amount: {{ cat.total_amount|default:0 }}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ],
+      fuelCost: {{ truck_data.total_fuel_cost|default:0 }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  truckData.forEach(function(truck) {
+    const canvas = document.getElementById('chart-' + truck.truckId);
+    if (!canvas) {
+      console.warn('Canvas not found for truck:', truck.truckId);
+      return;
+    }
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      console.warn('Could not get context for truck:', truck.truckId);
+      return;
+    }
+
+    // Prepare chart data
+    const labels = [];
+    const data = [];
+    const colors = [
+      '#3b82f6', '#ef4444', '#10b981', '#f59e0b',
+      '#8b5cf6', '#06b6d4', '#84cc16', '#f97316',
+      '#ec4899', '#6366f1'
+    ];
+
+    // Add expense categories
+    truck.categories.forEach(function(cat, index) {
+      if (cat.amount > 0) {
+        labels.push(cat.name);
+        data.push(parseFloat(cat.amount));
+      }
+    });
+
+    // Add fuel cost
+    if (truck.fuelCost > 0) {
+      labels.push('Fuel');
+      data.push(parseFloat(truck.fuelCost));
+    }
+
+    // Only create chart if we have data
+    if (data.length === 0) {
+      // Show "No data" message
+      canvas.style.display = 'none';
+      const container = canvas.parentElement;
+      if (container && !container.querySelector('.no-data-message')) {
+        const message = document.createElement('div');
+        message.className = 'no-data-message';
+        message.style.cssText = 'display: flex; align-items: center; justify-content: center; height: 100%; color: #9ca3af; font-style: italic;';
+        message.textContent = 'No expense data available';
+        container.appendChild(message);
+      }
+      return;
+    }
+
+    console.log('Creating chart for truck', truck.truckId, 'with data:', { labels, data });
+
+    try {
+      // Destroy existing chart if it exists
+      const existingChart = Chart.getChart(canvas);
+      if (existingChart) {
+        existingChart.destroy();
+      }
+
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: colors.slice(0, labels.length),
+            borderWidth: 2,
+            borderColor: '#ffffff',
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#ffffff',
+              bodyColor: '#ffffff',
+              borderColor: '#ffffff',
+              borderWidth: 1,
+              cornerRadius: 6,
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${label}: KES ${value.toLocaleString()} (${percentage}%)`;
+                }
+              }
+            }
+          },
+          cutout: '60%',
+          animation: {
+            animateScale: true,
+            animateRotate: true,
+            duration: 1000,
+            easing: 'easeOutQuart'
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          }
+        }
+      });
+
+      console.log('Chart created successfully for truck', truck.truckId);
+
+    } catch (error) {
+      console.error('Error creating chart for truck', truck.truckId, error);
+    }
+  });
+}
+</script>
+
+{% else %}
+<div class="empty-state" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; padding: 4rem 2rem; text-align: center; color: #718096; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+  <i class="fas fa-chart-line" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+  <p>No trucks selected or no data available for the selected date range</p>
+</div>
+{% endif %}

@@ -1,0 +1,19 @@
+<div class="notification bg-red-600 hover:bg-red-700 text-white is-light">
+    <button class="delete" onclick="this.parentElement.remove()"></button>
+    <p>Cannot prepare <strong>{{ item_name }}</strong> - missing ingredients:</p>
+    <ul class="mt-2">
+        {% for ingredient in missing_ingredients %}
+        <li>
+            {{ ingredient.name }} (Need: {{ ingredient.required }}, Have: {{ ingredient.available }})
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+    // Auto-hide after 8 seconds (longer for complex messages)
+    setTimeout(() => {
+        const notif = document.querySelector('.notification.is-danger');
+        if (notif) notif.remove();
+    }, 8000);
+</script>

@@ -1,0 +1,64 @@
+
+<!-- templates/pos/partials/_transfer_success_updates.html -->
+<div class="inline-success-message transfer-success" id="transfer-success-{{ item_id }}">
+    <div class="is-flex is-align-items-center">
+        <i class="fas fa-paper-plane mr-3 text-green-500" style="font-size: 1.25rem;"></i>
+        <div class="is-flex-grow-1">
+            <div class="has-text-weight-bold">Transfer Request Submitted</div>
+            <div class="is-size-7 mt-1">
+                {{ quantity|floatformat:2 }}kg {{ item_name }} → {{ destination_section }}
+                {% if transferred_to_user_name != "Any Staff" %}
+                ({{ transferred_to_user_name }})
+                {% endif %}
+            </div>
+        </div>
+        <button class="delete text-xs px-2.5 py-1.5" onclick="dismissMessage('transfer-success-{{ item_id }}')"></button>
+    </div>
+
+    <!-- Auto-hide progress bar -->
+    <div class="auto-hide-countdown">
+        <div class="countdown-bar"></div>
+    </div>
+</div>
+
+<!-- Update the transfers total -->
+<div hx-swap-oob="innerHTML:#total-transferred-today .title.is-1">
+    {{ updated_total|floatformat:2 }}
+</div>
+
+<!-- Add new transfer to the transfers table -->
+<div hx-swap-oob="afterbegin:#transfers-tbody">
+    <tr class="new-transfer-row">
+        <td>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light py-1.5">{{ new_transfer.request_timestamp|date:"H:i" }}</span>
+        </td>
+        <td>
+            <div class="has-text-weight-bold">{{ item_name|truncatechars:15 }}</div>
+        </td>
+        <td>
+            <span class="has-text-weight-semibold">{{ quantity|floatformat:2 }}</span>
+        </td>
+        <td>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500 hover:bg-sky-600 text-white is-light py-1.5">{{ destination_section|truncatechars:8 }}</span>
+        </td>
+        <td class="is-hidden-mobile">
+            <span class="is-size-7 has-text-grey">
+                {{ transferred_to_user_name|truncatechars:12 }}
+            </span>
+        </td>
+        <td>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-badge status-requested">
+                <i class="fas fa-clock mr-1"></i>
+                <span>Requested</span>
+            </span>
+        </td>
+    </tr>
+</div>
+
+<script>
+    // Auto-hide the transfer success message after 5 seconds
+    setTimeout(() => {
+        dismissMessage('transfer-success-{{ item_id }}');
+    }, 5000);
+</script>
+

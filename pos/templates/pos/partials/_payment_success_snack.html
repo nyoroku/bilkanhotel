@@ -1,0 +1,20 @@
+<!-- _payment_success_snack.html -->
+<div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[100] animate-bounce" id="success-snackbar">
+    <div class="bg-green-600 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center border-2 border-green-400">
+        <i class="fas fa-check-circle text-2xl mr-4"></i>
+        <div>
+            <p class="font-bold text-lg">{{ message }}</p>
+            <p class="text-sm opacity-80">Dashboard updated automatically.</p>
+        </div>
+        <button onclick="this.closest('div').remove()" class="ml-8 text-white opacity-50 hover:opacity-100">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+    setTimeout(() => {
+        const snack = document.getElementById('success-snackbar');
+        if (snack) snack.remove();
+    }, 5000);
+</script>

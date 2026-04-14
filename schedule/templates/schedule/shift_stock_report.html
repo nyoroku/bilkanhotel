@@ -1,0 +1,35 @@
+{% extends 'pos/base.html' %}
+{% block title %}Stock Report – {{ section }}{% endblock %}
+{% block content %}
+<div class="section">
+  <h1 class="text-2xl font-bold text-gray-900 mb-4 is-4">Stock Report – {{ section }}</h1>
+  <h2 class="text-lg text-gray-600 mb-4">Shift {{ shift.date }} {{ shift.name }}</h2>
+
+  <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Opening Physical</th>
+        <th>Opening System</th>
+        <th>Δ</th>
+        <th>Closing Physical</th>
+        <th>Closing System</th>
+        <th>Δ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for st in stock_takes %}
+      <tr>
+        <td>{{ st.item.name }}</td>
+        <td>{{ st.opening_physical }}</td>
+        <td>{{ st.opening_system }}</td>
+        <td>{{ st.opening_disparity }}</td>
+        <td>{{ st.closing_physical|default:"—" }}</td>
+        <td>{{ st.closing_system|default:"—" }}</td>
+        <td>{{ st.closing_disparity|default:"—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

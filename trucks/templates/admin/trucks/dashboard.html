@@ -1,0 +1,424 @@
+{% extends "trucks/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Dashboard - LogiTrack{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+.metric-card {
+  border-radius: 8px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.1) 100%);
+}
+.change-indicator {
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.analytics-box {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.status-badge {
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.status-completed { background: #d1fae5; color: #065f46; }
+.status-in_progress { background: #fef3c7; color: #92400e; }
+.status-planned { background: #e0e7ff; color: #3730a3; }
+.status-cancelled { background: #fee2e2; color: #991b1b; }
+.status-delayed { background: #fed7d7; color: #c53030; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap -mx-3 is-multiline">
+
+  <!-- Action Buttons -->
+  <div class="w-full px-3 is-12">
+    <div class="level">
+      <div class="level-left">
+        <div class="buttons">
+          <a href="{% url 'trucks:logistics_report' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">
+            <span class="icon"><i class="fas fa-chart-line"></i></span>
+            <span>View Logistics Report</span>
+          </a>
+          <a href="{% url 'trucks:trip_create' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white">
+            <span class="icon"><i class="fas fa-plus"></i></span>
+            <span>New Trip</span>
+          </a>
+          <a href="{% url 'trucks:invoice_create' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white">
+            <span class="icon"><i class="fas fa-file-invoice-dollar"></i></span>
+            <span>New Invoice</span>
+          </a>
+            <a href="{% url 'trucks:analytics_dashboard' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">
+            <span class="icon"><i class="fas fa-chart-line"></i></span>
+            <span>View Analytics </span>
+          </a>
+        </div>
+      </div>
+      <div class="level-right">
+        <div class="level-item">
+          <div class="mb-4">
+            <p class="relative">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">{{ current_month }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Metrics Cards -->
+  <div class="w-full px-3 is-3">
+    <div class="metric-card has-background-primary-light">
+      <div class="content">
+        <p class="text-2xl font-bold text-gray-900 mb-4 is-3 text-[#1e3a8a] mb-2">
+          {% if current_metrics.total_revenue > 0 %}
+            KES {{ current_metrics.total_revenue|floatformat:2|intcomma }}
+          {% else %}
+            KES 0.00
+          {% endif %}
+        </p>
+        <p class="text-lg text-gray-600 mb-4 is-6 mb-2">Total Revenue</p>
+        {% if metrics_comparison.total_revenue.change is not None %}
+          <p class="change-indicator {% if metrics_comparison.total_revenue.change_positive %}has-text-success{% else %}has-text-danger{% endif %}">
+            <i class="fas fa-{% if metrics_comparison.total_revenue.change_positive %}arrow-up{% else %}arrow-down{% endif %}"></i>
+            {{ metrics_comparison.total_revenue.change }}% from {{ last_month }}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full px-3 is-3">
+    <div class="metric-card has-background-info-light">
+      <div class="content">
+        <p class="text-2xl font-bold text-gray-900 mb-4 is-3 text-blue-500 mb-2">
+          {% if current_metrics.total_fuel > 0 %}
+            KES {{ current_metrics.total_fuel|floatformat:2|intcomma }}
+          {% else %}
+            KES 0.00
+          {% endif %}
+        </p>
+        <p class="text-lg text-gray-600 mb-4 is-6 mb-2">Total Fuel Cost</p>
+        {% if metrics_comparison.total_fuel.change is not None %}
+          <p class="change-indicator {% if metrics_comparison.total_fuel.change_positive %}has-text-success{% else %}has-text-danger{% endif %}">
+            <i class="fas fa-{% if metrics_comparison.total_fuel.change_positive %}arrow-up{% else %}arrow-down{% endif %}"></i>
+            {{ metrics_comparison.total_fuel.change }}% from {{ last_month }}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full px-3 is-3">
+    <div class="metric-card has-background-success-light">
+      <div class="content">
+        <p class="text-2xl font-bold text-gray-900 mb-4 is-3 text-green-500 mb-2">
+          {{ current_metrics.total_tonnage|floatformat:1|intcomma }} tons
+        </p>
+        <p class="text-lg text-gray-600 mb-4 is-6 mb-2">Total Tonnage</p>
+        {% if metrics_comparison.total_tonnage.change is not None %}
+          <p class="change-indicator {% if metrics_comparison.total_tonnage.change_positive %}has-text-success{% else %}has-text-danger{% endif %}">
+            <i class="fas fa-{% if metrics_comparison.total_tonnage.change_positive %}arrow-up{% else %}arrow-down{% endif %}"></i>
+            {{ metrics_comparison.total_tonnage.change }}% from {{ last_month }}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full px-3 is-3">
+    <div class="metric-card has-background-warning-light">
+      <div class="content">
+        <p class="text-2xl font-bold text-gray-900 mb-4 is-3 has-text-warning-dark mb-2">{{ current_metrics.trip_count }}</p>
+        <p class="text-lg text-gray-600 mb-4 is-6 mb-2">Completed Trips</p>
+        {% if metrics_comparison.trip_count.change is not None %}
+          <p class="change-indicator {% if metrics_comparison.trip_count.change_positive %}has-text-success{% else %}has-text-danger{% endif %}">
+            <i class="fas fa-{% if metrics_comparison.trip_count.change_positive %}arrow-up{% else %}arrow-down{% endif %}"></i>
+            {{ metrics_comparison.trip_count.change }}% from {{ last_month }}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Secondary Metrics -->
+  <div class="w-full px-3 is-3">
+    <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+      <div class="level is-mobile">
+        <div class="level-left">
+          <div class="level-item">
+            <div>
+              <p class="text-2xl font-bold text-gray-900 mb-4 is-4">{{ active_trucks }}</p>
+              <p class="text-lg text-gray-600 mb-4 is-6">Active Trucks</p>
+            </div>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <span class="icon text-xl px-8 py-4 text-[#1e3a8a]">
+              <i class="fas fa-truck fa-2x"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+      <progress class="progress bg-blue-600 hover:bg-blue-700 text-white" value="{{ active_trucks }}" max="{{ total_trucks }}">{{ active_trucks }}/{{ total_trucks }}</progress>
+      <p class="is-size-7 has-text-grey">{{ total_trucks }} total</p>
+    </div>
+  </div>
+
+  <div class="w-full px-3 is-3">
+    <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+      <div class="level is-mobile">
+        <div class="level-left">
+          <div class="level-item">
+            <div>
+              <p class="text-2xl font-bold text-gray-900 mb-4 is-4">{{ active_drivers }}</p>
+              <p class="text-lg text-gray-600 mb-4 is-6">Active Drivers</p>
+            </div>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <span class="icon text-xl px-8 py-4 text-blue-500">
+              <i class="fas fa-users fa-2x"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+      <progress class="progress bg-sky-500 hover:bg-sky-600 text-white" value="{{ active_drivers }}" max="{{ total_drivers }}">{{ active_drivers }}/{{ total_drivers }}</progress>
+      <p class="is-size-7 has-text-grey">{{ total_drivers }} total</p>
+    </div>
+  </div>
+
+  <div class="w-full px-3 is-3">
+    <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+      <div class="level is-mobile">
+        <div class="level-left">
+          <div class="level-item">
+            <div>
+              <p class="text-2xl font-bold text-gray-900 mb-4 is-4">KES {{ outstanding_summary.total_outstanding|floatformat:2|intcomma }}</p>
+              <p class="text-lg text-gray-600 mb-4 is-6">Outstanding</p>
+            </div>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <span class="icon text-xl px-8 py-4 text-red-500">
+              <i class="fas fa-exclamation-triangle fa-2x"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+      <p class="is-size-7 has-text-grey">{{ outstanding_summary.count }} invoices</p>
+      {% if overdue_count > 0 %}
+        <p class="is-size-7 text-red-500"><strong>{{ overdue_count }} overdue</strong></p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="w-full px-3 is-3">
+    <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+      <div class="level is-mobile">
+        <div class="level-left">
+          <div class="level-item">
+            <div>
+              <p class="text-2xl font-bold text-gray-900 mb-4 is-4">{{ active_destinations }}</p>
+              <p class="text-lg text-gray-600 mb-4 is-6">Destinations</p>
+            </div>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <span class="icon text-xl px-8 py-4 text-green-500">
+              <i class="fas fa-map-marker-alt fa-2x"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+      <progress class="progress bg-green-600 hover:bg-green-700 text-white" value="{{ active_destinations }}" max="{{ total_destinations }}">{{ active_destinations }}/{{ total_destinations }}</progress>
+      <p class="is-size-7 has-text-grey">{{ total_destinations }} total</p>
+    </div>
+  </div>
+
+  <!-- Recent Activity and Outstanding Invoices -->
+  <div class="w-full px-3 is-6">
+    <div class="analytics-box p-5">
+      <div class="level">
+        <div class="level-left">
+          <div class="level-item">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5">Recent Activity</h3>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <a href="{% url 'trucks:trip_list' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5">View All</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="min-w-full divide-y divide-gray-200 is-fullwidth hover:bg-gray-50">
+          <thead>
+            <tr>
+              <th>Trip</th>
+              <th>Truck</th>
+              <th>Destination</th>
+              <th>Status</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for trip in recent_trips %}
+              <tr>
+                <td>
+                  <a href="{% url 'trucks:trip_detail' trip.pk %}" class="has-text-link">
+                    {{ trip.trip_number }}
+                  </a>
+                </td>
+                <td>{{ trip.truck.truck_number }}</td>
+                <td>{{ trip.destination.name|truncatechars:15 }}</td>
+                <td>
+                  <span class="status-badge status-{{ trip.status }}">
+                    {{ trip.get_status_display }}
+                  </span>
+                </td>
+                <td>
+                  {% if trip.transport_amount %}
+                    KES {{ trip.transport_amount|floatformat:2|intcomma }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5" class="has-text-grey text-center">No recent trips.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full px-3 is-6">
+    <div class="analytics-box p-5">
+      <div class="level">
+        <div class="level-left">
+          <div class="level-item">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5">Outstanding Invoices</h3>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <a href="{% url 'trucks:invoice_list' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5">View All</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="min-w-full divide-y divide-gray-200 is-fullwidth hover:bg-gray-50">
+          <thead>
+            <tr>
+              <th>Invoice</th>
+              <th>Transporter</th>
+              <th>Total</th>
+              <th>Balance</th>
+              <th>Due</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inv in outstanding_invoices %}
+              <tr>
+                <td>
+                  <a href="{% url 'trucks:invoice_detail' inv.pk %}" class="has-text-link">
+                    {{ inv.invoice_number }}
+                  </a>
+                </td>
+                <td>{{ inv.transporter.name|truncatechars:15 }}</td>
+                <td>KES {{ inv.total_amount|floatformat:2|intcomma }}</td>
+                <td class="text-red-500">
+                  <strong>KES {{ inv.balance|floatformat:2|intcomma }}</strong>
+                </td>
+                <td>
+                  {% if inv.is_overdue %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-600 hover:bg-red-700 text-white">{{ inv.due_date }}</span>
+                  {% else %}
+                    {{ inv.due_date }}
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5" class="has-text-grey text-center">No outstanding invoices.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics Charts -->
+  {% if top_destinations %}
+  <div class="w-full px-3 is-6">
+    <div class="analytics-box p-5">
+      <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5">Top Destinations (This Month)</h3>
+      <div class="table-container">
+        <table class="min-w-full divide-y divide-gray-200 is-fullwidth">
+          <tbody>
+            {% for dest in top_destinations %}
+              <tr>
+                <td><strong>{{ dest.destination__name }}</strong></td>
+                <td>{{ dest.total_tonnage|floatformat:1 }} tons</td>
+                <td class="has-text-grey">{{ dest.trip_count }} trip{{ dest.trip_count|pluralize }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if top_transporters %}
+  <div class="w-full px-3 is-6">
+    <div class="analytics-box p-5">
+      <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5">Top Transporters (This Month)</h3>
+      <div class="table-container">
+        <table class="min-w-full divide-y divide-gray-200 is-fullwidth">
+          <tbody>
+            {% for trans in top_transporters %}
+              <tr>
+                <td><strong>{{ trans.transporter__name }}</strong></td>
+                <td>KES {{ trans.total_revenue|floatformat:2|intcomma }}</td>
+                <td class="has-text-grey">{{ trans.trip_count }} trip{{ trans.trip_count|pluralize }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

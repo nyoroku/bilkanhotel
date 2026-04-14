@@ -1,0 +1,70 @@
+<div class="level mb-5">
+    <div class="level-left">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Expense Report</h1>
+    </div>
+    <div class="level-right">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-4 has-background-danger-light">
+            <p class="heading">Total Expenses in Period</p>
+            <p class="text-2xl font-bold text-gray-900 mb-4 is-3 has-text-danger-dark">{{ grand_total|floatformat:2 }} KES</p>
+        </div>
+        <div class="level-item ml-4">
+            <a href="{% url 'pos:print_expense_report' %}?start_date={{ start_date }}&end_date={{ end_date }}&category={{ category_filter }}"
+               target="_blank" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-indigo-600 hover:bg-indigo-700 text-white text-lg px-6 py-3">
+                <span class="icon"><i class="fas fa-print"></i></span>
+                <span>Print Report</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+    {% if is_detail_view %}
+        <div class="level is-mobile">
+            <div class="level-left">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4 is-4">Details for: {{ selected_category.name }}</h3>
+            </div>
+            <div class="level-right">
+                <a class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5"
+                   hx-get="{% url 'pos:expense_list' %}?start_date={{ start_date }}&end_date={{ end_date }}"
+                   hx-target="#report-content-wrapper" hx-swap="innerHTML">
+                    &larr; Back to Summary
+                </a>
+            </div>
+        </div>
+
+        <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white">
+            <thead><tr><th>Date</th><th>Description</th><th class="text-right">Amount (KES)</th></tr></thead>
+            <tbody>
+                {% for expense in expenses %}
+                <tr>
+                    <td>{{ expense.expense_date|date:"d M Y" }}</td>
+                    <td>{{ expense.description }}</td>
+                    <td class="text-right has-text-weight-semibold">{{ expense.amount|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <h3 class="text-2xl font-bold text-gray-900 mb-4 is-4">Summary by Category</h3>
+        <table class="min-w-full divide-y divide-gray-200 is-fullwidth hover:bg-gray-50">
+            <thead><tr><th>Category</th><th class="text-right">Total Expenses (KES)</th></tr></thead>
+            <tbody>
+                {% for category in category_summary %}
+                <tr>
+                    <td>
+                        <a  class="has-text-weight-bold"
+                            hx-get="{% url 'pos:expense_list' %}?start_date={{ start_date }}&end_date={{ end_date }}&category={{ category.category__id }}"
+                            hx-target="#report-content-wrapper"
+                            hx-swap="innerHTML">
+                            {{ category.category__name }}
+                        </a>
+                    </td>
+                    <td class="text-right has-text-weight-bold">{{ category.category_total|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2" class="text-center p-5">No expenses found for this period.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>

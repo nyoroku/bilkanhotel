@@ -1,0 +1,111 @@
+{% extends "trucks/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - LogiTrack{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+  <h2 class="text-2xl font-bold text-gray-900 mb-4 is-4">Record Payment for Invoice #{{ invoice.invoice_number }}</h2>
+<!-- DEBUG: Show hidden invoice field -->
+<div class="mb-4">
+  <label class="block text-sm font-medium text-gray-700 mb-1">Invoice (Hidden)</label>
+  <div class="relative">
+    {{ form.invoice }}
+    <p class="help">Value: {{ form.invoice.value }}</p>
+    {% if form.invoice.errors %}
+      {% for error in form.invoice.errors %}
+        <p class="help bg-red-600 hover:bg-red-700 text-white">{{ error }}</p>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+  {% if messages %}
+    {% for message in messages %}
+      <div class="notification is-{{ message.tags }}">
+        <button class="delete"></button>
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- ✅ Payment Date -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Payment Date</label>
+      <div class="relative">
+        {{ form.payment_date }}
+        {% if form.payment_date.errors %}
+          {% for error in form.payment_date.errors %}
+            <p class="help bg-red-600 hover:bg-red-700 text-white">{{ error }}</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ✅ Amount -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+      <div class="relative">
+        {{ form.amount }}
+        {% if form.amount.errors %}
+          {% for error in form.amount.errors %}
+            <p class="help bg-red-600 hover:bg-red-700 text-white">{{ error }}</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ✅ Payment Method -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+      <div class="relative">
+        {{ form.payment_method }}
+        {% if form.payment_method.errors %}
+          {% for error in form.payment_method.errors %}
+            <p class="help bg-red-600 hover:bg-red-700 text-white">{{ error }}</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ✅ Reference Number -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
+      <div class="relative">
+        {{ form.reference_number }}
+        {% if form.reference_number.errors %}
+          {% for error in form.reference_number.errors %}
+            <p class="help bg-red-600 hover:bg-red-700 text-white">{{ error }}</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ✅ Remarks -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+      <div class="relative">
+        {{ form.remarks }}
+        {% if form.remarks.errors %}
+          {% for error in form.remarks.errors %}
+            <p class="help bg-red-600 hover:bg-red-700 text-white">{{ error }}</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="mb-4 flex space-x-2">
+      <div class="relative">
+        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white">Record Payment</button>
+      </div>
+      <div class="relative">
+        <a href="{% url 'trucks:invoice_detail' invoice.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

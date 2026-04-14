@@ -1,0 +1,26 @@
+{% comment %}
+This partial contains ONLY the discount lines and the grand total.
+It is swapped in by HTMX when a coupon or loyalty points are applied.
+{% endcomment %}
+<div id="bill-discounts-and-total">
+    {% if loyalty_discount > 0 %}
+    <div class="is-flex is-justify-content-space-between mb-2 has-text-info-dark">
+        <span>Loyalty Discount</span>
+        <span>- {{ loyalty_discount|floatformat:2 }} KES</span>
+    </div>
+    {% endif %}
+    {% if coupon_discount > 0 %}
+    <div class="is-flex is-justify-content-space-between mb-2 has-text-info-dark">
+        <span>Voucher: {{ coupon_code }}</span>
+        <span>- {{ coupon_discount|floatformat:2 }} KES</span>
+    </div>
+    {% endif %}
+
+    <hr class="my-3">
+
+    <div class="is-flex is-justify-content-space-between has-text-weight-bold text-xl font-medium">
+        <span>Grand Total</span>
+        {# This ID and data attribute are crucial for the keypad JavaScript #}
+        <span id="total-due" data-total="{{ final_total_due }}">{{ final_total_due|floatformat:2 }} KES</span>
+    </div>
+</div>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ receipt_title }} - Order #{{ order.id }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #000;
+            background: #fff;
+            width: 80mm;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 8px;
+                font-size: 11px;
+            }
+            .no-print { display: none !important; }
+            .page-break { page-break-before: always; }
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .receipt-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .receipt-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .order-info {
+            margin-bottom: 15px;
+            padding: 8px 0;
+            border-bottom: 1px dashed #000;
+        }
+
+        .order-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .order-info-label {
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .order-info-value {
+            font-size: 11px;
+        }
+
+        .items-section {
+            margin-bottom: 15px;
+        }
+
+        .items-header {
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 6px;
+            background: #f0f0f0;
+            border: 1px solid #000;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            padding: 6px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: bold;
+            font-size: 12px;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .item-quantity {
+            font-size: 11px;
+            min-width: 25px;
+            text-align: center;
+            background: #000;
+            color: #fff;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .item-notes {
+            font-size: 10px;
+            color: #666;
+            font-style: italic;
+            margin-top: 3px;
+            padding-left: 5px;
+        }
+
+        .status-ready { background: #4CAF50; color: white; }
+        .status-pending { background: #FB8C00; color: white; }
+        .status-preparing { background: #2196F3; color: white; }
+
+        .receipt-footer {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 2px solid #000;
+            font-size: 10px;
+        }
+
+        .print-time {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .footer-message {
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .item-kitchen {
+            background: #fff3cd;
+            border-left: 4px solid #fb8c00;
+            padding-left: 8px;
+        }
+
+        .item-bar {
+            background: #d4e6f1;
+            border-left: 4px solid #2196f3;
+            padding-left: 8px;
+        }
+
+        .print-spinner {
+            display: none;
+            text-align: center;
+            padding: 25px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .print-error, .print-success {
+            display: none;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .print-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .print-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <!-- Print Status Messages -->
+    <div class="print-spinner no-print" id="printSpinner">
+        <div class="spinner"></div>
+        <p>Preparing to print...</p>
+    </div>
+
+    <div class="print-error no-print" id="printError">
+        <strong>Print Error:</strong> Unable to print automatically. Please use Ctrl+P to print manually.
+    </div>
+
+    <div class="print-success no-print" id="printSuccess">
+        <strong>Print Successful!</strong> Window will close automatically.
+    </div>
+
+    <!-- Receipt Content -->
+    <div class="receipt-content" id="receiptContent">
+        <!-- Header -->
+        <div class="receipt-header">
+            <div class="receipt-title">{{ receipt_title }}</div>
+            <div class="receipt-subtitle">Production Docket</div>
+        </div>
+
+        <!-- Order Information -->
+        <div class="order-info">
+            <div class="order-info-row">
+                <span class="order-info-label">Order #:</span>
+                <span class="order-info-value">{{ order.id }}</span>
+            </div>
+            <div class="order-info-row">
+                <span class="order-info-label">Table:</span>
+                <span class="order-info-value">{{ order.table.table_number|default:"Takeaway" }}</span>
+            </div>
+            <div class="order-info-row">
+                <span class="order-info-label">Customer:</span>
+                <span class="order-info-value">{{ order.customer.name }}</span>
+            </div>
+            <div class="order-info-row">
+                <span class="order-info-label">Waiter:</span>
+                <span class="order-info-value">{{ order.waiter.get_full_name }}</span>
+            </div>
+            <div class="order-info-row">
+                <span class="order-info-label">Time:</span>
+                <span class="order-info-value">{{ order.created_at|date:"H:i" }}</span>
+            </div>
+        </div>
+
+        <!-- Items Section -->
+        <div class="items-section">
+            <div class="items-header">
+                ORDER ITEMS ({{ total_items }})
+            </div>
+
+            {% for item in order.items.all %}
+            <div class="item-row {% if item.menu_item.category.module == 'kitchen' %}item-kitchen{% elif 'bar' %}item-bar{% endif %}">
+                <div class="item-details">
+                    <div class="item-name">{{ item.menu_item.name }}</div>
+                    {% if item.special_instructions %}
+                    <div class="item-notes">Note: {{ item.special_instructions }}</div>
+                    {% endif %}
+                </div>
+                <div class="item-quantity status-{{ item.status|lower }}">
+                    {{ item.quantity }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Footer -->
+        <div class="receipt-footer">
+            <div class="print-time">Printed: {{ print_timestamp|date:"d/m/Y H:i" }}</div>
+            <div class="footer-message">*** KITCHEN/BAR COPY ***</div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced print handling with better error management
+        let printAttempted = false;
+        let printCompleted = false;
+        let printTimeout;
+
+        function showSpinner() {
+            document.getElementById('printSpinner').style.display = 'block';
+            document.getElementById('receiptContent').style.opacity = '0.3';
+        }
+
+        function hideSpinner() {
+            document.getElementById('printSpinner').style.display = 'none';
+            document.getElementById('receiptContent').style.opacity = '1';
+        }
+
+        function showError() {
+            document.getElementById('printError').style.display = 'block';
+            hideSpinner();
+        }
+
+        function showSuccess() {
+            document.getElementById('printSuccess').style.display = 'block';
+            hideSpinner();
+        }
+
+        function notifyParent() {
+            const orderId = window.location.pathname.split('/')[3];
+
+            try {
+                // Try specific callback first (for bulk printing)
+                if (window.opener && window.opener[`printCompleted_${orderId}`]) {
+                    window.opener[`printCompleted_${orderId}`]();
+                    return true;
+                }
+                // Try general callback
+                else if (window.opener && window.opener.printCompleted) {
+                    window.opener.printCompleted();
+                    return true;
+                }
+            } catch (e) {
+                console.error('Error notifying parent:', e);
+            }
+            return false;
+        }
+
+        function attemptPrint() {
+            try {
+                showSpinner();
+
+                // Set a timeout for print operation
+                printTimeout = setTimeout(function() {
+                    if (!printCompleted) {
+                        showError();
+                        // Still try to notify parent
+                        notifyParent();
+                    }
+                }, 10000); // 10 second timeout
+
+                // Attempt to print
+                window.print();
+
+            } catch (error) {
+                console.error('Print error:', error);
+                clearTimeout(printTimeout);
+                showError();
+            }
+        }
+
+        // Event listeners
+        window.addEventListener('beforeprint', function() {
+            printAttempted = true;
+            clearTimeout(printTimeout);
+        });
+
+        window.addEventListener('afterprint', function() {
+            printCompleted = true;
+            clearTimeout(printTimeout);
+            showSuccess();
+
+            // Notify parent window
+            if (notifyParent()) {
+                setTimeout(function() {
+                    window.close();
+                }, 1500);
+            }
+        });
+
+        // Fallback for browsers that don't support afterprint
+        window.addEventListener('focus', function() {
+            if (printAttempted && !printCompleted) {
+                setTimeout(function() {
+                    printCompleted = true;
+                    clearTimeout(printTimeout);
+                    showSuccess();
+
+                    if (notifyParent()) {
+                        setTimeout(function() {
+                            window.close();
+                        }, 1500);
+                    }
+                }, 1000);
+            }
+        });
+
+        // Initialize print process
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(attemptPrint, 500);
+        });
+
+        // Prevent accidental navigation
+        window.addEventListener('beforeunload', function(e) {
+            if (!printCompleted) {
+                e.preventDefault();
+                return 'Print operation may not be complete. Are you sure you want to leave?';
+            }
+        });
+    </script>
+</body>
+</html>

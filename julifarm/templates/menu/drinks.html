@@ -1,0 +1,356 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<section class="menu-hero">
+    <div class="container mx-auto px-4 lg:max-w-7xl">
+        <div class="hero-content">
+            <p class="hero-tagline">Experience the Best</p>
+            <h1 class="hero-title">{{ page_title }}</h1>
+            <p class="hero-description">{{ page_description }}</p>
+        </div>
+    </div>
+</section>
+
+<section class="menu-section">
+    <div class="container mx-auto px-4 lg:max-w-7xl">
+        {% for category in categories %}
+        <div class="category-section" data-category="{{ category.slug }}">
+            <div class="category-header">
+                <h2 class="category-title">{{ category.name }}</h2>
+            </div>
+
+            <div class="menu-grid">
+                {% for item in category.items.all %}
+                <article class="menu-card">
+                    {% if item.image %}
+                    <div class="card-image">
+                        <img src="{{ item.image.url }}"
+                             alt="{{ item.name }}"
+                             loading="lazy"
+                             class="food-image">
+                        {% if item.is_popular %}
+                        <span class="badge badge-popular">Popular</span>
+                        {% endif %}
+                        {% if item.is_new %}
+                        <span class="badge badge-new">New</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="p-6">
+                        <div class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                            <h3 class="item-title">{{ item.name }}</h3>
+                            <span class="item-price">KSh {{ item.price|floatformat:0 }}</span>
+                        </div>
+
+                        {% if item.ingredients %}
+                        <div class="card-actions">
+                            <button type="button"
+                                    class="btn btn-secondary view-details"
+                                    data-item-id="{{ item.id }}">
+                                Details
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </article>
+                {% empty %}
+                <div class="empty-category">
+                    <p>No items available in this category.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-menu">
+            <div class="empty-state">
+                <h3>Menu Coming Soon</h3>
+                <p>We're working on adding delicious items to our menu. Check back soon!</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<style>
+/* Hero Section */
+.menu-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.hero-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.hero-tagline {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.hero-description {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+}
+
+/* Menu Section */
+.menu-section {
+    padding: 4rem 0;
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Category Section */
+.category-section {
+    margin-bottom: 4rem;
+}
+
+.category-section:last-child {
+    margin-bottom: 0;
+}
+
+.category-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.category-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    position: relative;
+    display: inline-block;
+}
+
+.category-title::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: #667eea;
+    border-radius: 2px;
+}
+
+/* Menu Grid */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Menu Card */
+.menu-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.menu-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Image */
+.card-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.food-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.menu-card:hover .food-image {
+    transform: scale(1.05);
+}
+
+/* Badges */
+.badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-popular {
+    background: #e74c3c;
+    color: white;
+}
+
+.badge-new {
+    background: #27ae60;
+    color: white;
+}
+
+/* Card Content */
+.card-content {
+    padding: 1.5rem;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+    gap: 1rem;
+}
+
+.item-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    line-height: 1.3;
+    flex: 1;
+}
+
+.item-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #27ae60;
+    white-space: nowrap;
+}
+
+/* Card Actions */
+.card-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn {
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.btn-secondary {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.btn-secondary:hover {
+    background: #dee2e6;
+}
+
+/* Empty States */
+.empty-category,
+.empty-menu {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+.empty-state {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.empty-state h3 {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .category-title {
+        font-size: 1.5rem;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 1.75rem;
+    }
+
+    .card-content {
+        padding: 1rem;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .item-price {
+        align-self: flex-end;
+    }
+}
+</style>
+
+<script>
+// View details functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const detailButtons = document.querySelectorAll('.view-details');
+
+    detailButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            // Add your modal/details logic here
+            console.log('Viewing details for item:', itemId);
+        });
+    });
+});
+</script>
+{% endblock %}

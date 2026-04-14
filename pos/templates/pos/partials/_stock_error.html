@@ -1,0 +1,27 @@
+{% comment %}
+This partial displays a single error notification.
+It's designed to be swapped into the error toast container.
+Simple enhancement with icon and auto-dismiss.
+{% endcomment %}
+
+<div class="notification bg-red-600 hover:bg-red-700 text-white is-light">
+    <button class="delete" onclick="this.parentElement.remove()"></button>
+    <span class="icon-text">
+        <span class="icon text-xs px-2.5 py-1.5">
+            <i class="fas fa-exclamation-triangle"></i>
+        </span>
+        <span>{{ message }}</span>
+    </span>
+</div>
+
+<script>
+// Auto-dismiss after 4 seconds
+setTimeout(() => {
+    const notification = document.currentScript.previousElementSibling;
+    if (notification && notification.classList.contains('notification')) {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+    }
+}, 4000);
+</script>

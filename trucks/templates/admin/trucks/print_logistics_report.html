@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Logistics Report (Print)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    .summary { margin: 20px 0; padding: 10px; background: #f9f9f9; }
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="window.print()" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">Print</button>
+  </div>
+
+  <h1>Logistics Report</h1>
+  <p><strong>Period:</strong> {{ start_date }} to {{ end_date }}</p>
+
+  <div class="summary">
+    <strong>Total Trips:</strong> {{ totals.count }}<br>
+    <strong>Total Transport Amount:</strong> {{ totals.total_transport }}<br>
+    <strong>Total Fuel Amount:</strong> {{ totals.total_fuel }}<br>
+    <strong>Total Tonnage:</strong> {{ totals.total_tonnage }} tons
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Trip #</th>
+        <th>Truck</th>
+        <th>Driver</th>
+        <th>Origin</th>
+        <th>Destination</th>
+        <th>Status</th>
+        <th>Weight (Tons)</th>
+        <th>Transport Amt</th>
+        <th>Fuel Amt</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for trip in trips %}
+        <tr>
+          <td>{{ trip.trip_number }}</td>
+          <td>{{ trip.truck.truck_number }}</td>
+          <td>{{ trip.driver.full_name|default:"Unassigned" }}</td>
+          <td>{{ trip.origin.name }}</td>
+          <td>{{ trip.destination.name }}</td>
+          <td>{{ trip.get_status_display }}</td>
+          <td>{{ trip.weight_tons }}</td>
+          <td>{{ trip.transport_amount }}</td>
+          <td>{{ trip.fuel_total_cost|default:"0.00" }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

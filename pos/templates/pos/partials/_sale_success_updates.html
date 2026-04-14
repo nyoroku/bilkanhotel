@@ -1,0 +1,118 @@
+<!-- templates/pos/partials/_sale_success_updates.html -->
+<div class="success-message-container">
+    <!-- Full-screen success overlay for major actions -->
+    <div class="success-overlay" id="sale-success-overlay-{{ item_id }}">
+        <div class="success-modal">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-4 is-4 mb-3 has-text-navy-dark">Sale Completed Successfully!</h3>
+            <div class="content">
+                <div class="success-details mb-4">
+                    <p><strong>{{ item_name }}</strong></p>
+                    <p>Quantity: <span class="has-text-weight-bold">{{ quantity }} kg</span></p>
+                    <p>Amount: <span class="text-green-500 has-text-weight-bold">KES {{ line_total }}</span></p>
+                    <p>Payment: <span class="text-blue-500">{{ payment_method }}</span></p>
+                </div>
+
+                <!-- Stock Update Indicator -->
+                <div class="stock-update-summary mb-4">
+                    <div class="is-flex is-align-items-center is-justify-content-center">
+                        <span class="icon text-yellow-500 mr-2">
+                            <i class="fas fa-cubes"></i>
+                        </span>
+                        <span class="is-size-7 has-text-grey">
+                            Stock: {{ original_stock }} kg → {{ new_stock }} kg
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white" onclick="closeSaleSuccessModal('{{ item_id }}')">
+                    <i class="fas fa-check mr-2"></i>
+                    Continue
+                </button>
+            </div>
+
+            <!-- Auto-hide countdown -->
+            <div class="auto-hide-countdown">
+                <div class="countdown-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HTMX responses for updating stats -->
+    <div hx-swap-oob="innerHTML:#sales-stats-container">
+        <div class="stats-card stats-card-navy">
+            <div class="content">
+                <div class="is-flex is-align-items-center is-justify-content-center mb-3">
+                    <span class="icon text-xl px-8 py-4 mr-4">
+                        <i class="fas fa-cash-register fa-2x"></i>
+                    </span>
+                    <div class="text-left">
+                        <p class="text-2xl font-bold text-gray-900 mb-4 is-6 has-text-white mb-2 opacity-90">Sales Today</p>
+                        <p class="text-2xl font-bold text-gray-900 mb-4 is-1 has-text-white has-text-weight-bold">{{ updated_total_sales|floatformat:2 }}</p>
+                        <p class="text-lg text-gray-600 mb-4 is-6 has-text-white-ter">
+                            {{ updated_total_quantity_sold|floatformat:2 }}kg sold
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update stock indicator for this specific item -->
+    <div hx-swap-oob="innerHTML:#stock-indicator-container-{{ item_id }}">
+        <div class="is-flex is-align-items-center is-justify-content-between mb-3">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium stock-indicator stock-update-flash {% if new_stock <= item.low_stock_threshold %}stock-low{% else %}stock-good{% endif %}">
+                <i class="fas fa-cubes"></i>
+                <span>{{ new_stock|floatformat:2 }} kg</span>
+                <i class="fas fa-arrow-down ml-2 text-yellow-500"></i>
+            </span>
+            {% if new_stock <= item.low_stock_threshold %}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-600 hover:bg-red-700 text-white is-light">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Low Stock
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Add new sale to the sales table -->
+    <div hx-swap-oob="afterbegin:#sales-tbody">
+        <tr class="new-sale-row">
+            <td>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light py-1.5">{{ sale.processed_at|date:"H:i" }}</span>
+            </td>
+            <td>
+                <div class="has-text-weight-bold">{{ item_name|truncatechars:15 }}</div>
+            </td>
+            <td>
+                <span class="has-text-weight-semibold">{{ quantity|floatformat:2 }}</span>
+            </td>
+            <td>
+                <span class="price-display has-text-weight-bold">{{ line_total|floatformat:2 }}</span>
+            </td>
+            <td>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white is-light py-1.5">{{ payment_method|truncatechars:8 }}</span>
+            </td>
+            <td class="is-hidden-mobile">
+                <span class="is-size-7 has-text-grey">{{ order.waiter.get_full_name|default:order.waiter.email|default:"Unknown"|truncatechars:12 }}</span>
+            </td>
+            <td>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-badge status-fulfilled">
+                    <i class="fas fa-check mr-1"></i>
+                    <span>Done</span>
+                </span>
+            </td>
+        </tr>
+    </div>
+</div>
+
+<script>
+    // Auto-show the success modal
+    setTimeout(() => {
+        showSaleSuccessModal('{{ item_id }}');
+    }, 100);
+</script>

@@ -1,0 +1,29 @@
+
+{% for category in categories %}
+    <div class="menu-category">
+        <h3>{{ category.name }}</h3>
+        <div class="menu-items-grid">
+            {% for item in category.menu_items.all %}
+                {% if item.is_active %}
+                    <button class="menu-item-btn"
+                            hx-post="{% url 'pos:htmx_add_order_item' %}"
+                            hx-vals='{"menu_item_id": "{{ item.id }}"}'
+                            hx-target="#order-summary"
+                            hx-swap="outerHTML">
+                        <span class="item-name">{{ item.name }}</span>
+                        <span class="item-price">KES {{ item.selling_price|floatformat:2 }}</span>
+                    </button>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endfor %}
+
+<style>
+    .menu-category h3 { font-family: var(--font-display); font-size: 1.25rem; border-bottom: 2px solid var(--theme-yellow); padding-bottom: 0.5rem; margin: 1.5rem 0 1rem 0; }
+    .menu-items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
+    .menu-item-btn { background: #f3f4f6; border: 1px solid var(--gray-200); padding: 1rem; border-radius: 8px; cursor: pointer; text-align: left; transition: all 0.2s ease; }
+    .menu-item-btn:hover { background: var(--theme-yellow); border-color: var(--theme-yellow); }
+    .item-name { font-weight: 600; display: block; }
+    .item-price { font-size: 0.9rem; color: var(--gray-600); }
+</style>

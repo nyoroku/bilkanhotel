@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JuliFarm - Good Food & Great Times in Kirinyaga</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --theme-yellow: #F5D04C;
+            --deep-blue: #001D3D;
+            --background-light: #EBEBEB;
+
+            /* Mapped legacy variables to the new theme */
+            --accent-orange: var(--theme-yellow);
+            --deep-brown: var(--deep-blue);
+            --warm-cream: var(--background-light);
+            --sage-green: #87A96B;
+            --charcoal: var(--deep-blue);
+            --light-gray: var(--background-light);
+            --text-dark: var(--deep-blue);
+            --text-light: #FFFFFF; /* Using white for best contrast on dark blue */
+
+            --shadow-soft: 0 8px 32px rgba(0, 29, 61, 0.12);
+            --shadow-hover: 0 16px 48px rgba(0, 29, 61, 0.18);
+            --gradient-warm: linear-gradient(135deg, #F5D04C 0%, #eab308 100%);
+            --gradient-overlay: linear-gradient(135deg, rgba(0, 29, 61, 0.8) 0%, rgba(0, 29, 61, 0.6) 100%);
+
+            --font-display: 'Playfair Display', serif;
+            --font-script: 'Dancing Script', cursive;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: clamp(14px, 2vw, 16px);
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Utility Classes */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.25rem;
+        }
+
+        .section {
+            padding: 4rem 0;
+        }
+
+        .section-large {
+            padding: 6rem 0;
+        }
+
+        .yellow-section {
+            background-color: var(--theme-yellow);
+        }
+
+        .text-center { text-align: center; }
+        .text-gradient {
+            background: var(--gradient-warm);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Typography */
+        .heading-xl {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .heading-lg {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .heading-md {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            line-height: 1.3;
+            margin-bottom: 0.75rem;
+        }
+
+        .script-text {
+            font-family: var(--font-script);
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .body-lg {
+            font-size: 1.125rem;
+            font-weight: 400;
+            line-height: 1.7;
+        }
+
+        .subheading {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            max-width: 600px;
+            margin: 0 auto 3rem auto;
+            opacity: 0.9;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 50px;
+            text-decoration: none;
+            border: 2px solid transparent;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            min-width: 160px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 29, 61, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--theme-yellow);
+            color: var(--deep-blue);
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* Specific button style for use on yellow backgrounds */
+        .yellow-section .btn-primary, .navbar .btn-primary {
+             background: var(--deep-blue);
+             color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--deep-blue);
+            border-color: var(--deep-blue);
+        }
+
+        .btn-secondary:hover {
+            background: var(--deep-blue);
+            color: var(--background-light);
+            transform: translateY(-3px);
+        }
+
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: var(--theme-yellow); /* CHANGED */
+            border-bottom: 1px solid rgba(0, 29, 61, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            box-shadow: var(--shadow-soft);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-family: var(--font-script);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--deep-blue); /* CHANGED for contrast */
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            font-family: var(--font-body);
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--text-dark); /* CHANGED for contrast */
+            text-decoration: none;
+            position: relative;
+            padding: 0.5rem 0;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--deep-blue); /* CHANGED for contrast */
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover {
+            color: var(--text-dark);
+            opacity: 0.8;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .mobile-menu-btn span {
+            width: 25px;
+            height: 3px;
+            background: var(--text-dark); /* CHANGED for contrast */
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .mobile-menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: var(--gradient-overlay), url('https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80') center/cover no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin-top: 82px; /* Offset for fixed navbar */
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0, 29, 61, 0.3));
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            padding: 0 1.25rem;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-subtitle {
+            font-family: var(--font-script);
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            color: var(--theme-yellow);
+            margin-bottom: 1rem;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .hero-title {
+            color: white;
+            text-shadow: 2px 4px 20px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .hero-description {
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            color: #FFFFFF;
+            margin-bottom: 2.5rem;
+            opacity: 0.95;
+            animation: fadeInUp 1s ease-out 0.9s both;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s ease-out 1.2s both;
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            display: flex; /* ADDED for alignment */
+            flex-direction: column; /* ADDED for alignment */
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-warm);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-image {
+            position: relative;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover .card-image img {
+            transform: scale(1.1);
+        }
+
+        .card-content {
+            padding: 2rem;
+            display: flex; /* ADDED for alignment */
+            flex-direction: column; /* ADDED for alignment */
+            flex-grow: 1; /* ADDED for alignment */
+        }
+
+        .card-content .btn {
+            margin-top: auto; /* ADDED for alignment */
+        }
+
+        .card-title {
+            color: var(--deep-blue);
+            margin-bottom: 1rem;
+        }
+
+        .card-text {
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+        }
+
+        /* Split Section */
+        .split-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .split-image {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .split-image img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+
+        .split-content h2 {
+            color: var(--deep-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        .split-content p {
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        /* Special Sections */
+        .offers-section {
+            background: white;
+        }
+
+        .shop-banner {
+            background: var(--gradient-overlay), url('https://images.unsplash.com/photo-1555243896-c709bfa0b564?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80') center/cover no-repeat;
+            color: white;
+            text-align: center;
+            padding: 8rem 0;
+            position: relative;
+        }
+
+        .shop-banner .script-text {
+            color: var(--theme-yellow);
+        }
+
+        .shop-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0, 29, 61, 0.2));
+        }
+
+        .shop-banner-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .shop-banner h2 {
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .shop-banner p {
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--deep-blue);
+            color: var(--background-light);
+            padding: 4rem 0 2rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-column h4 {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: var(--theme-yellow);
+        }
+
+        .footer-column p,
+        .footer-column a {
+            color: var(--background-light);
+            text-decoration: none;
+            margin-bottom: 0.75rem;
+            display: block;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+
+        .footer-column a:hover {
+            opacity: 1;
+            color: var(--theme-yellow);
+            transform: translateX(5px);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(235, 235, 235, 0.1);
+            opacity: 0.6;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed;
+                top: 80px;
+                left: 0;
+                width: 100%;
+                height: calc(100vh - 80px);
+                background: var(--theme-yellow);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 2rem;
+                padding: 3rem 0;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .nav-menu.active {
+                transform: translateX(0);
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .hero {
+                height: auto;
+                padding: 4rem 1rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 280px;
+            }
+
+            .section {
+                padding: 3rem 0;
+            }
+
+            .section-large {
+                padding: 4rem 0;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .split-section {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                text-align: center;
+            }
+
+            .split-image {
+                order: -1;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .nav-container {
+                padding: 1rem;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .hero-content {
+                padding: 0 1rem;
+            }
+
+            .card-content {
+                padding: 1.5rem;
+            }
+
+            .shop-banner {
+                padding: 6rem 0;
+            }
+        }
+
+        /* Scroll reveal animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <nav class="bg-white shadow-sm w-full top-0" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">JuliFarm</a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#occasions" class="nav-link">Occasions</a></li>
+                <li><a href="#offers" class="nav-link">Offers</a></li>
+                <li><a href="#shop" class="nav-link">Shop</a></li>
+                <li><a href="#career" class="nav-link">Career</a></li>
+                <li><a href="#blog" class="nav-link">Blog</a></li>
+                 <li><a href="{% url 'pos:pos' %}" class="nav-link">Pos</a></li>
+            </ul>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <section class="bg-gray-100 py-12" id="hero">
+        <div class="hero-content">
+            <p class="hero-subtitle script-text">Welcome to</p>
+            <h1 class="hero-title heading-xl">JuliFarm</h1>
+            <p class="hero-description">Your perfect spot on the Nairobi-Embu Highway for authentic Kenyan barbecue, cool drinks, and unforgettable moments. Karibu sana!</p>
+            <div class="hero-buttons">
+                <a href="tel:+254700123456" class="btn btn-primary">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122L9.98 10.96a.678.678 0 0 1-.672-.105L6.87 8.417a.678.678 0 0 1-.105-.672l.525-1.805a.678.678 0 0 0-.122-.58L5.374 3.654z"/>
+                    </svg>
+                    Call to Order
+                </a>
+                <a href="https://wa.me/254700123456" class="btn btn-ghost">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56v0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                    </svg>
+                    WhatsApp Us
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <main>
+        <section class="section section-large offers-section" id="about">
+            <div class="container mx-auto px-4 lg:max-w-7xl">
+                <div class="text-center reveal">
+                    <p class="script-text" style="font-size: 1.5rem; margin-bottom: 1rem;">Experience the Best</p>
+                    <h2 class="heading-lg">It's More Than a Meal</h2>
+                    <p class="subheading">We bring together the best of Kenyan hospitality with rustic, modern charm. A place to connect, relax, and create unforgettable memories.</p>
+                </div>
+
+                <div class="card-grid reveal">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="card-image">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEOMRzsrHKNNT3NontMUtT55a-bgGAVR9Wzw&s" alt="Beautifully plated nyama choma platter">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="card-title heading-md">Authentic Flavour</h3>
+                            <p class="card-text">Perfectly grilled meat, prepared the traditional Kenyan way. Our secret spice blend and slow-cooking technique creates flavors that will transport you.</p>
+                            <a href="{% url 'julifarm:food_menu' %}" class="btn btn-secondary">View Food Menu</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="card-image">
+                            <img src="data:image/jpeg;base64,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" alt="Colorful cocktails and beers in a rustic bar setting">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="card-title heading-md">Premium Beverages</h3>
+                            <p class="card-text">From ice-cold local brews to expertly crafted cocktails and fresh tropical juices, we have the perfect drink to complement every meal and moment.</p>
+                            <a href="{% url 'julifarm:drinks_menu' %}" class="btn btn-secondary">See Drinks Menu</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" alt="People enjoying a live music event outdoors">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="card-title heading-md">Live Entertainment</h3>
+                            <p class="card-text">Enjoy live bands every weekend, catch the game on our big screens, and join our special themed nights that bring the community together.</p>
+                            <a href="{% url 'julifarm:events' %}" class="btn btn-secondary">Event Schedule</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-large" id="occasions">
+            <div class="container mx-auto px-4 lg:max-w-7xl">
+                <div class="split-section reveal">
+                    <div class="split-image">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDMAl6hOEj65kOXTHWMDqtidiOSdvaqov6xQ&s" alt="Group of friends celebrating at a rustic restaurant">
+                    </div>
+                    <div class="split-content">
+                        <p class="script-text" style="font-size: 1.5rem; margin-bottom: 1rem;">Perfect For</p>
+                        <h2 class="heading-lg">All Your Special Occasions</h2>
+                        <p class="body-lg">Whether you're celebrating a birthday, hosting a chama meeting, planning a family reunion, or organizing a corporate event, our beautiful rustic garden and semi-private spaces provide the perfect atmosphere for your special moments.</p>
+                        <p class="body-lg">We offer customizable platter menus, dedicated service, and flexible seating arrangements to make your event truly memorable. From intimate gatherings to larger celebrations, we've got you covered.</p>
+                        <a href="https://wa.me/254700123456" class="btn btn-primary">Book Your Event</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-large yellow-section" id="offers">
+            <div class="container mx-auto px-4 lg:max-w-7xl">
+                <div class="text-center reveal">
+                    <p class="script-text" style="font-size: 1.5rem; margin-bottom: 1rem;">Limited Time</p>
+                    <h2 class="heading-lg">Special Offers</h2>
+                    <p class="subheading">Take advantage of our exclusive deals and seasonal specials. Great food at even better prices!</p>
+                </div>
+
+                <div class="card-grid reveal">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1615937691194-97dbd3f3dc29?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Large nyama choma platter with ugali and kachumbari">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="card-title heading-md">Weekend Choma Feast</h3>
+                            <p class="card-text">The ultimate sharing experience for 4-6 people. Our signature platter featuring premium goat meat, tender chicken, spiced sausages, and all the classic sides.</p>
+                            <a href="tel:+254700123456" class="btn btn-primary">Order Takeaway</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1627924619396-857c584769ce?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Tusker beer bottles">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="card-title heading-md">Tusker Bucket Special</h3>
+                            <p class="card-text">Perfect for groups and celebrations! Get a chilled bucket of 5 Tusker Lager or Cider for the price of 4. Available all weekend long.</p>
+                            <a href="#hero" class="btn btn-primary">Visit Us Now</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1541542898-89856334a179?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=794&q=80" alt="Premium whiskey selection">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="card-title heading-md">Saturday Night Premium</h3>
+                            <p class="card-text">Elevate your Saturday night with 15% off all premium whiskey and gin cocktails after 6 PM. Perfect for ending the week in style.</p>
+                            <a href="#" class="btn btn-primary">View Cocktail Menu</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="shop-banner" id="shop">
+            <div class="shop-banner-content container mx-auto px-4 lg:max-w-7xl reveal">
+                <p class="script-text" style="font-size: 1.8rem; margin-bottom: 1rem;">Take Home</p>
+                <h2 class="heading-lg">The JuliFarm Experience</h2>
+                <p>Can't get enough of our signature flavors? Take home our specially crafted JuliFarm choma spice blend and artisanal chili sauces. Made with love, packaged with care.</p>
+                <a href="tel:+254700123456" class="btn btn-primary">Order Our Products</a>
+            </div>
+        </section>
+
+        <section class="section section-large offers-section" id="career">
+            <div class="container mx-auto px-4 lg:max-w-7xl">
+                <div class="split-section reveal">
+                    <div class="split-content">
+                        <p class="script-text" style="font-size: 1.5rem; margin-bottom: 1rem;">Join Our Family</p>
+                        <h2 class="heading-lg">Career Opportunities</h2>
+                        <p class="body-lg">At JuliFarm, we believe great food comes from passionate people. We're always looking for talented individuals who share our love for exceptional hospitality and authentic Kenyan cuisine.</p>
+                        <p class="body-lg">Whether you're an experienced chef, a friendly server, or someone eager to learn the restaurant business, we offer competitive wages, flexible schedules, and a supportive work environment.</p>
+                        <a href="https://wa.me/254700123456" class="btn btn-primary">Apply Now</a>
+                    </div>
+                    <div class="split-image">
+                        <img src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Happy restaurant staff working together">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="blog">
+            <div class="container mx-auto px-4 lg:max-w-7xl">
+                <div class="text-center reveal">
+                    <p class="script-text" style="font-size: 1.5rem; margin-bottom: 1rem;">Stories & Updates</p>
+                    <h2 class="heading-lg">From Our Kitchen</h2>
+                    <p class="subheading">Discover the stories behind our dishes, meet our team, and stay updated with the latest happenings at JuliFarm.</p>
+                </div>
+
+                <div class="card-grid reveal">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Chef preparing traditional kenyan spices">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="card-title heading-md">The Secret Behind Our Spice Blend</h3>
+                            <p class="card-text">Discover how our signature spice blend brings together traditional Kenyan flavors with modern grilling techniques for the perfect nyama choma.</p>
+                            <a href="#" class="btn btn-secondary">Read More</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Local farmers with fresh produce">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="card-title heading-md">Supporting Local Farmers</h3>
+                            <p class="card-text">Learn about our commitment to sourcing fresh ingredients from local Kirinyaga farmers and how we're supporting our community.</p>
+                            <a href="#" class="btn btn-secondary">Read More</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Weekend live music performance">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="card-title heading-md">This Weekend's Live Music</h3>
+                            <p class="card-text">Get ready for an amazing weekend! Featured local artists, special food offers, and the perfect atmosphere for great times with friends.</p>
+                            <a href="#" class="btn btn-secondary">Event Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container mx-auto px-4 lg:max-w-7xl">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h4>JuliFarm</h4>
+                    <p>Your home for authentic Kenyan flavors and unforgettable dining experiences. We're more than a restaurant - we're a community gathering place.</p>
+                    <p style="margin-top: 1.5rem;">&copy; 2025 JuliFarm Choma Spot.<br>All Rights Reserved.</p>
+                </div>
+
+                <div class="footer-column">
+                    <h4>Location & Hours</h4>
+                    <p><strong>Address:</strong><br>Mutithi, Kirinyaga County<br>Opposite Agitech, Nairobi-Embu Highway</p>
+                    <p><strong>Hours:</strong><br>Tuesday - Sunday: 12:00 PM - 11:00 PM<br>Monday: Closed</p>
+                </div>
+
+                <div class="footer-column">
+                    <h4>Get In Touch</h4>
+                    <a href="tel:+254700123456">📞 +254 700 123 456</a>
+                    <a href="https://wa.me/254700123456">💬 WhatsApp Us</a>
+                    <a href="mailto:info@julifarm.co.ke">✉️ info@julifarm.co.ke</a>
+                    <a href="#">📍 Get Directions</a>
+                </div>
+
+                <div class="footer-column">
+                    <h4>Quick Links</h4>
+                    <a href="#about">About Us</a>
+                    <a href="#occasions">Private Events</a>
+                    <a href="#offers">Current Offers</a>
+                    <a href="#career">Join Our Team</a>
+                    <a href="#blog">Latest Stories</a>
+                    <a href="#">Food Safety</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>Made with ❤️ for the JuliFarm community. Taste the difference, feel the warmth.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navMenu = document.getElementById('navMenu');
+        const navbar = document.getElementById('navbar');
+        const heroSection = document.getElementById('hero');
+
+        // Recalculate hero margin on resize
+        function setHeroMargin() {
+            const navbarHeight = navbar.offsetHeight;
+            heroSection.style.marginTop = `${navbarHeight}px`;
+        }
+
+        // Set initial margin
+        window.addEventListener('load', setHeroMargin);
+        window.addEventListener('resize', setHeroMargin);
+
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenuBtn.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking on a link
+        navMenu.addEventListener('click', (e) => {
+            if (e.target.classList.contains('nav-link')) {
+                mobileMenuBtn.classList.remove('active');
+                navMenu.classList.remove('active');
+            }
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Scroll reveal animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // Observe all elements with reveal class
+        document.querySelectorAll('.reveal').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Smooth scrolling for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const navbarHeight = navbar.offsetHeight;
+                    const offsetTop = target.offsetTop - navbarHeight;
+                    window.scrollTo({
+                        top: offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Physical Stock Sheet - {{ print_time|date:"d M Y" }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print { display: none; }
+            body { padding: 0; margin: 0; font-size: 12px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #000; padding: 4px; }
+            .avoid-break { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-8 font-sans">
+    <div class="max-w-4xl mx-auto bg-white p-8 shadow-sm print:shadow-none print:p-0">
+        <header class="text-center mb-8 border-b pb-4">
+            <h1 class="text-3xl font-bold uppercase tracking-wider">HOTELA</h1>
+            <h2 class="text-xl font-semibold text-gray-700">Daily Physical Stock Sheet</h2>
+            <p class="text-gray-500 mt-2">Generated: {{ print_time|date:"d M Y H:i" }}</p>
+        </header>
+
+        <div class="flex justify-between no-print mb-6">
+            <button onclick="window.history.back()" class="bg-gray-200 px-4 py-2 rounded font-semibold hover:bg-gray-300">← Back</button>
+            <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 shadow-lg">Print Stock Sheet</button>
+        </div>
+
+        {% for category in categories %}
+        {% if category.menu_items.all %}
+        <div class="mb-10 avoid-break">
+            <h3 class="bg-gray-800 text-white px-4 py-2 text-lg font-bold uppercase mb-2">{{ category.name }} ({{ category.module }})</h3>
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 text-left">
+                        <th class="border p-2 w-2/3 uppercase text-sm">Item Name</th>
+                        <th class="border p-2 w-1/6 text-center uppercase text-sm">System Stock</th>
+                        <th class="border p-2 w-1/6 text-center uppercase text-sm">Physical Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in category.menu_items.all %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="border p-2 font-medium">{{ item.name }}</td>
+                        <td class="border p-2 text-center text-gray-600 font-mono">{{ item.stock_quantity|floatformat:0 }}</td>
+                        <td class="border p-2 bg-gray-50"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        <footer class="mt-12 pt-8 border-t flex justify-between text-sm uppercase font-bold text-gray-600">
+            <div>Verified By: ____________________</div>
+            <div>Date: {{ print_time|date:"d/m/Y" }}</div>
+        </footer>
+    </div>
+</body>
+</html>

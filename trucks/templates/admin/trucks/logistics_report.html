@@ -1,0 +1,100 @@
+{% extends "trucks/base.html" %}
+{% load static %}
+
+{% block title %}Logistics Report - LogiTrack{% endblock %}
+
+{% block page_title %}Logistics Report{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+  <form method="get" class="mb-4">
+    <div class="mb-4 is-horizontal">
+      <div class="field-label text-xs px-2.5 py-1.5">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+      </div>
+      <div class="field-body">
+        <div class="mb-4">
+          <div class="relative">
+            <input type="date" name="start_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xs px-2.5 py-1.5" value="{{ start_date }}" />
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="relative">
+            <input type="date" name="end_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xs px-2.5 py-1.5" value="{{ end_date }}" />
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="relative">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white text-xs px-2.5 py-1.5">Filter</button>
+            <a href="{% url 'trucks:print_logistics_report' %}?start_date={{ start_date }}&end_date={{ end_date }}" target="_blank" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light text-xs px-2.5 py-1.5">
+              <span class="icon"><i class="fas fa-print"></i></span>
+              <span>Print</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-4 is-horizontal">
+      <div class="field-label text-xs px-2.5 py-1.5">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Filters</label>
+      </div>
+      <div class="field-body">
+        <div class="mb-4">
+          <div class="relative">
+            {{ filter_form.status }}
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="relative">
+            {{ filter_form.transporter }}
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="relative">
+            {{ filter_form.destination }}
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="relative">
+            {{ filter_form.truck }}
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="relative">
+            {{ filter_form.search }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="notification bg-sky-500 hover:bg-sky-600 text-white">
+    <strong>Showing {{ totals.count }} trips</strong> |
+    Total Transport: {{ totals.total_transport }} |
+    Total Fuel: {{ totals.total_fuel }} |
+    Total Tonnage: {{ totals.total_tonnage }} tons
+  </div>
+
+  {% if filter_form.transporter.value %}
+    <div class="buttons mb-4">
+      <a href="{% url 'trucks:invoice_create_from_trips' %}?transporter={{ filter_form.transporter.value }}&start_date={{ start_date }}&end_date={{ end_date }}&status={{ filter_form.status.value }}&truck={{ filter_form.truck.value }}&destination={{ filter_form.destination.value }}&search={{ filter_form.search.value }}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white">
+        <span class="icon"><i class="fas fa-file-invoice-dollar"></i></span>
+        <span>Generate Invoice for Filtered Trips</span>
+      </a>
+    </div>
+  {% endif %}
+
+  <div id="logistics-table-container">
+    {% include "admin/trucks/partials/_logistics_table.html" %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  htmx.on("#logistics-table-container", "htmx:afterSwap", function(evt) {
+    // Re-attach any JS behavior if needed
+  });
+</script>
+{% endblock %}

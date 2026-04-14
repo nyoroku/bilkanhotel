@@ -1,0 +1,1385 @@
+<!-- pos/partials/_multi_payment_screen.html -->
+{% load maths_filter %}
+<style>
+    :root {
+        --pay-bg-light-grey: #f8fafc;
+        --pay-bg-white: #ffffff;
+        --pay-text-navy: #1e293b;
+        --pay-text-secondary: #64748b;
+        --pay-accent-mustard: #f59e0b;
+        --pay-border-grey: #e2e8f0;
+        --pay-success: #059669;
+        --pay-danger: #dc2626;
+        --pay-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        --pay-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
+        --pay-border-radius: 12px;
+        --pay-border-radius-sm: 8px;
+    }
+    #payment-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+        backdrop-filter: blur(10px);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        opacity: 0;
+        animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    .payment-terminal-container {
+        display: grid;
+        grid-template-columns: 380px 1fr 350px;
+        gap: 1.5rem;
+        width: 100%;
+        height: 100%;
+        max-width: 1700px;
+        max-height: 95vh;
+        background-color: var(--pay-bg-light-grey);
+        color: var(--pay-text-navy);
+        border-radius: var(--pay-border-radius);
+        padding: 1.5rem;
+        position: relative;
+        box-shadow: var(--pay-shadow);
+        overflow: hidden;
+    }
+    .payment-column {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-height: 0;
+        overflow: hidden;
+    }
+    .payment-column .box {
+        background-color: var(--pay-bg-white);
+        box-shadow: var(--pay-shadow);
+        border: 1px solid var(--pay-border-grey);
+        border-radius: var(--pay-border-radius-sm);
+        padding: 1.25rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+    .payment-column .box:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--pay-shadow-hover);
+    }
+    .payment-entry {
+        border: 2px solid var(--pay-border-grey);
+        border-radius: var(--pay-border-radius-sm);
+        padding: 0.875rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+        background: var(--pay-bg-white);
+    }
+    .payment-entry.completed {
+        border-color: var(--pay-success);
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.08), rgba(5, 150, 105, 0.03));
+    }
+    .payment-method-btn {
+        background: var(--pay-bg-white);
+        border: 2px solid var(--pay-border-grey);
+        border-radius: var(--pay-border-radius-sm);
+        color: var(--pay-text-navy);
+        transition: all 0.3s ease;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .payment-method-btn:hover {
+        border-color: var(--pay-accent-mustard);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+        background: rgba(245, 158, 11, 0.05);
+    }
+    .payment-method-btn.is-primary {
+        background: linear-gradient(135deg, var(--pay-accent-mustard), #f97316);
+        border-color: var(--pay-accent-mustard);
+        color: white;
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
+        transform: translateY(-2px);
+    }
+    #keypad-section {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        gap: 1.25rem;
+        min-height: 0;
+    }
+    #payment-terminal-keypad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: 1fr;
+        gap: 0.875rem;
+        flex-grow: 1;
+        min-height: 300px;
+    }
+    #payment-terminal-keypad .button {
+        font-size: 1.75rem;
+        height: 100%;
+        min-height: 65px;
+        border: 2px solid var(--pay-border-grey);
+        border-radius: var(--pay-border-radius-sm);
+        background: var(--pay-bg-white);
+        color: var(--pay-text-navy);
+        font-weight: 700;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #payment-terminal-keypad .button:hover {
+        background: var(--pay-accent-mustard);
+        border-color: var(--pay-accent-mustard);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
+    }
+    #payment-terminal-keypad .button.is-light {
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        border-color: #fca5a5;
+        color: var(--pay-danger);
+        font-weight: 600;
+    }
+    #payment-terminal-keypad .button.is-light:hover {
+        background: var(--pay-danger);
+        border-color: var(--pay-danger);
+        color: white;
+    }
+    .payment-summary {
+        background: linear-gradient(135deg, var(--pay-text-navy), #475569);
+        color: white;
+        border-radius: var(--pay-border-radius);
+        padding: 1.75rem;
+        margin-bottom: 1rem;
+        position: relative;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .payment-summary::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: shimmer 4s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+        0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+        50% { transform: translate(-50%, -50%) rotate(180deg); }
+    }
+    .remaining-amount {
+        font-size: 2.25rem;
+        font-weight: bold;
+        color: var(--pay-accent-mustard);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: var(--pay-danger);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        font-weight: bold;
+    }
+    .close-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+    }
+    /* Enhanced Bill Summary with Better Scrolling */
+    .bill-summary-card {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--pay-bg-white);
+        border-radius: var(--pay-border-radius-sm);
+        border: 1px solid var(--pay-border-grey);
+        box-shadow: var(--pay-shadow);
+        overflow: hidden;
+    }
+    .bill-summary-header {
+        padding: 1.25rem 1.25rem 1rem 1.25rem;
+        border-bottom: 2px solid var(--pay-border-grey);
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        flex-shrink: 0;
+    }
+    .bill-summary-header .title {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--pay-text-navy);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .bill-summary-header .title::before {
+        content: "📋";
+        font-size: 1.25rem;
+    }
+    .bill-items-container {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        padding: 0;
+    }
+    .bill-items-list {
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0.75rem 1.25rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--pay-accent-mustard) var(--pay-bg-light-grey);
+    }
+    .bill-items-list::-webkit-scrollbar {
+        width: 8px;
+    }
+    .bill-items-list::-webkit-scrollbar-track {
+        background: var(--pay-bg-light-grey);
+        border-radius: 4px;
+    }
+    .bill-items-list::-webkit-scrollbar-thumb {
+        background: var(--pay-accent-mustard);
+        border-radius: 4px;
+        border: 1px solid var(--pay-bg-light-grey);
+    }
+    .bill-items-list::-webkit-scrollbar-thumb:hover {
+        background: #d97706;
+    }
+    /* Make any content in bill items follow the flow */
+    .bill-items-list * {
+        max-width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    .bill-items-list table {
+        width: 100% !important;
+        table-layout: fixed;
+        border-collapse: collapse;
+    }
+    .bill-items-list td,
+    .bill-items-list th {
+        padding: 0.75rem 0.5rem;
+        border-bottom: 1px solid var(--pay-border-grey);
+        vertical-align: top;
+        word-wrap: break-word;
+    }
+    .bill-items-list tr:hover {
+        background: linear-gradient(90deg, rgba(245, 158, 11, 0.05), transparent);
+    }
+    .bill-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 1rem 0.75rem;
+        border-bottom: 1px solid var(--pay-border-grey);
+        transition: all 0.2s ease;
+        border-radius: var(--pay-border-radius-sm);
+        margin-bottom: 0.5rem;
+        background: transparent;
+    }
+    .bill-item:hover {
+        background: linear-gradient(90deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.02));
+        border-color: var(--pay-accent-mustard);
+        transform: translateX(3px);
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    }
+    .bill-item:last-child {
+        border-bottom: 1px solid var(--pay-border-grey);
+        margin-bottom: 0;
+    }
+    .item-details {
+        flex: 1;
+        min-width: 0;
+        padding-right: 1rem;
+    }
+    .item-name {
+        font-weight: 600;
+        margin-bottom: 0.375rem;
+        color: var(--pay-text-navy);
+        font-size: 0.95rem;
+        line-height: 1.3;
+        word-wrap: break-word;
+    }
+    .item-meta {
+        font-size: 0.8rem;
+        color: var(--pay-text-secondary);
+        line-height: 1.3;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .item-quantity {
+        background: var(--pay-accent-mustard);
+        color: white;
+        padding: 0.125rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .item-price {
+        font-weight: 700;
+        color: var(--pay-success);
+        font-size: 1rem;
+        text-align: right;
+        flex-shrink: 0;
+        min-width: 80px;
+    }
+    /* Enhanced Payment List - Completely rewritten for better visibility */
+    .payment-list-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 150px;
+        border: 2px solid var(--pay-border-grey);
+        border-radius: var(--pay-border-radius-sm);
+        background-color: var(--pay-bg-white);
+        overflow: hidden;
+    }
+    .payment-list-header {
+        padding: 0.75rem 1rem;
+        background-color: var(--pay-bg-light-grey);
+        border-bottom: 1px solid var(--pay-border-grey);
+        font-weight: 600;
+        color: var(--pay-text-navy);
+    }
+    .payment-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+    .payment-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    .payment-list::-webkit-scrollbar-track {
+        background: var(--pay-bg-light-grey);
+        border-radius: 3px;
+    }
+    .payment-list::-webkit-scrollbar-thumb {
+        background: var(--pay-success);
+        border-radius: 3px;
+    }
+    .payment-empty-state {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: var(--pay-text-secondary);
+        font-style: italic;
+    }
+    .payment-empty-state::before {
+        content: "💳";
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 0.5rem;
+        opacity: 0.5;
+    }
+    .remove-payment-btn {
+        background: var(--pay-danger);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        padding: 0.25rem 0.625rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+    .remove-payment-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+    }
+    .htmx-request .spinner {
+        display: inline-block !important;
+    }
+    .htmx-request .button-text {
+        display: none;
+    }
+    .spinner {
+        display: none;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid white;
+        border-radius: 50%;
+        width: 1.5em;
+        height: 1.5em;
+        animation: spin 1s linear infinite;
+        margin-left: 0.5rem;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    /* Enhanced Amount Display */
+    .amount-display-card {
+        background: var(--pay-bg-white);
+        border: 2px solid var(--pay-border-grey);
+        border-radius: var(--pay-border-radius);
+        padding: 1.75rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+    .amount-display-card:focus-within {
+        border-color: var(--pay-accent-mustard);
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+    .amount-display-card .heading {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--pay-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+    #amount-display {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: var(--pay-accent-mustard);
+        margin: 0.75rem 0;
+        line-height: 1;
+    }
+    .amount-display-card .help {
+        font-size: 0.8rem;
+        color: var(--pay-text-secondary);
+        margin-top: 0.5rem;
+    }
+    /* Enhanced Change Due Notification */
+    #change-due-notification {
+        background: linear-gradient(135deg, var(--pay-success), #10b981);
+        color: white;
+        border-radius: var(--pay-border-radius-sm);
+        padding: 1.25rem;
+        text-align: center;
+        animation: pulse 2s infinite;
+        box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
+        flex-shrink: 0;
+    }
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    /* Enhanced Action Buttons */
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.875rem;
+        flex-shrink: 0;
+    }
+    .button.is-warning,
+    .button.is-success {
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+        border-radius: var(--pay-border-radius-sm);
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .button.is-warning {
+        background: linear-gradient(135deg, var(--pay-accent-mustard), #f97316);
+        color: white;
+    }
+    .button.is-success {
+        background: linear-gradient(135deg, var(--pay-success), #10b981);
+        color: white;
+    }
+    .button.is-warning:hover,
+    .button.is-success:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--pay-shadow-hover);
+    }
+    .button.is-warning:disabled,
+    .button.is-success:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+        background: #94a3b8;
+    }
+    /* Enhanced Conditional Fields */
+    .conditional-field {
+        background: var(--pay-bg-white);
+        border: 1px solid var(--pay-border-grey);
+        border-radius: var(--pay-border-radius-sm);
+        padding: 1.25rem;
+        box-shadow: var(--pay-shadow);
+        flex-shrink: 0;
+    }
+    .conditional-field .label {
+        font-weight: 600;
+        color: var(--pay-text-navy);
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+    .conditional-field .input {
+        border: 2px solid var(--pay-border-grey);
+        border-radius: var(--pay-border-radius-sm);
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+    .conditional-field .input:focus {
+        border-color: var(--pay-accent-mustard);
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        outline: none;
+    }
+    /* Enhanced Form Styles */
+    .box.p-4 {
+        background: var(--pay-bg-white);
+        border-radius: var(--pay-border-radius-sm);
+        border: 1px solid var(--pay-border-grey);
+        box-shadow: var(--pay-shadow);
+        flex-shrink: 0;
+    }
+    .field.has-addons {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .field.has-addons .control {
+        flex: 1;
+    }
+    .field.has-addons .control .input {
+        border: 2px solid var(--pay-border-grey);
+        border-radius: var(--pay-border-radius-sm);
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    .field.has-addons .control .input:focus {
+        border-color: var(--pay-accent-mustard);
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        outline: none;
+    }
+    .field.has-addons .control .button {
+        border: 2px solid var(--pay-text-navy);
+        background: var(--pay-text-navy);
+        color: white;
+        border-radius: var(--pay-border-radius-sm);
+        padding: 0.75rem 1.25rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+    .field.has-addons .control .button:hover {
+        background: var(--pay-accent-mustard);
+        border-color: var(--pay-accent-mustard);
+        transform: translateY(-1px);
+    }
+    .button.is-info {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        border: none;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .button.is-info:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    /* Level styling for payment summary */
+    .level {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        position: relative;
+        z-index: 1;
+    }
+    .level-item {
+        text-align: center;
+        flex: 1;
+    }
+    .level-item .heading {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.85;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+    .level-item .title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.2;
+    }
+    /* Payment methods section */
+    .payment-methods-section {
+        background: var(--pay-bg-white);
+        border: 1px solid var(--pay-border-grey);
+        border-radius: var(--pay-border-radius-sm);
+        padding: 1.25rem;
+        box-shadow: var(--pay-shadow);
+        flex-shrink: 0;
+    }
+    .payment-methods-section .title {
+        margin-bottom: 1rem;
+        font-size: 1.125rem;
+        font-weight: 700;
+        text-align: center;
+        color: var(--pay-text-navy);
+    }
+    .payment-methods-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    /* Responsive Design */
+    @media (max-width: 1400px) {
+        .payment-terminal-container {
+            grid-template-columns: 320px 1fr 320px;
+            gap: 1rem;
+        }
+    }
+    @media (max-width: 1200px) {
+        .payment-terminal-container {
+            grid-template-columns: 1fr;
+            grid-template-rows: auto 1fr auto;
+            max-height: none;
+            overflow-y: auto;
+            gap: 1rem;
+            max-height: 95vh;
+        }
+        .payment-column {
+            gap: 0.875rem;
+        }
+        #amount-display {
+            font-size: 2.5rem;
+        }
+        .remaining-amount {
+            font-size: 2rem;
+        }
+        .level {
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+    }
+    @media (max-width: 768px) {
+        #payment-overlay {
+            padding: 0.5rem;
+        }
+        .payment-terminal-container {
+            padding: 1rem;
+            border-radius: var(--pay-border-radius-sm);
+            max-height: 100vh;
+        }
+        .level-item .title {
+            font-size: 1.25rem;
+        }
+        .remaining-amount {
+            font-size: 1.75rem;
+        }
+        #payment-terminal-keypad {
+            gap: 0.5rem;
+            min-height: 250px;
+        }
+        #payment-terminal-keypad .button {
+            min-height: 55px;
+            font-size: 1.5rem;
+        }
+        #amount-display {
+            font-size: 2rem;
+        }
+        .bill-items-list {
+            max-height: 200px;
+        }
+    }
+    @media (max-width: 480px) {
+        .payment-terminal-container {
+            padding: 0.75rem;
+            gap: 0.75rem;
+        }
+        .payment-column .box {
+            padding: 1rem;
+        }
+        .payment-summary {
+            padding: 1.25rem;
+        }
+        .remaining-amount {
+            font-size: 1.5rem;
+        }
+        #amount-display {
+            font-size: 1.75rem;
+        }
+        .payment-method-btn {
+            padding: 0.875rem;
+            font-size: 0.9rem;
+        }
+        .bill-items-list {
+            max-height: 150px;
+        }
+    }
+</style>
+<div id="payment-overlay">
+    <div class="payment-terminal-container">
+        <button class="close-btn" id="close-payment-terminal-btn" aria-label="close">&times;</button>
+        <!-- Column 1: Bill Summary & Payment History -->
+        <div class="payment-column">
+            <!-- Payment Summary -->
+            <div class="payment-summary">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4 is-4" style="color: white; margin-bottom: 1rem; position: relative; z-index: 1;">Order #{{ order.id }} Payment</h3>
+                <div class="level">
+                    <div class="level-item text-center">
+                        <div>
+                            <p class="heading" style="color: #bdc3c7;">Total Due</p>
+                            <p class="text-2xl font-bold text-gray-900 mb-4 is-3" style="color: white;" id="total-due-display" data-total="{{ order.total_amount }}">
+                                {{ order.total_amount|floatformat:2 }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="level-item text-center">
+                        <div>
+                            <p class="heading" style="color: #bdc3c7;">Total Paid</p>
+                            <p class="text-2xl font-bold text-gray-900 mb-4 is-3" style="color: var(--pay-success);" id="total-paid-display">0.00</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <p class="heading" style="color: #bdc3c7; position: relative; z-index: 1;">Remaining</p>
+                    <p class="remaining-amount" id="remaining-amount-display">{{ order.total_amount|floatformat:2 }}</p>
+                </div>
+            </div>
+            <!-- Payment History - Completely restructured -->
+            <div class="payment-list-wrapper">
+                <div class="payment-list-header">
+                    Payment Entries
+                </div>
+                <div class="payment-list" id="payment-list">
+                    <div class="payment-empty-state">No payments added yet</div>
+                </div>
+            </div>
+            <!-- Bill Summary with Enhanced Item Display -->
+            <div class="bill-summary-card" style="flex: 2; min-height: 300px;">
+                <div class="bill-summary-header">
+                    <h4 class="text-2xl font-bold text-gray-900 mb-4">Order Items</h4>
+                </div>
+                <div class="bill-items-container" style="flex: 1; overflow: hidden;">
+                    <div class="bill-items-list" id="bill-items-content">
+                        {% include 'pos/partials/_bill_summary.html' %}
+                    </div>
+                </div>
+            </div>
+            <!-- Discounts -->
+            <form class="bg-white rounded-lg shadow-md p-6 mb-4 p-4"
+                  hx-post="{% url 'pos:htmx_apply_coupon' order.id %}"
+                  hx-target="#bill-discounts-and-total"
+                  hx-swap="outerHTML">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Apply Coupon/Voucher</label>
+                <div class="mb-4 has-addons">
+                    <div class="relative is-expanded">
+                        <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" type="text" name="coupon_code" placeholder="Enter code" autocomplete="off">
+                    </div>
+                    <div class="relative">
+                        <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-dark" type="submit">Apply</button>
+                    </div>
+                </div>
+            </form>
+            {% if loyalty_settings and loyalty_settings.is_active and order.customer.id > 1 and order.customer.loyalty_points >= loyalty_settings.minimum_redeemable_points %}
+            <form class="bg-white rounded-lg shadow-md p-6 mb-4 p-4"
+                  hx-post="{% url 'pos:htmx_apply_loyalty_discount' order.id %}"
+                  hx-target="#bill-discounts-and-total"
+                  hx-swap="outerHTML">
+                <p class="has-text-weight-bold">
+                    {{ order.customer.name }} has
+                    <span class="has-text-info-dark">{{ order.customer.loyalty_points }}</span>
+                    redeemable points.
+                </p>
+                <div class="field.has-addons mt-2">
+                    <div class="relative is-expanded">
+                        <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" type="number" name="points_to_redeem"
+                               placeholder="Points to use" max="{{ order.customer.loyalty_points }}">
+                    </div>
+                    <div class="relative">
+                        <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white" type="submit">Use Points</button>
+                    </div>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+        <!-- Column 2: Keypad & Amount Display -->
+        <div class="payment-column" style="justify-content: space-between;">
+            <div id="keypad-section">
+                <div class="amount-display-card">
+                    <p class="heading">Amount Entering</p>
+                    <p id="amount-display" class="text-2xl font-bold text-gray-900 mb-4 is-1 has-text-dark mb-0">0.00</p>
+                    <p class="help">Use keypad to enter amount</p>
+                </div>
+                <div id="payment-terminal-keypad"></div>
+            </div>
+            <div id="change-due-notification" class="notification bg-green-600 hover:bg-green-700 text-white text-center" style="display: none;">
+                <p class="text-2xl font-semibold">Change Due: <strong id="change-due">0.00</strong> KES</p>
+            </div>
+        </div>
+        <!-- Column 3: Payment Methods & Actions -->
+        <div class="payment-column" style="justify-content: space-between;">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1 text-lg px-6 py-3 text-center">1. Select Payment Method</label>
+                <div class="buttons are-large is-vertical">
+                    {% for method_val, method_label in payment_methods %}
+                    <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-fullwidth payment-method-btn" data-method="{{ method_val }}">
+                        {{ method_label }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- Conditional Fields -->
+            <div id="conditional-fields">
+                <div id="mpesa-field" class="bg-white rounded-lg shadow-md p-6 mb-4" style="display: none;">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">M-Pesa Code</label>
+                    <div class="relative">
+                        <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" type="text" id="mpesa-code-field" placeholder="Enter transaction code">
+                    </div>
+                </div>
+                <div id="credit-info-panel" class="bg-white rounded-lg shadow-md p-6 mb-4" style="display: none;">
+                    <h5 class="text-2xl font-bold text-gray-900 mb-4 is-6">Credit Information</h5>
+                    <p><strong>Customer:</strong> {{ order.customer.name }}</p>
+                    <p><strong>Credit Limit:</strong> {{ order.customer.credit_limit|floatformat:2 }} KES</p>
+                    <p><strong>Current Balance:</strong> {{ order.customer.credit_balance|floatformat:2 }} KES</p>
+                    {% with available_credit=order.customer.credit_limit|sub:order.customer.credit_balance %}
+                    <p><strong>Available Credit:</strong>
+                        <span class="{% if available_credit > 0 %}has-text-success{% else %}has-text-danger{% endif %}">
+                            {{ available_credit|floatformat:2 }} KES
+                        </span>
+                    </p>
+                    {% endwith %}
+                </div>
+            </div>
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button id="add-payment-btn" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-yellow-500 hover:bg-yellow-600 text-black text-xl px-8 py-4 is-fullwidth" disabled>
+                    <span class="button-text">Add Payment</span>
+                    <span class="spinner"></span>
+                </button>
+                <button id="complete-order-btn" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white text-xl px-8 py-4 is-fullwidth" disabled>
+                    <span class="button-text">Complete Order</span>
+                    <span class="spinner"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    (function() {
+        const paymentOverlay = document.getElementById('payment-overlay');
+        if (!paymentOverlay) return;
+        class MultiPaymentTerminal {
+            constructor() {
+                this.orderId = {{ order.id }};
+                this.totalDue = parseFloat("{{ order.total_amount }}");
+                this.payments = [];
+                this.currentAmount = '';
+                this.selectedMethod = '';
+                this.currentMpesaCode = '';
+                this.initializeElements();
+                this.createKeypad();
+                this.attachEventListeners();
+                this.updateDisplay();
+                this.loadPendingPayments();
+                this.ensureBillItemsVisible();
+
+                // Debug: Log initialization
+                console.log('Payment terminal initialized', {
+                    orderId: this.orderId,
+                    totalDue: this.totalDue,
+                    elements: this.elements
+                });
+            }
+            initializeElements() {
+                this.elements = {
+                    totalDueDisplay: paymentOverlay.querySelector('#total-due-display'),
+                    totalPaidDisplay: paymentOverlay.querySelector('#total-paid-display'),
+                    remainingDisplay: paymentOverlay.querySelector('#remaining-amount-display'),
+                    amountDisplay: paymentOverlay.querySelector('#amount-display'),
+                    paymentList: paymentOverlay.querySelector('#payment-list'),
+                    keypadContainer: paymentOverlay.querySelector('#payment-terminal-keypad'),
+                    changeDueNotification: paymentOverlay.querySelector('#change-due-notification'),
+                    changeDueAmount: paymentOverlay.querySelector('#change-due'),
+                    mpesaField: paymentOverlay.querySelector('#mpesa-field'),
+                    mpesaCodeField: paymentOverlay.querySelector('#mpesa-code-field'),
+                    creditInfoPanel: paymentOverlay.querySelector('#credit-info-panel'),
+                    addPaymentBtn: paymentOverlay.querySelector('#add-payment-btn'),
+                    completeOrderBtn: paymentOverlay.querySelector('#complete-order-btn'),
+                    closeBtn: paymentOverlay.querySelector('#close-payment-terminal-btn'),
+                    billItemsContent: paymentOverlay.querySelector('#bill-items-content')
+                };
+
+                // Debug: Log element initialization
+                console.log('Elements initialized', {
+                    paymentList: this.elements.paymentList,
+                    totalPaidDisplay: this.elements.totalPaidDisplay
+                });
+            }
+            ensureBillItemsVisible() {
+                // Simply enhance whatever content is loaded from the partial
+                setTimeout(() => {
+                    this.enhanceBillItemsDisplay();
+                }, 100);
+            }
+            enhanceBillItemsDisplay() {
+                // Just ensure the bill items flow properly and are scrollable
+                const billItemsContainer = this.elements.billItemsContent;
+                if (!billItemsContainer) return;
+                // Make sure any tables are responsive and flow correctly
+                const tables = billItemsContainer.querySelectorAll('table');
+                tables.forEach(table => {
+                    table.style.width = '100%';
+                    table.style.tableLayout = 'fixed';
+                    table.style.borderCollapse = 'collapse';
+                    table.classList.add('table');
+                });
+                // Ensure all content flows downwards properly
+                const allElements = billItemsContainer.querySelectorAll('*');
+                allElements.forEach(element => {
+                    // Remove any fixed widths that might break the flow
+                    if (element.style.width && element.style.width !== '100%') {
+                        element.style.width = 'auto';
+                    }
+                    // Ensure text wraps properly
+                    element.style.wordWrap = 'break-word';
+                    element.style.overflowWrap = 'break-word';
+                });
+            }
+            createKeypad() {
+                const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', 'DEL'];
+                this.elements.keypadContainer.innerHTML = '';
+                keys.forEach(key => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'button is-large';
+                    if (key === 'C' || key === 'DEL') {
+                        btn.classList.add('is-light');
+                    }
+                    btn.textContent = key;
+                    btn.addEventListener('click', () => this.handleKeypad(key));
+                    this.elements.keypadContainer.appendChild(btn);
+                });
+            }
+            attachEventListeners() {
+                // Payment method selection
+                paymentOverlay.querySelectorAll('.payment-method-btn').forEach(btn => {
+                    btn.addEventListener('click', () => this.selectPaymentMethod(btn));
+                });
+                // Add payment button
+                this.elements.addPaymentBtn.addEventListener('click', () => this.addPayment());
+                // Complete order button
+                this.elements.completeOrderBtn.addEventListener('click', () => this.completeOrder());
+                // Close button
+                this.elements.closeBtn.addEventListener('click', () => this.closeModal());
+                // M-Pesa code field
+                this.elements.mpesaCodeField.addEventListener('input', (e) => {
+                    this.currentMpesaCode = e.target.value;
+                    this.updateAddPaymentButton();
+                });
+                // Handle discount form updates
+                paymentOverlay.addEventListener('htmx:afterSettle', (evt) => {
+                    const isDiscountForm = evt.detail.elt.hasAttribute('hx-target') &&
+                                          evt.detail.elt.getAttribute('hx-target') === '#bill-discounts-and-total';
+                    if (isDiscountForm) {
+                        setTimeout(() => {
+                            this.updateTotalDue();
+                            this.updateDisplay();
+                            this.ensureBillItemsVisible();
+                        }, 100);
+                    }
+                });
+                // Handle window resize to maintain layout
+                window.addEventListener('resize', () => {
+                    this.handleResize();
+                });
+            }
+            handleResize() {
+                // Ensure proper display on resize
+                setTimeout(() => {
+                    this.enhanceBillItemsDisplay();
+                }, 100);
+            }
+            handleKeypad(key) {
+                if (key === 'C') {
+                    this.currentAmount = '';
+                } else if (key === 'DEL') {
+                    this.currentAmount = this.currentAmount.slice(0, -1);
+                } else if (this.currentAmount.length < 9) {
+                    if (this.currentAmount === '0') this.currentAmount = '';
+                    this.currentAmount += key;
+                }
+                this.updateAmountDisplay();
+            }
+            selectPaymentMethod(btn) {
+                // Remove active state from all buttons
+                paymentOverlay.querySelectorAll('.payment-method-btn').forEach(b =>
+                    b.classList.remove('is-primary')
+                );
+                // Add active state to clicked button
+                btn.classList.add('is-primary');
+                this.selectedMethod = btn.dataset.method;
+                // Show/hide relevant fields
+                this.elements.mpesaField.style.display =
+                    (this.selectedMethod === 'Mpesa') ? 'block' : 'none';
+                this.elements.creditInfoPanel.style.display =
+                    (this.selectedMethod === 'Credit') ? 'block' : 'none';
+                this.updateAddPaymentButton();
+            }
+            updateAmountDisplay() {
+                const amountFloat = parseFloat(this.currentAmount || '0');
+                this.elements.amountDisplay.textContent = amountFloat.toFixed(2);
+                this.updateAddPaymentButton();
+                this.calculateChange();
+            }
+            calculateChange() {
+                const amountFloat = parseFloat(this.currentAmount || '0');
+                const totalPaid = this.getTotalPaid();
+                const potentialTotal = totalPaid + amountFloat;
+                if (potentialTotal > this.totalDue) {
+                    const change = potentialTotal - this.totalDue;
+                    this.elements.changeDueAmount.textContent = change.toFixed(2);
+                    this.elements.changeDueNotification.style.display = 'block';
+                } else {
+                    this.elements.changeDueNotification.style.display = 'none';
+                }
+            }
+            async addPayment() {
+                const amount = parseFloat(this.currentAmount || '0');
+                if (!this.validatePayment(amount)) {
+                    return;
+                }
+                const paymentData = {
+                    method: this.selectedMethod,
+                    amount: amount,
+                    mpesa_code: this.selectedMethod === 'Mpesa' ? this.currentMpesaCode : null
+                };
+                try {
+                    this.setButtonLoading(this.elements.addPaymentBtn, true);
+                    const response = await fetch(`/pos/orders/${this.orderId}/add-payment/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCSRFToken()
+                        },
+                        body: JSON.stringify(paymentData)
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        this.payments.push(result.payment);
+                        this.resetCurrentEntry();
+                        this.updateDisplay();
+                        this.showNotification(`Added ${paymentData.method} payment: ${amount.toFixed(2)} KES`, 'success');
+                    } else {
+                        this.showNotification(result.error || 'Failed to add payment', 'danger');
+                    }
+                } catch (error) {
+                    console.error('Add payment error:', error);
+                    this.showNotification('Network error. Please try again.', 'danger');
+                } finally {
+                    this.setButtonLoading(this.elements.addPaymentBtn, false);
+                }
+            }
+            validatePayment(amount) {
+                if (!this.selectedMethod) {
+                    alert('Please select a payment method');
+                    return false;
+                }
+                if (amount <= 0) {
+                    alert('Please enter a valid amount');
+                    return false;
+                }
+                if (this.selectedMethod === 'Mpesa' && !this.currentMpesaCode.trim()) {
+                    alert('Please enter M-Pesa transaction code');
+                    return false;
+                }
+                const remaining = this.getRemainingAmount();
+                if (amount > remaining + 50) { // Allow small overpayment for change
+                    alert(`Amount exceeds remaining balance. Remaining: ${remaining.toFixed(2)} KES`);
+                    return false;
+                }
+                return true;
+            }
+            async removePayment(paymentId) {
+                try {
+                    const response = await fetch(`/pos/orders/${this.orderId}/remove-payment/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCSRFToken()
+                        },
+                        body: JSON.stringify({payment_id: paymentId})
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        this.payments = this.payments.filter(p => p.id !== paymentId);
+                        this.updateDisplay();
+                        this.showNotification('Payment removed', 'info');
+                    } else {
+                        this.showNotification(result.error || 'Failed to remove payment', 'danger');
+                    }
+                } catch (error) {
+                    console.error('Remove payment error:', error);
+                    this.showNotification('Network error. Please try again.', 'danger');
+                }
+            }
+            async completeOrder() {
+                if (this.getRemainingAmount() > 0.01) {
+                    alert('Payment incomplete. Please add more payments to cover the remaining amount.');
+                    return;
+                }
+                try {
+                    this.setButtonLoading(this.elements.completeOrderBtn, true);
+                    const response = await fetch(`/pos/orders/${this.orderId}/complete-multi-payment/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCSRFToken()
+                        }
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        let message = result.message;
+                        if (result.change_due > 0) {
+                            message += `\n\nChange due: ${result.change_due.toFixed(2)} KES`;
+                        }
+                        alert(message);
+                        this.closeModal();
+                        window.location.reload(); // Refresh the page
+                    } else {
+                        this.showNotification(result.error || 'Failed to complete order', 'danger');
+                    }
+                } catch (error) {
+                    console.error('Complete order error:', error);
+                    this.showNotification('Network error. Please try again.', 'danger');
+                } finally {
+                    this.setButtonLoading(this.elements.completeOrderBtn, false);
+                }
+            }
+            async loadPendingPayments() {
+                try {
+                    const response = await fetch(`/pos/orders/${this.orderId}/pending-payments/`);
+                    if (response.ok) {
+                        const result = await response.json();
+                        this.payments = result.payments || [];
+                        console.log('Loaded pending payments:', this.payments);
+                        this.updateDisplay();
+                    }
+                } catch (error) {
+                    console.error('Load pending payments error:', error);
+                }
+            }
+            resetCurrentEntry() {
+                this.currentAmount = '';
+                this.selectedMethod = '';
+                this.currentMpesaCode = '';
+                // Reset UI
+                paymentOverlay.querySelectorAll('.payment-method-btn').forEach(btn =>
+                    btn.classList.remove('is-primary')
+                );
+                this.elements.amountDisplay.textContent = '0.00';
+                this.elements.mpesaCodeField.value = '';
+                this.elements.mpesaField.style.display = 'none';
+                this.elements.creditInfoPanel.style.display = 'none';
+                this.elements.changeDueNotification.style.display = 'none';
+                this.updateAddPaymentButton();
+            }
+            updateDisplay() {
+                const totalPaid = this.getTotalPaid();
+                const remaining = this.getRemainingAmount();
+
+                // Debug: Log updateDisplay
+                console.log('updateDisplay called', {
+                    totalPaid: totalPaid,
+                    remaining: remaining,
+                    payments: this.payments
+                });
+
+                this.elements.totalPaidDisplay.textContent = totalPaid.toFixed(2);
+                this.elements.remainingDisplay.textContent = remaining.toFixed(2);
+                this.updatePaymentList();
+                this.updateCompleteOrderButton();
+            }
+            updateTotalDue() {
+                // Update total due from the bill summary after discounts are applied
+                const finalTotalEl = paymentOverlay.querySelector('#final-total, #grand-total, .final-total, .grand-total');
+                if (finalTotalEl) {
+                    if (finalTotalEl.dataset.total) {
+                        this.totalDue = parseFloat(finalTotalEl.dataset.total);
+                    } else {
+                        const text = finalTotalEl.textContent.replace(/[^\d.]/g, '');
+                        const amount = parseFloat(text);
+                        if (!isNaN(amount)) this.totalDue = amount;
+                    }
+                    this.elements.totalDueDisplay.textContent = this.totalDue.toFixed(2);
+                }
+            }
+            updatePaymentList() {
+                // Debug: Log updatePaymentList
+                console.log('updatePaymentList called', {
+                    payments: this.payments,
+                    paymentList: this.elements.paymentList
+                });
+
+                if (!this.elements.paymentList) {
+                    console.error('Payment list element not found');
+                    return;
+                }
+
+                if (this.payments.length === 0) {
+                    this.elements.paymentList.innerHTML = '<div class="payment-empty-state">No payments added yet</div>';
+                    return;
+                }
+
+                const paymentsHtml = this.payments.map((payment) => `
+                    <div class="payment-entry completed">
+                        <div class="level is-mobile">
+                            <div class="level-left">
+                                <div>
+                                    <p class="has-text-weight-bold">${payment.method}</p>
+                                    <p class="is-size-7 has-text-grey">${new Date(payment.timestamp).toLocaleTimeString()}</p>
+                                    ${payment.mpesa_code ? `<p class="is-size-7">Code: ${payment.mpesa_code}</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="text-right">
+                                    <p class="has-text-weight-bold text-green-500">
+                                        ${payment.amount.toFixed(2)} KES
+                                    </p>
+                                    <button class="remove-payment-btn" onclick="terminal.removePayment(${payment.id})">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                this.elements.paymentList.innerHTML = paymentsHtml;
+                console.log('Payment list updated with HTML:', paymentsHtml);
+            }
+            updateAddPaymentButton() {
+                const amount = parseFloat(this.currentAmount || '0');
+                const hasMethod = !!this.selectedMethod;
+                const hasValidAmount = amount > 0;
+                const hasMpesaCode = this.selectedMethod !== 'Mpesa' || this.currentMpesaCode.trim();
+                this.elements.addPaymentBtn.disabled = !(hasMethod && hasValidAmount && hasMpesaCode);
+            }
+            updateCompleteOrderButton() {
+                const remaining = this.getRemainingAmount();
+                this.elements.completeOrderBtn.disabled = remaining > 0.01;
+                const buttonText = this.elements.completeOrderBtn.querySelector('.button-text');
+                if (remaining <= 0.01) {
+                    buttonText.textContent = 'Complete Order';
+                    this.elements.completeOrderBtn.classList.remove('is-warning');
+                    this.elements.completeOrderBtn.classList.add('is-success');
+                } else {
+                    buttonText.textContent = `Complete Order (${remaining.toFixed(2)} remaining)`;
+                    this.elements.completeOrderBtn.classList.remove('is-success');
+                    this.elements.completeOrderBtn.classList.add('is-warning');
+                }
+            }
+            getTotalPaid() {
+                return this.payments.reduce((sum, payment) => sum + payment.amount, 0);
+            }
+            getRemainingAmount() {
+                return Math.max(0, this.totalDue - this.getTotalPaid());
+            }
+            setButtonLoading(button, loading) {
+                const spinner = button.querySelector('.spinner');
+                const buttonText = button.querySelector('.button-text');
+                if (loading) {
+                    button.classList.add('htmx-request');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('htmx-request');
+                    button.disabled = false;
+                }
+            }
+            closeModal() {
+                const container = document.getElementById('payment-overlay-container');
+                if (container) {
+                    container.innerHTML = '';
+                } else {
+                    paymentOverlay.remove();
+                }
+            }
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification is-${type}`;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    z-index: 1001;
+                    max-width: 400px;
+                    animation: slideIn 0.3s ease;
+                    background: ${type === 'success' ? 'var(--pay-success)' : type === 'danger' ? 'var(--pay-danger)' : 'var(--pay-accent-mustard)'};
+                    color: white;
+                    border-radius: var(--pay-border-radius-sm);
+                    padding: 1rem 1.5rem;
+                    box-shadow: var(--pay-shadow);
+                `;
+                notification.innerHTML = `
+                    <button class="delete" style="background: none; border: none; color: white; float: right; cursor: pointer; font-size: 1.2rem;">&times;</button>
+                    ${message}
+                `;
+                document.body.appendChild(notification);
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 5000);
+                // Manual close
+                notification.querySelector('.delete').addEventListener('click', () => {
+                    notification.remove();
+                });
+            }
+            getCSRFToken() {
+                return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                       document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '';
+            }
+        }
+        // Initialize the terminal
+        const terminal = new MultiPaymentTerminal();
+        // Make terminal globally accessible for onclick handlers
+        window.terminal = terminal;
+        // Add CSS for notification animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    })();
+</script>

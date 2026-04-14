@@ -1,0 +1,316 @@
+<!-- partials/_analytics_content.html -->
+{% load humanize %}
+<div class="flex flex-wrap -mx-3 is-multiline">
+
+  <!-- Business Overview Metrics -->
+  <div class="w-full px-3 is-12">
+    <div class="analytics-card">
+      <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5">Business Overview
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">{{ date_range_days }} days</span>
+      </h3>
+
+      <div class="flex flex-wrap -mx-3">
+        <div class="w-full px-3">
+          <div class="metric-box">
+            <div class="metric-value profit-positive">
+              KES {{ business_metrics.total_revenue|floatformat:2|intcomma }}
+            </div>
+            <div class="metric-label">Total Revenue</div>
+          </div>
+        </div>
+
+        <div class="w-full px-3">
+          <div class="metric-box">
+            <div class="metric-value profit-negative">
+              KES {{ business_metrics.total_expenses|floatformat:2|intcomma }}
+            </div>
+            <div class="metric-label">Total Expenses</div>
+          </div>
+        </div>
+
+        <div class="w-full px-3">
+          <div class="metric-box">
+            <div class="metric-value {% if business_metrics.net_profit >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
+              KES {{ business_metrics.net_profit|floatformat:2|intcomma }}
+            </div>
+            <div class="metric-label">Net Profit</div>
+          </div>
+        </div>
+
+        <div class="w-full px-3">
+          <div class="metric-box">
+            <div class="metric-value {% if business_metrics.net_margin >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
+              {{ business_metrics.net_margin|floatformat:1 }}%
+            </div>
+            <div class="metric-label">Net Margin</div>
+          </div>
+        </div>
+
+        <div class="w-full px-3">
+          <div class="metric-box">
+            <div class="metric-value profit-neutral">
+              {{ business_metrics.trip_count }}
+            </div>
+            <div class="metric-label">Completed Trips</div>
+          </div>
+        </div>
+
+        <div class="w-full px-3">
+          <div class="metric-box">
+            <div class="metric-value profit-neutral">
+              KES {{ business_metrics.revenue_per_ton|floatformat:2 }}
+            </div>
+            <div class="metric-label">Revenue per Ton</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense Breakdown -->
+      <div class="flex flex-wrap -mx-3">
+        <div class="w-full px-3">
+          <h4 class="text-lg text-gray-600 mb-4 is-6">Expense Breakdown</h4>
+          <div class="content">
+            <p><strong>Fuel Costs:</strong> KES {{ business_metrics.total_fuel_cost|floatformat:2|intcomma }}</p>
+            <p><strong>Other Expenses:</strong> KES {{ business_metrics.total_other_expenses|floatformat:2|intcomma }}</p>
+            <p><strong>Gross Profit:</strong> KES {{ business_metrics.gross_profit|floatformat:2|intcomma }}
+               ({{ business_metrics.gross_margin|floatformat:1 }}%)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profit Trends Chart -->
+  {% if profit_trends %}
+  <div class="w-full px-3 is-8">
+    <div class="analytics-card">
+      <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5">Profit Trends (Weekly)</h3>
+      <div class="chart-container">
+        <canvas id="profitTrendChart"></canvas>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Top Performers Summary -->
+  <div class="w-full px-3 is-4">
+    <div class="analytics-card">
+      <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5">Top Performers</h3>
+
+      {% if top_trucks %}
+      <h4 class="text-lg text-gray-600 mb-4 is-6">Most Profitable Truck</h4>
+      <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+        <strong>{{ top_trucks.0.truck__truck_number }}</strong>
+        {% if top_trucks.0.truck__make %}
+          ({{ top_trucks.0.truck__make }} {{ top_trucks.0.truck__model }})
+        {% endif %}
+        <br>
+        <span class="text-green-500">Net Profit: KES {{ top_trucks.0.net_profit|floatformat:2|intcomma }}</span>
+        <br>
+        <small>{{ top_trucks.0.trip_count }} trips, {{ top_trucks.0.profit_margin|floatformat:1 }}% margin</small>
+      </div>
+      {% endif %}
+
+      {% if top_transporters %}
+      <h4 class="text-lg text-gray-600 mb-4 is-6">Highest Revenue Transporter</h4>
+      <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+        <strong>{{ top_transporters.0.transporter__name }}</strong>
+        <br>
+        <span class="text-[#1e3a8a]">Revenue: KES {{ top_transporters.0.total_revenue|floatformat:2|intcomma }}</span>
+        <br>
+        <small>{{ top_transporters.0.trip_count }} trips, {{ top_transporters.0.total_tonnage|floatformat:1 }} tons</small>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Top Trucks Performance -->
+  {% if top_trucks %}
+  <div class="w-full px-3 is-6">
+    <div class="analytics-card">
+      <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5">Top Trucks by Profitability</h3>
+      <div class="table-container">
+        <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white comparison-table">
+          <thead>
+            <tr>
+              <th>Truck</th>
+              <th>Revenue</th>
+              <th>Net Profit</th>
+              <th>Margin</th>
+              <th>Trips</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for truck in top_trucks|slice:":8" %}
+            <tr>
+              <td>
+                <strong>{{ truck.truck__truck_number }}</strong>
+                {% if truck.truck__make %}
+                  <br><small class="has-text-grey">{{ truck.truck__make }} {{ truck.truck__model }}</small>
+                {% endif %}
+              </td>
+              <td>KES {{ truck.total_revenue|floatformat:2|intcomma }}</td>
+              <td class="{% if truck.net_profit >= 0 %}has-text-success{% else %}has-text-danger{% endif %}">
+                KES {{ truck.net_profit|floatformat:2|intcomma }}
+              </td>
+              <td class="{% if truck.profit_margin >= 0 %}has-text-success{% else %}has-text-danger{% endif %}">
+                {{ truck.profit_margin|floatformat:1 }}%
+              </td>
+              <td>{{ truck.trip_count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Top Transporters -->
+  {% if top_transporters %}
+  <div class="w-full px-3 is-6">
+    <div class="analytics-card">
+      <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5">Top Transporters by Revenue</h3>
+      <div class="table-container">
+        <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white comparison-table">
+          <thead>
+            <tr>
+              <th>Transporter</th>
+              <th>Revenue</th>
+              <th>Tonnage</th>
+              <th>Avg Rate/Ton</th>
+              <th>Trips</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for trans in top_transporters|slice:":8" %}
+            <tr>
+              <td><strong>{{ trans.transporter__name|truncatechars:25 }}</strong></td>
+              <td>KES {{ trans.total_revenue|floatformat:2|intcomma }}</td>
+              <td>{{ trans.total_tonnage|floatformat:1 }}</td>
+              <td>KES {{ trans.avg_rate_per_ton|floatformat:2 }}</td>
+              <td>{{ trans.trip_count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Top Destinations -->
+  {% if top_destinations %}
+  <div class="w-full px-3 is-12">
+    <div class="analytics-card">
+      <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5">Top Destinations by Volume</h3>
+      <div class="table-container">
+        <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white comparison-table">
+          <thead>
+            <tr>
+              <th>Destination</th>
+              <th>Total Tonnage</th>
+              <th>Revenue</th>
+              <th>Trips</th>
+              <th>Avg Tonnage/Trip</th>
+              <th>Region</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for dest in top_destinations|slice:":10" %}
+            <tr>
+              <td><strong>{{ dest.destination__name }}</strong></td>
+              <td>{{ dest.total_tonnage|floatformat:1 }} tons</td>
+              <td>KES {{ dest.total_revenue|floatformat:2|intcomma }}</td>
+              <td>{{ dest.trip_count }}</td>
+              <td>{{ dest.avg_tonnage_per_trip|floatformat:1 }} tons</td>
+              <td>{{ dest.destination__region|default:"N/A" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Chart.js Script for Profit Trends -->
+{% if profit_trends %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const ctx = document.getElementById('profitTrendChart').getContext('2d');
+  const profitTrendData = {{ profit_trends|safe }};
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [
+        {% for trend in profit_trends %}
+          '{{ trend.week|date:"M d" }}',
+        {% endfor %}
+      ],
+      datasets: [
+        {
+          label: 'Revenue',
+          data: [
+            {% for trend in profit_trends %}
+              {{ trend.revenue|default:0 }},
+            {% endfor %}
+          ],
+          borderColor: 'rgb(54, 162, 235)',
+          backgroundColor: 'rgba(54, 162, 235, 0.1)',
+          tension: 0.4
+        },
+        {
+          label: 'Net Profit',
+          data: [
+            {% for trend in profit_trends %}
+              {{ trend.net_profit|default:0 }},
+            {% endfor %}
+          ],
+          borderColor: 'rgb(75, 192, 192)',
+          backgroundColor: 'rgba(75, 192, 192, 0.1)',
+          tension: 0.4
+        },
+        {
+          label: 'Fuel Cost',
+          data: [
+            {% for trend in profit_trends %}
+              {{ trend.fuel_cost|default:0 }},
+            {% endfor %}
+          ],
+          borderColor: 'rgb(255, 99, 132)',
+          backgroundColor: 'rgba(255, 99, 132, 0.1)',
+          tension: 0.4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return 'KES ' + value.toLocaleString();
+            }
+          }
+        }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.dataset.label + ': KES ' + context.parsed.y.toLocaleString();
+            }
+          }
+        }
+      }
+    }
+  });
+});
+</script>
+{% endif %}

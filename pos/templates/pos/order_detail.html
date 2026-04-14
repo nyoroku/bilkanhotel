@@ -1,0 +1,182 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Order #{{ order.id }} Details{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <p class="text-lg font-bold text-gray-800">
+            Order #{{ order.id }} Details
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-3 {% if order.status == 'Pending' %}is-warning elif 'Ready' %}is-success 'Completed' %}is-primary else %}is-light{% endif %}">
+                {{ order.get_status_display }}
+            </span>
+        </p>
+        <div class="card-header-icon">
+            <span class="icon-text">
+                <span class="icon">
+                    <i class="fas fa-calendar-day"></i>
+                </span>
+                <span>{{ order.created_at|date:"M d, Y H:i" }}</span>
+            </span>
+        </div>
+    </header>
+
+    <div class="p-6">
+        <div class="content">
+            <!-- Order Summary -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-4 has-background-light">
+                <div class="flex flex-wrap -mx-3 is-mobile">
+                    <div class="w-full px-3">
+                        <p class="heading">Customer</p>
+                        <p class="text-2xl font-bold text-gray-900 mb-4 is-5">{{ order.customer.name }}</p>
+                        {% if order.customer.phone_number %}
+                        <p class="text-lg text-gray-600 mb-4 is-6">
+                            <span class="icon-text">
+                                <span class="icon">
+                                    <i class="fas fa-phone"></i>
+                                </span>
+                                <span>{{ order.customer.phone_number }}</span>
+                            </span>
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="w-full px-3">
+                        <p class="heading">Table</p>
+                        <p class="text-2xl font-bold text-gray-900 mb-4 is-5">
+                            {% if order.table %}
+                                {{ order.table.table_number }}
+                            {% else %}
+                                Takeaway
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="w-full px-3">
+                        <p class="heading">Waiter</p>
+                        <p class="text-2xl font-bold text-gray-900 mb-4 is-5">{{ order.waiter.get_full_name }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <h3 class="text-2xl font-bold text-gray-900 mb-4 is-4">Items</h3>
+            <div class="table-container">
+                <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-right">Price</th>
+                            <th class="text-right">Total</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.menu_item.name }}</strong>
+                                {% if item.special_requests %}
+                                <p class="help">{{ item.special_requests }}</p>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">{{ item.quantity }}</td>
+                            <td class="text-right">{{ item.price_at_sale|floatformat:2 }}</td>
+                            <td class="text-right">{{ item.subtotal|floatformat:2 }}</td>
+                            <td class="text-center">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if item.status == 'Ready' %}is-success{% else %}is-light{% endif %}">
+                                    {{ item.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Order Notes -->
+            {% if order.notes %}
+            <div class="bg-white rounded-lg shadow-md p-6 mb-4 mt-5">
+                <h4 class="text-2xl font-bold text-gray-900 mb-4 is-5">Order Notes</h4>
+                <p>{{ order.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Payment Summary -->
+    <div class="border-t border-gray-200 bg-gray-50 flex">
+        <div class="flex-1 text-center py-3 text-blue-600 hover:bg-gray-100">
+            <table class="min-w-full divide-y divide-gray-200 is-fullwidth">
+                <tbody>
+                    <tr>
+                        <td><strong>Subtotal</strong></td>
+                        <td class="text-right">{{ order.subtotal|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>VAT ({{ order.vat_percentage }}%)</td>
+                        <td class="text-right">{{ order.vat_amount|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Service Charge</td>
+                        <td class="text-right">{{ order.service_charge_amount|floatformat:2 }}</td>
+                    </tr>
+                    <tr class="has-background-light">
+                        <td><strong>Total</strong></td>
+                        <td class="text-right"><strong>{{ order.total_amount|floatformat:2 }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Payment History -->
+{% if order.sales.exists %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden mt-4">
+    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <p class="text-lg font-bold text-gray-800">Payment History</p>
+    </header>
+    <div class="p-6">
+        <div class="content">
+            <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Method</th>
+                        <th class="text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in order.sales.all %}
+                    <tr>
+                        <td>{{ sale.processed_at|date:"M d, H:i" }}</td>
+                        <td>{{ sale.get_payment_method_display }}</td>
+                        <td class="text-right">{{ sale.amount_paid|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Action Buttons -->
+<div class="buttons mt-4">
+    <a href="{% url 'pos:order_list' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-indigo-600 hover:bg-indigo-700 text-white">
+        <span class="icon">
+            <i class="fas fa-arrow-left"></i>
+        </span>
+        <span>Back to Orders</span>
+    </a>
+
+    <a href="{% url 'pos:print_order_receipt' order.id %}"
+       class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white"
+       target="_blank">
+        <span class="icon">
+            <i class="fas fa-print"></i>
+        </span>
+        <span>Print Receipt</span>
+    </a>
+</div>
+{% endblock %}

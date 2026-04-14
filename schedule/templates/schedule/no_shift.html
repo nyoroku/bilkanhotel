@@ -1,0 +1,17 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}No Active Shift{% endblock %}
+
+{% block content %}
+<div class="section text-center">
+    <div class="bg-white rounded-lg shadow-md p-6 mb-4" style="max-width: 500px; margin: 0 auto;">
+        <span class="icon text-xl px-8 py-4 text-yellow-500">
+            <i class="fas fa-exclamation-triangle fa-3x"></i>
+        </span>
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2 mt-4">No Active Shift</h1>
+        <p class="text-lg text-gray-600 mb-4">You are not currently assigned to any running shift.</p>
+        <p class="mt-5">Please contact your manager to be assigned to a shift before continuing.</p>
+
+    </div>
+</div>
+{% endblock %}

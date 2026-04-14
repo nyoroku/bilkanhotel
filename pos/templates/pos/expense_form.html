@@ -1,0 +1,120 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Record New Expense{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container mx-auto px-4 lg:max-w-7xl">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Record a Business Expense</h1>
+        <p class="text-lg text-gray-600 mb-4">Use this form to track any money spent on operations, salaries, rent, etc.</p>
+
+        <div class="flex flex-wrap -mx-3 is-centered">
+            <div class="w-full px-3 md:w-2/3">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% if form.errors %}
+                        <div class="notification bg-red-600 hover:bg-red-700 text-white is-light">
+                            Please correct the errors below.
+                        </div>
+                        {% endif %}
+
+                        <div class="flex flex-wrap -mx-3">
+                            <div class="w-full px-3">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1 text-lg px-6 py-3" for="{{ form.expense_date.id_for_label }}">Date of Expense</label>
+                                    <div class="relative">
+                                        {{ form.expense_date }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full px-3">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1 text-lg px-6 py-3" for="{{ form.amount.id_for_label }}">Amount</label>
+                                    <div class="relative has-icons-left">
+                                        {{ form.amount }}
+                                        <span class="icon text-xs px-2.5 py-1.5 is-left">KES</span>
+                                    </div>
+                                    {% if form.amount.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.amount.errors|striptags }}</p>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap -mx-3">
+                            <div class="w-full px-3">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1 text-lg px-6 py-3" for="{{ form.category.id_for_label }}">Expense Category</label>
+                                    <div class="relative">
+                                        <div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border is-fullwidth text-lg px-6 py-3">{{ form.category }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full px-3">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1 text-lg px-6 py-3" for="{{ form.payment_method.id_for_label }}">Payment Method</label>
+                                    <div class="relative">
+                                        <div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border is-fullwidth text-lg px-6 py-3">{{ form.payment_method }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1 text-lg px-6 py-3" for="{{ form.description.id_for_label }}">Description</label>
+                            <div class="relative">
+                                {{ form.description }}
+                            </div>
+                             {% if form.description.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.description.errors|striptags }}</p>{% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1 text-lg px-6 py-3" for="{{ form.receipt_image.id_for_label }}">Upload Receipt (Optional)</label>
+                            <div id="file-upload" class="file has-name is-fullwidth text-lg px-6 py-3">
+                                <label class="file-label">
+                                    {{ form.receipt_image }}
+                                    <span class="file-cta">
+                                        <span class="file-icon"><i class="fas fa-upload"></i></span>
+                                        <span class="file-label">Choose a file…</span>
+                                    </span>
+                                    <span id="file-name" class="file-name">No file selected</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <div class="mb-4 flex space-x-2">
+                            <div class="relative">
+                                <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white text-xl px-8 py-4">
+                                    <span class="icon"><i class="fas fa-save"></i></span>
+                                    <span>Save Expense</span>
+                                </button>
+                            </div>
+                            <div class="relative">
+                                <a href="{% url 'pos:expense_list' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light text-xl px-8 py-4">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const fileInput = document.querySelector('#file-upload input[type=file]');
+        if (fileInput) {
+            fileInput.onchange = () => {
+                if (fileInput.files.length > 0) {
+                    const fileName = document.querySelector('#file-upload .file-name');
+                    fileName.textContent = fileInput.files[0].name;
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

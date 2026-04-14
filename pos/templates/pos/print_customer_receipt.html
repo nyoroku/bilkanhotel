@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Receipt #{{ sale.id }}</title>
+    <style>
+        body { font-family: 'Courier New', monospace; width: 280px; font-size: 12px; }
+        .center { text-align: center; }
+        .item-row { display: flex; justify-content: space-between; }
+        .totals { border-top: 1px dashed black; padding-top: 5px; margin-top: 5px; }
+        @media print { body { -webkit-print-color-adjust: exact; } @page { margin: 0.2in; } }
+    </style>
+</head>
+<body onload="window.print(); setTimeout(window.close, 100);">
+    <div class="center">
+        <h3>JuliFarm Restaurant</h3>
+        <p>Receipt #{{ sale.id }}</p>
+
+        {# --- NEW: Display the section name --- #}
+        {% if section_name %}
+            <p><strong>Section: {{ section_name }}</strong></p>
+        {% endif %}
+
+        <p>{{ sale.processed_at|date:"d M Y, H:i" }}</p>
+    </div>
+    <hr>
+    {% for item in order.items.all %}
+    <div class="item-row">
+        <span>{{ item.quantity|floatformat }}x {{ item.menu_item.name }}</span>
+        <span>{{ item.subtotal|floatformat:2 }}</span>
+    </div>
+    {% endfor %}
+    <div class="totals">
+        <div class="item-row"><strong>Subtotal:</strong><span>{{ order.subtotal|floatformat:2 }}</span></div>
+        <div class="item-row"><strong>VAT:</strong><span>{{ order.vat_amount|floatformat:2 }}</span></div>
+        <div class="item-row"><strong>Total:</strong><strong>{{ order.total_amount|floatformat:2 }}</strong></div>
+        <hr>
+        <div class="item-row"><strong>Amount Paid ({{ sale.get_payment_method_display }}):</strong><strong>{{ sale.amount_paid|floatformat:2 }}</strong></div>
+    </div>
+    <p class="center" style="margin-top: 15px;">Thank you for your visit!</p>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JuliFarm Expense Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 11pt; color: #000; }
+        .report-header { text-align: center; margin-bottom: 2rem; }
+        .report-header h1 { margin: 0; }
+        .report-header h2 { margin: 0; font-size: 1.2rem; font-weight: normal; }
+        .summary-box { border: 1px solid #ccc; padding: 1rem; margin-bottom: 2rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #ccc; }
+        thead th { border-bottom: 2px solid #000; font-size: 12pt; }
+        .col-right { text-align: right; }
+    </style>
+</head>
+<body onload="window.print();">
+    <div class="report-header">
+        <h1>JuliFarm Expense Report</h1>
+        <h2>For period: {{ start_date|date:"d M Y" }} to {{ end_date|date:"d M Y" }}</h2>
+        <p><small>Report generated on: {{ ran_at|date:"d M Y, H:i" }}</small></p>
+    </div>
+
+    <div class="summary-box">
+        <h3>Total Expenses: {{ total_expenses|floatformat:2 }} KES</h3>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th class="col-right">Amount (KES)</th>
+                <th>Recorded By</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.expense_date|date:"d M Y" }}</td>
+                <td>{{ expense.category.name }}</td>
+                <td>{{ expense.description }}</td>
+                <td class="col-right">{{ expense.amount|floatformat:2 }}</td>
+                <td>{{ expense.recorded_by.full_name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

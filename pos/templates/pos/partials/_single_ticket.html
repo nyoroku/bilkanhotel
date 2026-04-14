@@ -1,0 +1,43 @@
+{% comment %}
+This partial renders a single, self-contained production ticket.
+It's used by the HTMX response when an item's status is updated.
+{% endcomment %}
+
+<div class="ticket {% if order.age_minutes > 15 %}late{% elif 7 %}aging{% endif %}" id="ticket-{{ order.id }}">
+    <div class="ticket-header">
+        <span class="table-name">{{ order.table.table_number|default:'Takeaway' }}</span>
+        <div class="text-right">
+            <div class="order-age">
+                <span class="icon text-xs px-2.5 py-1.5"><i class="far fa-clock"></i></span>
+                <span>{{ order.created_at|timesince }} ago</span>
+            </div>
+            <a href="{% url 'pos:print_order_receipt' order.id %}" target="_blank" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 is-light bg-transparent border-2 mt-2" title="Print Docket">
+                <span class="icon"><i class="fas fa-print"></i></span>
+            </a>
+        </div>
+    </div>
+    <div class="ticket-body">
+        {% for item in order.items.all %}
+            <div class="ticket-item is-justify-content-space-between">
+                <div class="is-flex">
+                    <div class="qty">{{ item.quantity|floatformat:0 }}x</div>
+                    <div class="item-name">{{ item.menu_item.name }}</div>
+                </div>
+
+                {% if item.status == 'Ready' %}
+                    <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white" disabled>
+                        <span class="icon"><i class="fas fa-check"></i></span>
+                        <span>Ready</span>
+                    </button>
+                {% else %}
+                    <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 is-light"
+                            hx-post="{% url 'pos:htmx_mark_one_item_ready' item.id %}"
+                            hx-target="#ticket-{{ order.id }}"
+                            hx-swap="outerHTML">
+                        Mark Ready
+                    </button>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>

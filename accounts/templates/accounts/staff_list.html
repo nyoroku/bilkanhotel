@@ -1,0 +1,115 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Staff Management{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <p class="text-lg font-bold text-gray-800 is-centered text-2xl font-semibold">
+            Staff Management
+        </p>
+        <div class="card-header-icon">
+            <a href="{% url 'accounts:staff_add' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">
+                <span class="icon"><i class="fas fa-plus"></i></span>
+                <span>Add New Staff</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="p-6">
+        <!-- Search Form -->
+        <form method="get" class="mb-5">
+            <div class="mb-4 has-addons">
+                <div class="relative is-expanded">
+                    <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" type="text" name="q" placeholder="Search by name, email, or role..." value="{{ search_query }}">
+                </div>
+                <div class="relative">
+                    <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white">Search</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Staff Table -->
+        <div class="table-container">
+            <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+                <thead>
+                    <tr>
+                        <th>Profile</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in page_obj.object_list %}
+                    <tr>
+                        <td>
+                            {% if user.profile_image %}
+                                <figure class="image is-48x48">
+                                    <img src="{{ user.profile_image.url }}" alt="Profile" class="is-rounded">
+                                </figure>
+                            {% else %}
+                                <div class="is-flex is-align-items-center is-justify-content-center image is-48x48 has-background-grey-lighter is-rounded">
+                                    <span class="text-2xl font-bold text-gray-900 mb-4 is-4 has-text-grey">{{ user.first_name|first }}</span>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td style="vertical-align: middle;">{{ user.get_full_name }}</td>
+                        <td style="vertical-align: middle;">{{ user.email }}</td>
+                        <td style="vertical-align: middle;"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500 hover:bg-sky-600 text-white is-light">{{ user.get_role_display }}</span></td>
+                        <td style="vertical-align: middle;">
+                            {% if user.is_active %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white">Active</span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-600 hover:bg-red-700 text-white">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center" style="vertical-align: middle;">
+                            <div class="buttons is-centered">
+                                <a href="{% url 'accounts:staff_edit' user.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white">
+                                    <span class="icon"><i class="fas fa-edit"></i></span>
+                                    <span>Edit</span>
+                                </a>
+                                {% if user != request.user %}
+                                <a href="{% url 'accounts:staff_delete' user.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white bg-transparent border-2">
+                                    <span class="icon"><i class="fas fa-trash"></i></span>
+                                    <span>Delete</span>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No staff members found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}" class="pagination-previous">Previous</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&q={{ search_query }}" class="pagination-next">Next page</a>
+            {% endif %}
+            <ul class="pagination-list">
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li><a href="?page={{ num }}&q={{ search_query }}" class="pagination-link is-current" aria-label="Page {{ num }}" aria-current="page">{{ num }}</a></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li><a href="?page={{ num }}&q={{ search_query }}" class="pagination-link" aria-label="Goto page {{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

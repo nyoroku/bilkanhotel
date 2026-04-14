@@ -1,0 +1,898 @@
+
+{% extends 'pos/base.html' %}
+
+{% block title %}Manager's Floor View{% endblock %}
+
+{% block styles %}
+{{ block.super }}
+<style>
+    .main-content-area {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    #floor-plan-wrapper {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    #floor-plan {
+        position: relative;
+        flex-grow: 1;
+        background-color: #ffffff;
+        border: 1px solid #dbdbdb;
+        border-radius: 6px;
+        background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        background-size: 20px 20px;
+        overflow: hidden;
+        min-height: 600px;
+        cursor: crosshair;
+    }
+
+    .draggable-table {
+        position: absolute;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        padding: 8px;
+        box-sizing: border-box;
+        overflow: hidden;
+        text-align: center;
+        line-height: 1.2;
+    }
+
+    .draggable-table:hover {
+        transform: scale(1.02);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    }
+
+    .draggable-table.is-available {
+        background-color: #2ecc71;
+        background-image: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    }
+
+    .draggable-table.is-busy {
+        background-color: var(--deep-blue);
+        background-image: linear-gradient(135deg, var(--deep-blue) 0%, #1e3a8a 100%);
+    }
+
+    .draggable-table:active,
+    .draggable-table.is-dragging {
+        cursor: grabbing;
+        z-index: 1000;
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+
+    .draggable-table.round {
+        border-radius: 50%;
+        width: 90px;
+        height: 90px;
+    }
+
+    .draggable-table.square {
+        border-radius: 10px;
+        width: 90px;
+        height: 90px;
+    }
+
+    .draggable-table.rectangle {
+        border-radius: 10px;
+        width: 120px;
+        height: 70px;
+    }
+
+    .table-name {
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .table-orders {
+        font-size: 0.7rem;
+        opacity: 0.95;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .table-total {
+        font-weight: bold;
+        font-size: 0.8rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    /* Add pulsing animation for tables with orders */
+    .draggable-table.is-busy .table-orders {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 0.9; }
+        50% { opacity: 1; }
+        100% { opacity: 0.9; }
+    }
+
+    /* Compact Stats cards */
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 0;
+    }
+
+    .stat-item {
+        text-align: center;
+        position: relative;
+        padding: 0.75rem 0.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .stat-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #00f5ff, #0080ff);
+        border-radius: 8px 8px 0 0;
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: bold;
+        display: block;
+        margin-bottom: 0.25rem;
+        background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+
+    /* Loading state for save button */
+    .button.is-loading {
+        pointer-events: none;
+    }
+
+    /* Modal improvements */
+    .modal-card {
+        max-width: 700px;
+        margin: 0 auto;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        max-height: 90vh;
+    }
+
+    .modal-card-head {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+    }
+
+    .modal-card-title {
+        color: white !important;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .modal-card-body {
+        max-height: 60vh;
+        overflow-y: auto;
+        padding: 1.5rem;
+    }
+
+    .order-item {
+        border-left: 4px solid #3273dc;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .order-time {
+        font-size: 0.8rem;
+        color: #666;
+        background: rgba(0,0,0,0.05);
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+    }
+
+    .order-total-highlight {
+        background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+        border: 1px solid #c3e6cb;
+        padding: 0.75rem;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+        text-align: center;
+        font-weight: bold;
+        color: #155724;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .draggable-table.round,
+        .draggable-table.square {
+            width: 70px;
+            height: 70px;
+        }
+
+        .draggable-table.rectangle {
+            width: 100px;
+            height: 60px;
+        }
+
+        .table-name {
+            font-size: 0.9rem;
+        }
+
+        .table-orders {
+            font-size: 0.6rem;
+        }
+
+        .table-total {
+            font-size: 0.7rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+        }
+
+        .stat-item {
+            padding: 0.5rem;
+            min-height: 60px;
+        }
+    }
+
+    /* Enhanced Toolbar */
+    .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .toolbar-section {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .color-legend {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .legend-available {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    }
+
+    .legend-busy {
+        background: linear-gradient(135deg, var(--deep-blue) 0%, #1e3a8a 100%);
+    }
+
+    /* Enhanced buttons */
+    .button {
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    /* Compact Page header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .page-header .title {
+        color: white !important;
+        margin-bottom: 0.25rem;
+        font-size: 1.8rem;
+    }
+
+    .page-header .subtitle {
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-size: 0.9rem;
+    }
+
+    /* Notification improvements */
+    .notification {
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Icon improvements */
+    .icon {
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+    }
+
+    /* Small table text improvements */
+    .draggable-table .icon {
+        font-size: 0.8rem;
+    }
+
+    /* Ensure text fits in smaller tables */
+    .draggable-table.round .table-name,
+    .draggable-table.square .table-name {
+        font-size: 1rem;
+    }
+
+    .draggable-table.round .table-orders,
+    .draggable-table.square .table-orders {
+        font-size: 0.6rem;
+    }
+
+    .draggable-table.round .table-total,
+    .draggable-table.square .table-total {
+        font-size: 0.7rem;
+    }
+
+    /* Very small screens */
+    @media (max-width: 480px) {
+        .draggable-table .table-name {
+            font-size: 0.8rem;
+        }
+
+        .draggable-table .table-orders {
+            font-size: 0.5rem;
+        }
+
+        .draggable-table .table-total {
+            font-size: 0.6rem;
+        }
+
+        .toolbar {
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 1rem;
+        }
+
+        .page-header .level {
+            display: block;
+        }
+
+        .page-header .level-right {
+            margin-top: 1rem;
+        }
+    }
+
+    /* Empty state styling */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #666;
+    }
+
+    .empty-state .icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Modal footer improvements */
+    .modal-card-foot {
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-total-display {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #2c3e50;
+        background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #c3e6cb;
+    }
+
+    /* Improved order items display */
+    .order-items-list {
+        margin-top: 0.5rem;
+    }
+
+    .order-items-list ul {
+        margin: 0;
+        padding-left: 1rem;
+    }
+
+    .order-items-list li {
+        margin-bottom: 0.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .item-price {
+        font-weight: 500;
+        color: #28a745;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="level">
+        <div class="level-left">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 mb-4 is-3">Manager's Floor View</h1>
+                <p class="text-lg text-gray-600 mb-4 is-6">
+                    <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-mouse-pointer"></i></span>
+                    Click table for details • Drag to arrange layout
+                </p>
+            </div>
+        </div>
+        <div class="level-right">
+            <div class="buttons">
+                <button id="reset-layout-btn" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-yellow-500 hover:bg-yellow-600 text-black text-lg px-6 py-3">
+                    <span class="icon"><i class="fas fa-undo"></i></span>
+                    <span>Reset Layout</span>
+                </button>
+                <button id="save-layout-btn" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white text-lg px-6 py-3">
+                    <span class="icon"><i class="fas fa-save"></i></span>
+                    <span>Save Layout</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Compact Statistics Cards -->
+<div class="stats-card">
+    <div class="stats-grid">
+        <div class="stat-item">
+            <span class="stat-number">{{ tables|length }}</span>
+            <span class="stat-label">Total Tables</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">{{ busy_tables }}</span>
+            <span class="stat-label">Busy Tables</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">{{ available_tables }}</span>
+            <span class="stat-label">Available Tables</span>
+        </div>
+    </div>
+</div>
+
+<!-- Compact Toolbar -->
+<div class="toolbar">
+    <div class="toolbar-section">
+        <strong>Legend:</strong>
+        <div class="color-legend">
+            <div class="legend-color legend-available"></div>
+            <span>Available</span>
+        </div>
+        <div class="color-legend">
+            <div class="legend-color legend-busy"></div>
+            <span>Busy</span>
+        </div>
+    </div>
+    <div class="toolbar-section">
+        <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-info-circle"></i></span>
+        <span>Drag tables to rearrange • Click to view details</span>
+    </div>
+</div>
+
+<div id="save-status" class="mt-2"></div>
+
+<div id="floor-plan-wrapper" class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div id="floor-plan" class="p-6">
+        {% for table in tables %}
+        <div class="draggable-table {{ table.shape }} {% if table.open_orders %}is-busy{% else %}is-available{% endif %}"
+             id="table-{{ table.pk }}"
+             data-id="{{ table.pk }}"
+             data-x="{{ table.position_x|default:0 }}"
+             data-y="{{ table.position_y|default:0 }}"
+             style="transform: translate({{ table.position_x|default:0 }}px, {{ table.position_y|default:0 }}px);"
+             onclick="openTableModal('{{ table.pk }}')">
+
+            <div class="table-name">{{ table.table_number }}</div>
+
+            {% if table.open_orders %}
+                <div class="table-orders">
+                    <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-receipt"></i></span>
+                    <span>{{ table.open_orders|length }} Order{{ table.open_orders|length|pluralize }}</span>
+                </div>
+                <div class="table-total">{{ table.total_bill|floatformat:2 }} KES</div>
+            {% else %}
+                <div class="table-orders">
+                    <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-check"></i></span>
+                    <span>Available</span>
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Enhanced Modal for Table Details -->
+<div class="modal" id="table-detail-modal">
+    <div class="modal-background" onclick="closeTableModal()"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="modal-table-name">
+                <span class="icon"><i class="fas fa-table"></i></span>
+                <span></span>
+            </p>
+            <button class="delete" aria-label="close" onclick="closeTableModal()"></button>
+        </header>
+        <section class="modal-card-body" id="modal-body-content">
+            <!-- Content will be dynamically loaded here -->
+        </section>
+        <footer class="modal-card-foot">
+            <div class="modal-total-display" id="modal-grand-total"></div>
+            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150" onclick="closeTableModal()">
+                <span class="icon"><i class="fas fa-times"></i></span>
+                <span>Close</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
+<!-- Hidden Order Data for Modal -->
+<div style="display: none;">
+    {% for table in tables %}
+    <div id="data-for-table-{{ table.pk }}">
+        {% for order in table.open_orders %}
+        <div class="order-item">
+            <div class="order-header">
+                <strong>
+                    <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-receipt"></i></span>
+                    Order #{{ order.id }}
+                </strong>
+                <span class="order-time">
+                    <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-clock"></i></span>
+                    {{ order.created_at|timesince }} ago
+                </span>
+            </div>
+            <p class="mb-2">
+                <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-user"></i></span>
+                <strong>Waiter:</strong> {{ order.waiter.get_full_name }}
+            </p>
+            <div class="content">
+                <strong>
+                    <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-utensils"></i></span>
+                    Items:
+                </strong>
+                <div class="order-items-list">
+                    <ul class="mt-1">
+                        {% for item in order.items.all %}
+                        <li>
+                            <span>{{ item.quantity|floatformat:0 }}x {{ item.menu_item.name }}</span>
+                            <span class="item-price">{{ item.total_price|floatformat:2 }} KES</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="order-total-highlight">
+                <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-calculator"></i></span>
+                Order Total: {{ order.total_amount|floatformat:2 }} KES
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <div class="icon">
+                <i class="fas fa-utensils"></i>
+            </div>
+            <p class="text-2xl font-bold text-gray-900 mb-4 is-5">No Active Orders</p>
+            <p class="text-lg text-gray-600 mb-4 is-6 has-text-grey">This table is available for new customers.</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+<script>
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    // Modal Logic
+    const modal = document.getElementById('table-detail-modal');
+    const modalTitle = document.getElementById('modal-table-name');
+    const modalBody = document.getElementById('modal-body-content');
+    const modalTotal = document.getElementById('modal-grand-total');
+    let currentTableId = null;
+
+    function openTableModal(tableId) {
+        currentTableId = tableId;
+        const table = document.getElementById(`table-${tableId}`);
+        const data = document.getElementById(`data-for-table-${tableId}`);
+
+        modalTitle.textContent = `Details for ${table.querySelector('.table-name').textContent}`;
+        modalBody.innerHTML = data.innerHTML;
+
+        const totalElement = table.querySelector('.table-total');
+        modalTotal.textContent = `Total Bill: ${totalElement ? totalElement.textContent : '0.00 KES'}`;
+
+        modal.classList.add('is-active');
+    }
+
+    function closeTableModal() {
+        modal.classList.remove('is-active');
+        currentTableId = null;
+    }
+
+    function viewFullOrders() {
+        if (currentTableId) {
+            window.location.href = `/pos/table/${currentTableId}/orders/`;
+        }
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-active')) {
+            closeTableModal();
+        }
+    });
+
+    // Drag and Drop
+    document.addEventListener('DOMContentLoaded', function () {
+        let isDragging = false;
+
+        interact('.draggable-table').draggable({
+            listeners: {
+                start(event) {
+                    isDragging = true;
+                    event.target.style.zIndex = '1000';
+                    event.target.classList.add('is-dragging');
+                },
+                move(event) {
+                    const target = event.target;
+                    target.style.pointerEvents = 'none';
+                    let x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+                    let y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+                    // Ensure tables stay within bounds
+                    const parent = target.parentElement;
+                    const parentRect = parent.getBoundingClientRect();
+                    const targetRect = target.getBoundingClientRect();
+
+                    x = Math.max(0, Math.min(x, parentRect.width - targetRect.width));
+                    y = Math.max(0, Math.min(y, parentRect.height - targetRect.height));
+
+                    target.style.transform = `translate(${x}px, ${y}px)`;
+                    target.setAttribute('data-x', x);
+                    target.setAttribute('data-y', y);
+                },
+                end(event) {
+                    setTimeout(() => {
+                        isDragging = false;
+                    }, 100);
+                    event.target.style.pointerEvents = 'auto';
+                    event.target.style.zIndex = '';
+                    event.target.classList.remove('is-dragging');
+                }
+            },
+            modifiers: [
+                interact.modifiers.restrictRect({
+                    restriction: 'parent',
+                    endOnly: true
+                })
+            ],
+            inertia: true
+        });
+
+        // Prevent modal from opening when dragging
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.draggable-table') && isDragging) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        // Save Layout Button
+        document.getElementById('save-layout-btn').addEventListener('click', function () {
+            const button = this;
+            const originalHTML = button.innerHTML;
+
+            button.innerHTML = '<span class="icon"><i class="fas fa-spinner fa-spin"></i></span><span>Saving...</span>';
+            button.disabled = true;
+            button.classList.add('is-loading');
+
+            const positions = Array.from(document.querySelectorAll('.draggable-table')).map(table => ({
+                id: table.dataset.id,
+                x: parseFloat(table.dataset.x) || 0,
+                y: parseFloat(table.dataset.y) || 0
+            }));
+
+            fetch("{% url 'pos:save_table_layout' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                },
+                body: JSON.stringify({ positions })
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('save-status').innerHTML = html;
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.disabled = false;
+                    button.classList.remove('is-loading');
+                }, 1000);
+            })
+            .catch(error => {
+                console.error('Error saving layout:', error);
+                document.getElementById('save-status').innerHTML =
+                    '<div class="notification bg-red-600 hover:bg-red-700 text-white is-light mt-4">Error saving layout. Please try again.</div>';
+                button.innerHTML = originalHTML;
+                button.disabled = false;
+                button.classList.remove('is-loading');
+            });
+        });
+
+        // Reset Layout Button
+        document.getElementById('reset-layout-btn').addEventListener('click', function () {
+            if (!confirm('Are you sure you want to reset all table positions? This action cannot be undone.')) {
+                return;
+            }
+
+            const button = this;
+            const originalHTML = button.innerHTML;
+
+            button.innerHTML = '<span class="icon"><i class="fas fa-spinner fa-spin"></i></span><span>Resetting...</span>';
+            button.disabled = true;
+            button.classList.add('is-loading');
+
+            fetch("{% url 'pos:reset_table_layout' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('save-status').innerHTML = html;
+                document.querySelectorAll('.draggable-table').forEach(table => {
+                    table.style.transform = 'translate(0px, 0px)';
+                    table.setAttribute('data-x', '0');
+                    table.setAttribute('data-y', '0');
+                });
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.disabled = false;
+                    button.classList.remove('is-loading');
+                }, 1000);
+            })
+            .catch(error => {
+                console.error('Error resetting layout:', error);
+                document.getElementById('save-status').innerHTML =
+                    '<div class="notification bg-red-600 hover:bg-red-700 text-white is-light mt-4">Error resetting layout. Please try again.</div>';
+                button.innerHTML = originalHTML;
+                button.disabled = false;
+                button.classList.remove('is-loading');
+            });
+        });
+
+        // Auto-save functionality
+        let autoSaveTimeout;
+        function scheduleAutoSave() {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                document.getElementById('save-layout-btn').click();
+            }, 5000);
+        }
+
+        interact('.draggable-table').on('dragend', scheduleAutoSave);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "trucks/base.html" %}
+{% load static %}
+
+{% block title %}Expenses - LogiTrack{% endblock %}
+
+{% block page_title %}Expenses{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+  <div class="buttons mb-4">
+    <a href="{% url 'trucks:expense_create' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">
+      <span class="icon"><i class="fas fa-plus"></i></span>
+      <span>Create Expense</span>
+    </a>
+  </div>
+
+  <form method="get" class="mb-4">
+    <div class="mb-4 is-horizontal">
+      <div class="field-label text-xs px-2.5 py-1.5">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+      </div>
+      <div class="field-body">
+        <div class="mb-4">
+          <div class="relative">
+            <input type="date" name="start_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xs px-2.5 py-1.5" value="{{ start_date }}" />
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="relative">
+            <input type="date" name="end_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xs px-2.5 py-1.5" value="{{ end_date }}" />
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="relative">
+            <div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border text-xs px-2.5 py-1.5">
+              <select name="expense_level">
+                <option value="">All Levels</option>
+                {% for value, display in level_choices %}
+                  <option value="{{ value }}" {% if level_filter == value %}selected{% endif %}>{{ display }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="relative">
+            <div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border text-xs px-2.5 py-1.5">
+              <select name="category">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                  <option value="{{ cat.pk }}" {% if category_filter == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="relative">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white text-xs px-2.5 py-1.5">Filter</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="notification bg-sky-500 hover:bg-sky-600 text-white">
+    <strong>Showing {{ totals.count }} expenses</strong> | Total Amount: {{ totals.total_amount }}
+  </div>
+
+  <div class="table-container">
+    <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Description</th>
+          <th>Level</th>
+          <th>Linked To</th>
+          <th>Amount</th>
+          <th>Recurring</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exp in page_obj %}
+          <tr>
+            <td>{{ exp.date }}</td>
+            <td>{{ exp.category.name }}</td>
+            <td>{{ exp.description }}</td>
+            <td>{{ exp.get_expense_level_display }}</td>
+            <td>
+              {% if exp.trip %}
+                <a href="{% url 'trucks:trip_detail' exp.trip.pk %}">Trip {{ exp.trip.trip_number }}</a>
+              {% elif exp.truck %}
+                {{ exp.truck.truck_number }}
+              {% else %}
+                Business
+              {% endif %}
+            </td>
+            <td>{{ exp.amount }}</td>
+            <td>{% if exp.is_recurring %}Yes{% else %}No{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7">No expenses found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+    <nav class="pagination text-xs px-2.5 py-1.5" role="navigation" aria-label="pagination">
+      {% if page_obj.has_previous %}
+        <a class="pagination-previous" href="?page={{ page_obj.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">Previous</a>
+      {% endif %}
+      <span class="pagination-ellipsis">&hellip;</span>
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <span class="pagination-link is-current">{{ num }}</span>
+        {% else %}
+          <a class="pagination-link" href="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      <span class="pagination-ellipsis">&hellip;</span>
+      {% if page_obj.has_next %}
+        <a class="pagination-next" href="?page={{ page_obj.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">Next</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+</div>
+{% endblock %}

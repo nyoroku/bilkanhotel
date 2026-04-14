@@ -1,0 +1,410 @@
+{% extends 'pos/base.html' %}
+{% load static %}
+{% load schedule_extra %}
+
+{% block title %}My Schedule{% endblock %}
+
+{% block extra_css %}
+<style>
+.schedule-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.schedule-header h1 {
+  margin: 0;
+  color: #363636;
+}
+
+.current-time {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.enhanced-tabs {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.enhanced-tabs ul {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: #f8f9fa;
+}
+
+.enhanced-tabs li {
+  flex: 1;
+  margin: 0;
+}
+
+.enhanced-tabs a {
+  display: block;
+  padding: 1rem 1.5rem;
+  text-decoration: none;
+  color: #6c757d;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.enhanced-tabs a:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.enhanced-tabs .is-active a {
+  background: white;
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+.tab-content {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+  min-height: 400px;
+}
+
+.shift-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.shift-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.shift-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.shift-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.shift-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #363636;
+  margin: 0;
+}
+
+.shift-schedule {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 0.25rem 0.75rem;
+  border-radius: 15px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.shift-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.shift-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shift-detail-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: white;
+}
+
+.icon-date { background: #28a745; }
+.icon-time { background: #17a2b8; }
+.icon-duration { background: #ffc107; color: #212529; }
+
+.shift-detail-text {
+  font-weight: 600;
+  color: #495057;
+}
+
+.shift-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-swap {
+  background: #ff6b6b;
+  color: white;
+}
+
+.btn-swap:hover {
+  background: #ff5252;
+  transform: translateY(-1px);
+}
+
+.btn-view {
+  background: #4ecdc4;
+  color: white;
+}
+
+.btn-view:hover {
+  background: #26d0ce;
+  transform: translateY(-1px);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6c757d;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.3;
+}
+
+.empty-state h3 {
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+
+.date-range-indicator {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+  color: #495057;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-upcoming { background: #e3f2fd; color: #1976d2; }
+.status-active { background: #e8f5e8; color: #2e7d32; }
+.status-past { background: #fafafa; color: #757575; }
+
+@media (max-width: 768px) {
+  .schedule-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .shift-details {
+    grid-template-columns: 1fr;
+  }
+
+  .shift-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .shift-actions {
+    justify-content: center;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="schedule-container">
+  <div class="schedule-header">
+    <h1>My Schedule</h1>
+    <div class="current-time" id="current-time">
+      Loading...
+    </div>
+  </div>
+
+  <!-- Enhanced Tabs -->
+  <div class="enhanced-tabs">
+    <ul>
+      <li class="is-active"><a href="#day" data-period="day">Today</a></li>
+      <li><a href="#week" data-period="week">This Week</a></li>
+      <li><a href="#month" data-period="month">This Month</a></li>
+    </ul>
+  </div>
+
+  <!-- Day View -->
+  <section id="day" class="tab-content">
+    <div class="date-range-indicator">
+      📅 {{ today|date:"l, F j, Y" }}
+    </div>
+    {% if day_shifts %}
+      {% for assignment in day_shifts %}
+        {% include 'schedule/_enhanced_shift_card.html' with assignment=assignment %}
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">🎯</div>
+        <h3>No shifts today</h3>
+        <p>Enjoy your day off!</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- Week View -->
+  <section id="week" class="tab-content is-hidden">
+    <div class="date-range-indicator">
+      📅 {{ week_start|date:"M j" }} - {{ week_end|date:"M j, Y" }}
+    </div>
+    {% if week_shifts %}
+      {% for assignment in week_shifts %}
+        {% include 'schedule/_enhanced_shift_card.html' with assignment=assignment %}
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">📅</div>
+        <h3>No shifts this week</h3>
+        <p>Time to relax and recharge!</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- Month View -->
+  <section id="month" class="tab-content is-hidden">
+    <div class="date-range-indicator">
+      📅 {{ month_start|date:"F Y" }}
+    </div>
+    {% if month_shifts %}
+      {% for assignment in month_shifts %}
+        {% include 'schedule/_enhanced_shift_card.html' with assignment=assignment %}
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">🗓️</div>
+        <h3>No shifts this month</h3>
+        <p>Check back later for upcoming schedules!</p>
+      </div>
+    {% endif %}
+  </section>
+</div>
+
+<script>
+// Enhanced tab functionality
+document.addEventListener('DOMContentLoaded', function() {
+  // Tab switching
+  document.querySelectorAll('.enhanced-tabs a').forEach(tab => {
+    tab.addEventListener('click', function(e) {
+      e.preventDefault();
+
+      // Hide all content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('is-hidden');
+      });
+
+      // Show target content
+      const target = document.querySelector(this.getAttribute('href'));
+      target.classList.remove('is-hidden');
+
+      // Update active tab
+      document.querySelectorAll('.enhanced-tabs li').forEach(li => {
+        li.classList.remove('is-active');
+      });
+      this.parentElement.classList.add('is-active');
+
+      // Smooth scroll to content
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // Real-time clock
+  function updateTime() {
+    const now = new Date();
+    const options = {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    };
+    document.getElementById('current-time').textContent = now.toLocaleDateString('en-US', options);
+  }
+
+  updateTime();
+  setInterval(updateTime, 1000);
+
+  // Add smooth animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  });
+
+  document.querySelectorAll('.shift-card').forEach(card => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(card);
+  });
+});
+</script>
+{% endblock %}

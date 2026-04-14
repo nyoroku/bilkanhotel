@@ -1,0 +1,5 @@
+{% comment %} This wrapper handles the OOB swap for the category dropdown {% endcomment %}
+<div id="category-filter-container" hx-swap-oob="true">
+    {% autoescape off %}{{ category_dropdown_oob }}{% endautoescape %}
+</div>
+{% include 'pos/partials/_menu_item_grid.html' %}

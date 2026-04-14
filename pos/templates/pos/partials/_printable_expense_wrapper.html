@@ -1,0 +1,22 @@
+<div class="level mb-5">
+    <div class="level-left">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Expenses</h1>
+    </div>
+    <div class="level-right">
+        <div class="buttons">
+            <a href="{% url 'pos:expense_add' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white text-lg px-6 py-3">
+                <span class="icon"><i class="fas fa-plus"></i></span>
+                <span>Record Expense</span>
+            </a>
+            <a href="{% url 'pos:print_expense_report' %}?start_date={{ start_date }}&end_date={{ end_date }}&category={{ category_filter }}&q={{ search_query }}"
+               target="_blank" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-indigo-600 hover:bg-indigo-700 text-white text-lg px-6 py-3">
+                <span class="icon"><i class="fas fa-print"></i></span>
+                <span>Print Report</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="report-content">
+    {% include 'pos/partials/_expense_report_table.html' %}
+</div>

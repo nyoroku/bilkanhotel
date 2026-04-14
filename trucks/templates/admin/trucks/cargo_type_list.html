@@ -1,0 +1,60 @@
+{% extends "trucks/base.html" %}
+{% load static %}
+
+{% block title %}Cargo Types - LogiTrack{% endblock %}
+
+{% block page_title %}Cargo Types{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+  <div class="buttons mb-4">
+    <a href="{% url 'trucks:cargo_type_create' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">
+      <span class="icon"><i class="fas fa-plus"></i></span>
+      <span>Add Cargo Type</span>
+    </a>
+  </div>
+
+  <form method="get" class="mb-4">
+    <div class="mb-4 flex space-x-2">
+      <div class="relative">
+        <input type="text" name="search" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" placeholder="Search by name or description..." value="{{ search_query }}">
+      </div>
+      <div class="relative">
+        <div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
+          <select name="status">
+            <option value="">All Statuses</option>
+            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+          </select>
+        </div>
+      </div>
+      <div class="relative">
+        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">Filter</button>
+      </div>
+    </div>
+  </form>
+
+  <p class="mb-4">
+    <strong>Total:</strong> {{ total_cargotypes }} |
+    <strong>Active:</strong> {{ active_cargotypes }}
+  </p>
+
+  <div id="cargotype-list-container">
+    {% include "admin/trucks/partials/_cargo_type_list.html" %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  htmx.on("#cargotype-list-container", "cargoTypeCreated", function(evt) {
+    htmx.ajax('GET', '{% url "trucks:cargo_type_list" %}', {target: '#cargotype-list-container', swap: 'innerHTML'});
+  });
+  htmx.on("#cargotype-list-container", "cargoTypeUpdated", function(evt) {
+    htmx.ajax('GET', '{% url "trucks:cargo_type_list" %}', {target: '#cargotype-list-container', swap: 'innerHTML'});
+  });
+  htmx.on("#cargotype-list-container", "cargoTypeDeleted", function(evt) {
+    htmx.ajax('GET', '{% url "trucks:cargo_type_list" %}', {target: '#cargotype-list-container', swap: 'innerHTML'});
+  });
+</script>
+{% endblock %}

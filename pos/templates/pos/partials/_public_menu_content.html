@@ -1,0 +1,76 @@
+<!-- Category chips -->
+<div class="chips">
+  <a href="?section={{ active_section }}"
+     class="{% if not selected_category %}active{% endif %}"
+     hx-get="{% url 'pos:public_menu_content' %}?section={{ active_section }}"
+     hx-target="#public-content"
+     hx-push-url="true">All</a>
+
+  {% for c in categories %}
+    <a  href="?section={{ active_section }}&category={{ c.id }}"
+        class="{% if c.id|stringformat:'s' == selected_category %}active{% endif %}"
+        title="{{ c.name }}"
+        hx-get="{% url 'pos:public_menu_content' %}?section={{ active_section }}&category={{ c.id }}"
+        hx-target="#public-content"
+        hx-push-url="true">
+      {{ c.name }}
+    </a>
+  {% endfor %}
+</div>
+
+<!-- Search box (sticky) -->
+<div class="search-wrapper">
+  <input type="search"
+         name="search"
+         placeholder="Search {{ active_section|lower }}…"
+         value="{{ search_query }}"
+         hx-get="{% url 'pos:public_menu_content' %}"
+         hx-trigger="keyup changed delay:300ms"
+         hx-target="#public-content"
+         hx-push-url="true"
+         hx-vals='{"section":"{{ active_section }}","category":"{{ selected_category }}"}'
+         autocomplete="off">
+</div>
+
+<!-- Items grid -->
+<div class="grid">
+  {% for item in menu_items %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      {% if item.image %}
+        <img src="{{ item.image.url }}" alt="{{ item.name }}">
+      {% else %}
+        <div style="width:72px;height:72px;border-radius:.5rem;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#9ca3af">
+          {{ item.name|first|upper }}
+        </div>
+      {% endif %}
+      <div class="card-body">
+        <div class="name">{{ item.name }}</div>
+        <div class="cat">{{ item.category.name }}</div>
+        <div class="price">{{ item.selling_price }} KES</div>
+      </div>
+    </div>
+  {% empty %}
+    <p style="text-align:center;color:#6b7280;grid-column:1/-1">No items found.</p>
+  {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav class="pagination">
+  {% if page_obj.has_previous %}
+    <a href="?section={{ active_section }}&category={{ selected_category }}&search={{ search_query|urlencode }}&page={{ page_obj.previous_page_number }}"
+       hx-get="{% url 'pos:public_menu_content' %}?section={{ active_section }}&category={{ selected_category }}&search={{ search_query|urlencode }}&page={{ page_obj.previous_page_number }}"
+       hx-target="#public-content"
+       hx-push-url="true">Prev</a>
+  {% endif %}
+
+  <span class="current">{{ page_obj.number }}</span>
+
+  {% if page_obj.has_next %}
+    <a href="?section={{ active_section }}&category={{ selected_category }}&search={{ search_query|urlencode }}&page={{ page_obj.next_page_number }}"
+       hx-get="{% url 'pos:public_menu_content' %}?section={{ active_section }}&category={{ selected_category }}&search={{ search_query|urlencode }}&page={{ page_obj.next_page_number }}"
+       hx-target="#public-content"
+       hx-push-url="true">Next</a>
+  {% endif %}
+</nav>
+{% endif %}

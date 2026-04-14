@@ -1,0 +1,38 @@
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+  <div class="table-container">
+    <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+      <thead>
+        <tr>
+          <th>Date</th><th>Truck</th><th>Destination</th><th>Tonnage</th><th>Rate</th><th>Transport</th><th>Fuel</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rec in page_obj %}
+        <tr>
+          <td>{{ rec.date|date:"d/m/Y" }}</td>
+          <td>{{ rec.truck.truck_number }}</td>
+          <td>{{ rec.destination.name }}</td>
+          <td>{{ rec.tonnage }}</td>
+          <td>{{ rec.rate_per_ton }}</td>
+          <td>{{ rec.total_transport_amount }}</td>
+          <td>{{ rec.fuel_amount|default:"—" }}</td>
+          <td>
+            <div class="buttons are-small">
+              <a class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white" hx-get="{% url 'trucks:trip_record_detail' rec.pk %}" hx-target="#modal-content">View</a>
+              <a class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-yellow-500 hover:bg-yellow-600 text-black" hx-get="{% url 'trucks:trip_record_edit' rec.pk %}" hx-target="#modal-content">Edit</a>
+              <a class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white" hx-get="{% url 'trucks:trip_record_delete' rec.pk %}" hx-target="#modal-content">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center">No records found</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.has_next %}
+  <div class="text-center mt-4">
+    <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-loading" hx-get="{{ request.path }}?page={{ page_obj.next_page_number }}" hx-target="#report-table" hx-swap="beforeend" hx-select="tbody tr">Load more</button>
+  </div>
+  {% endif %}
+</div>

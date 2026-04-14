@@ -1,0 +1,20 @@
+<div class="table-container">
+  <table class="min-w-full divide-y divide-gray-200 is-fullwidth">
+    <thead><tr><th>Date</th><th>Shift</th><th>Time</th><th>Action</th></tr></thead>
+    <tbody>
+    {% for assignment in shifts %}
+      <tr>
+        <td>{{ assignment.shift.date|date:"D, d M" }}</td>
+        <td>{{ assignment.shift.name }}</td>
+        <td>{{ assignment.shift.start_time|time:"H:i" }} – {{ assignment.shift.end_time|time:"H:i" }}</td>
+        <td>
+          <form method="post" action="{% url 'schedule:create_swap_request' assignment.shift.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-black">Request Swap</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>

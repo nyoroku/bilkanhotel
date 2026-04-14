@@ -1,0 +1,11 @@
+<select name="category" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border is-fullwidth"
+        hx-get="{% url 'pos:htmx_menu_content' %}"
+        hx-target="#menu-item-grid-wrapper"
+        hx-include="#menu-interface-form">
+    <option value="">All Categories</option>
+    {% for category in categories %}
+    <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected_category %}selected{% endif %}>
+        {{ category.name }}
+    </option>
+    {% endfor %}
+</select>

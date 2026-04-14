@@ -1,0 +1,28 @@
+{% comment %}
+  File: pos/templates/pos/supplier_confirm_delete.html
+  Asks for confirmation before permanently deleting a supplier.
+{% endcomment %}
+
+{% extends "pos/base.html" %}
+
+{% block content %}
+<main class="main-content">
+    <div class="form-container" style="text-align: center;">
+        <h1 class="heading-lg">Confirm Deletion</h1>
+        <p class="form-subtitle" style="font-size: 1.1rem;">Are you sure you want to permanently delete the supplier:</p>
+        <p style="font-size: 1.5rem; font-weight: 600; color: var(--danger-red); margin-bottom: 1.5rem;">"{{ supplier.name }}"</p>
+        <p>This action cannot be undone.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions" style="border-top: none; justify-content: center;">
+                <a href="{% url 'pos:supplier_list' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-danger">Yes, Delete Supplier</button>
+            </div>
+        </form>
+    </div>
+</main>
+<style>
+    .btn-danger { background-color: #dc2626; color: white; }
+</style>
+{% endblock %}

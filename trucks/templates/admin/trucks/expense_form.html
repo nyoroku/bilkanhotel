@@ -1,0 +1,110 @@
+{% extends "trucks/base.html" %}
+{% load static %}
+
+{% block title %}Create New Expense - LogiTrack{% endblock %}
+
+{% block page_title %}Create New Expense{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Expense Level</label>
+      <div class="relative">
+        {{ form.expense_level }}
+        {% if form.expense_level.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.expense_level.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4" id="trip-field">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Trip</label>
+      <div class="relative">
+        {{ form.trip }}
+        {% if form.trip.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.trip.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4" id="truck-field">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Truck</label>
+      <div class="relative">
+        {{ form.truck }}
+        {% if form.truck.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.truck.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+      <div class="relative">
+        {{ form.category }}
+        {% if form.category.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.category.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+      <div class="relative">
+        {{ form.description }}
+        {% if form.description.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.description.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+      <div class="relative">
+        {{ form.amount }}
+        {% if form.amount.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.amount.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+      <div class="relative">
+        {{ form.date }}
+        {% if form.date.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.date.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Receipt Number</label>
+      <div class="relative">
+        {{ form.receipt_number }}
+        {% if form.receipt_number.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.receipt_number.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+      <div class="relative">
+        {{ form.vendor }}
+        {% if form.vendor.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.vendor.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4">
+      <div class="relative">
+        <label class="checkbox">
+          {{ form.is_recurring }}
+          Is Recurring?
+        </label>
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+      <div class="relative">
+        {{ form.remarks }}
+        {% if form.remarks.errors %}<p class="help bg-red-600 hover:bg-red-700 text-white">{{ form.remarks.errors }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mb-4 flex space-x-2">
+      <div class="relative">
+        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">Save</button>
+      </div>
+      <div class="relative">
+        <a href="{% url 'trucks:expense_list' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  function toggleFields() {
+    const level = document.getElementById('id_expense_level').value;
+    document.getElementById('trip-field').style.display = level === 'trip' ? 'block' : 'none';
+    document.getElementById('truck-field').style.display = level === 'truck' ? 'block' : 'none';
+  }
+  document.getElementById('id_expense_level').addEventListener('change', toggleFields);
+  toggleFields(); // Initial call
+</script>
+{% endblock %}

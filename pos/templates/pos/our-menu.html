@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Our Menu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 16px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #1a202c;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+            border-radius: 12px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            color: #fff;
+            padding: 2rem 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>') repeat;
+            background-size: 50px 50px;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* Sticky Navigation */
+        .sticky {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab {
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            background: #f1f5f9;
+            color: #64748b;
+            white-space: nowrap;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+        }
+
+        .tab:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #1a202c;
+            font-weight: 600;
+            border-color: #fbbf24;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+        }
+
+        /* Search */
+        .search {
+            margin-bottom: 1rem;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search input {
+            width: 100%;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 1rem 1.25rem 1rem 3rem;
+            font-size: 1rem;
+            background: #fff;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .search input:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 1.2rem;
+        }
+
+        /* Category Chips */
+        .chips {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding: 0.5rem 0;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+        }
+
+        .chips::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.7rem 1.4rem;
+            border-radius: 25px;
+            background: #2d3748;
+            color: #e2e8f0;
+            white-space: nowrap;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            min-width: fit-content;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chip::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .chip:hover::before {
+            left: 100%;
+        }
+
+        .chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .chip.active {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            color: #fff;
+            border-color: #1e3a8a;
+            box-shadow: 0 6px 20px rgba(30, 58, 138, 0.4);
+        }
+
+        /* Kitchen category chips - Golden/Amber theme */
+        .chip[data-category="kitchen"] {
+            background: linear-gradient(135deg, #92400e 0%, #b45309 100%);
+            color: #fef3c7;
+            border-color: #92400e;
+        }
+
+        .chip[data-category="kitchen"]:hover {
+            box-shadow: 0 8px 25px rgba(146, 64, 14, 0.3);
+        }
+
+        .chip[data-category="kitchen"].active {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #1a202c;
+            border-color: #f59e0b;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        /* Bar category chips - Deep Purple/Indigo theme */
+        .chip[data-category="bar"] {
+            background: linear-gradient(135deg, #581c87 0%, #7c3aed 100%);
+            color: #e9d5ff;
+            border-color: #581c87;
+        }
+
+        .chip[data-category="bar"]:hover {
+            box-shadow: 0 8px 25px rgba(88, 28, 135, 0.3);
+        }
+
+        .chip[data-category="bar"].active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: #1a202c;
+            border-color: #8b5cf6;
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        @media (min-width: 480px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1.5rem;
+                padding: 1.5rem;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .card img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-placeholder {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #9ca3af;
+            border-radius: 16px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            margin-left: 1rem;
+            flex: 1;
+        }
+
+        .card-body .name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #1a202c;
+        }
+
+        .card-body .cat {
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: #475569;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-body .price {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #1e3a8a;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            color: #6b7280;
+            grid-column: 1 / -1;
+            padding: 3rem 1rem;
+            font-size: 1.1rem;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2rem 1rem;
+            gap: 0.5rem;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1e3a8a;
+            transition: all 0.3s ease;
+            min-width: 44px;
+            text-align: center;
+        }
+
+        .pagination a:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        .pagination .current {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 479px) {
+            .hero {
+                padding: 1.5rem 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .sticky {
+                padding: 0.75rem;
+            }
+
+            .tab {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.85rem;
+            }
+
+            .chip {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            .card {
+                padding: 0.75rem;
+            }
+
+            .card img,
+            .card-placeholder {
+                width: 70px;
+                height: 70px;
+            }
+
+            .card-body .name {
+                font-size: 1rem;
+            }
+
+            .card-body .price {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Loading Animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+
+<header class="bg-gray-100 py-12">
+    <div class="hero-content">
+        <h1>Our Menu</h1>
+        <p>Browse and call a waiter when ready</p>
+    </div>
+</header>
+
+<div class="sticky">
+    <!-- Module tabs -->
+    <div class="tabs">
+        {% for value,label in sections %}
+            <a class="tab {% if value == active_section %}active{% endif %}"
+               href="?section={{ value }}">{{ label }}</a>
+        {% endfor %}
+    </div>
+
+    <!-- Search -->
+    <div class="search">
+        <div class="search-container">
+            <div class="search-icon">🔍</div>
+            <input type="search" name="search" placeholder="Search dishes, drinks, desserts..."
+                   value="{{ search_query }}"
+                   oninput="liveSearch(this.value)">
+        </div>
+    </div>
+
+    <!-- Category chips -->
+    <div class="chips" id="categoryChips">
+        <a class="chip {% if not selected_category %}active{% endif %}"
+           href="?section={{ active_section }}">All</a>
+        {% for c in categories %}
+            <a class="chip {% if c.id|stringformat:'s' == selected_category %}active{% endif %}"
+               data-category="{% if 'kitchen' in c.name|lower or 'food' in c.name|lower or 'meal' in c.name|lower %}kitchen{% elif 'bar' in c.name|lower or 'drink' in c.name|lower or 'beverage' in c.name|lower %}bar{% else %}general{% endif %}"
+               href="?section={{ active_section }}&category={{ c.id }}">{{ c.name }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Item grid -->
+<div class="grid">
+    {% for item in menu_items %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+            {% else %}
+                <div class="card-placeholder">
+                    {{ item.name|first|upper }}
+                </div>
+            {% endif %}
+            <div class="card-body">
+                <div class="name">{{ item.name }}</div>
+                <div class="cat">{{ item.category.name }}</div>
+                <div class="price">{{ item.selling_price }} KES</div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="empty-state">
+            <p>No items found matching your search.</p>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav class="pagination">
+    {% if page_obj.has_previous %}
+        <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">← Prev</a>
+    {% endif %}
+    <span class="current">{{ page_obj.number }}</span>
+    {% if page_obj.has_next %}
+        <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">Next →</a>
+    {% endif %}
+</nav>
+{% endif %}
+
+<script>
+function liveSearch(val) {
+    const params = new URLSearchParams(location.search);
+    if (val) {
+        params.set('search', val);
+    } else {
+        params.delete('search');
+    }
+    params.delete('page'); // reset to page 1 on new search
+
+    // Add loading state
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => card.classList.add('loading'));
+
+    // Simulate loading delay for better UX
+    setTimeout(() => {
+        location.search = params.toString();
+    }, 150);
+}
+
+// Add smooth scrolling for tab navigation
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function(e) {
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            this.style.transform = '';
+        }, 150);
+    });
+});
+
+// Enhanced category chips scrolling
+function initializeCategoryScrolling() {
+    const chipsContainer = document.getElementById('categoryChips');
+    const activeChip = chipsContainer.querySelector('.chip.active');
+
+    if (activeChip && chipsContainer) {
+        // Smooth scroll to active chip on page load
+        const chipRect = activeChip.getBoundingClientRect();
+        const containerRect = chipsContainer.getBoundingClientRect();
+
+        if (chipRect.left < containerRect.left || chipRect.right > containerRect.right) {
+            activeChip.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
+        }
+    }
+
+    // Add click handlers for smooth scrolling
+    document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', function(e) {
+            // Visual feedback
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+
+            // Scroll to clicked chip
+            setTimeout(() => {
+                this.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'center'
+                });
+            }, 100);
+        });
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initializeCategoryScrolling);
+
+// Add touch feedback for mobile
+document.addEventListener('touchstart', function() {}, {passive: true});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,639 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Duplicate Menu Items Management{% endblock %}
+
+{% block styles %}
+{{ block.super }}
+<style>
+    .duplicate-group {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        background: #f8f9fa;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .duplicate-header {
+        background: linear-gradient(135deg, #ffc107, #ffb700);
+        color: white;
+        padding: 1rem;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .duplicate-item {
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem;
+        transition: all 0.2s;
+    }
+
+    .duplicate-item:hover {
+        background: #f1f3f4;
+    }
+
+    .duplicate-item:last-child {
+        border-bottom: none;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .primary-item {
+        background: #e8f5e8 !important;
+        border-left: 4px solid #28a745;
+    }
+
+    .inactive-item {
+        opacity: 0.7;
+        background: #ffe6e6 !important;
+    }
+
+    .similarity-badge {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        color: white;
+        font-size: 0.75rem;
+    }
+
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+    }
+
+    .quick-edit-form {
+        display: none;
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 4px;
+        margin-top: 0.5rem;
+    }
+
+    .btn-group-actions {
+        gap: 0.5rem;
+    }
+
+    .loading {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .refresh-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="section pt-0">
+    <div class="container mx-auto px-4 lg:max-w-7xl is-fluid">
+        <div class="mb-6">
+            <div class="is-flex is-justify-content-space-between is-align-items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">
+                        <span class="icon text-yellow-500">
+                            <i class="fas fa-clone"></i>
+                        </span>
+                        Duplicate Menu Items
+                    </h1>
+                    <p class="text-lg text-gray-600 mb-4 is-5 has-text-grey">Identify and manage duplicate or similar menu items</p>
+                </div>
+                <a href="{% url 'pos:pos' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white is-light">
+                    <span class="icon">
+                        <i class="fas fa-arrow-left"></i>
+                    </span>
+                    <span>Back to Dashboard</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="flex flex-wrap -mx-3 mb-5">
+            <div class="w-full px-3 md:w-1/3">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden stats-card">
+                    <div class="p-6 text-center">
+                        <p class="text-2xl font-bold text-gray-900 mb-4 is-3 has-text-white">{{ duplicate_stats.duplicate_groups }}</p>
+                        <p class="text-lg text-gray-600 mb-4 is-6 has-text-white">Duplicate Groups</p>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full px-3 md:w-1/3">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden stats-card">
+                    <div class="p-6 text-center">
+                        <p class="text-2xl font-bold text-gray-900 mb-4 is-3 has-text-white">{{ duplicate_stats.total_duplicates }}</p>
+                        <p class="text-lg text-gray-600 mb-4 is-6 has-text-white">Total Duplicates</p>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full px-3 md:w-1/3">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden stats-card">
+                    <div class="p-6 text-center">
+                        <form method="post" action="{% url 'pos:clear_duplicate_cache' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light text-xs px-2.5 py-1.5 refresh-btn">
+                                <span class="icon text-xs px-2.5 py-1.5">
+                                    <i class="fas fa-sync-alt"></i>
+                                </span>
+                                <span>Refresh</span>
+                            </button>
+                        </form>
+                        <p class="text-lg text-gray-600 mb-4 is-6 has-text-white mt-2">Last Updated: Now</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if not duplicate_groups %}
+        <div class="notification bg-green-600 hover:bg-green-700 text-white">
+            <span class="icon">
+                <i class="fas fa-check-circle"></i>
+            </span>
+            <strong>Great!</strong> No duplicate menu items found.
+        </div>
+        {% else %}
+
+        <!-- Bulk Actions Form -->
+        <form id="bulkActionForm" method="post" action="{% url 'pos:bulk_manage_duplicates' %}">
+            {% csrf_token %}
+
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-5">
+                <div class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                    <div class="text-lg font-bold text-gray-800">
+                        <span class="icon">
+                            <i class="fas fa-cog"></i>
+                        </span>
+                        Bulk Actions
+                    </div>
+                    <div class="card-header-icon">
+                        <div class="buttons">
+                            <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white text-xs px-2.5 py-1.5" onclick="selectAll()">
+                                Select All
+                            </button>
+                            <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light text-xs px-2.5 py-1.5" onclick="clearSelection()">
+                                Clear Selection
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex flex-wrap -mx-3">
+                        <div class="w-full px-3 md:w-1/2">
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Choose Action</label>
+                                <div class="relative">
+                                    <div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border is-fullwidth">
+                                        <select name="action" required>
+                                            <option value="">Select an action...</option>
+                                            <option value="deactivate">Deactivate Selected Items</option>
+                                            <option value="merge">Merge Selected Items (keep first as primary)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full px-3 md:w-1/2">
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Execute</label>
+                                <div class="relative">
+                                    <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-yellow-500 hover:bg-yellow-600 text-black is-fullwidth" onclick="return confirmBulkAction()">
+                                        <span class="icon">
+                                            <i class="fas fa-cog"></i>
+                                        </span>
+                                        <span>Execute Action</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Duplicate Groups -->
+            {% for group in duplicate_groups %}
+            <div class="duplicate-group">
+                <div class="duplicate-header">
+                    <div class="is-flex is-justify-content-space-between is-align-items-center">
+                        <h6 class="text-2xl font-bold text-gray-900 mb-4 is-6 has-text-white mb-0">
+                            <span class="icon">
+                                <i class="fas fa-layer-group"></i>
+                            </span>
+                            Group {{ forloop.counter }} - {{ group.total_count }} similar items
+                        </h6>
+                        <div class="flex flex-wrap gap-2">
+                            {% for name in group.names %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">{{ name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Primary Item -->
+                <div class="duplicate-item primary-item {% if not group.primary.is_active %}inactive-item{% endif %}">
+                    <div class="flex flex-wrap -mx-3 is-vcentered">
+                        <div class="w-full px-3 is-narrow">
+                            <label class="checkbox">
+                                <input type="checkbox" name="item_ids" value="{{ group.primary.id }}" id="item_{{ group.primary.id }}">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white ml-2">PRIMARY</span>
+                            </label>
+                        </div>
+                        <div class="w-full px-3 is-3">
+                            <p class="text-2xl font-bold text-gray-900 mb-4 is-6 mb-1">{{ group.primary.name }}</p>
+                            <p class="text-lg text-gray-600 mb-4 is-7 has-text-grey">{{ group.primary.category.name }}</p>
+                        </div>
+                        <div class="w-full px-3 is-2">
+                            <p class="has-text-weight-bold">KES {{ group.primary.selling_price }}</p>
+                            <p class="is-size-7 has-text-grey">Cost: {{ group.primary.supplier_cost_price }}</p>
+                        </div>
+                        <div class="w-full px-3 is-2">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if group.primary.stock_quantity > 0 %}is-success{% else %}is-warning{% endif %}">
+                                {{ group.primary.stock_quantity }} {{ group.primary.get_unit_of_measure_display|lower }}
+                            </span>
+                        </div>
+                        <div class="w-full px-3 is-2">
+                            {% if group.primary.is_active %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white">Active</span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">Inactive</span>
+                            {% endif %}
+                        </div>
+                        <div class="w-full px-3 is-3">
+                            <div class="buttons is-right">
+                                <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white text-xs px-2.5 py-1.5"
+                                        onclick="toggleQuickEdit({{ group.primary.id }})">
+                                    <span class="icon text-xs px-2.5 py-1.5">
+                                        <i class="fas fa-edit"></i>
+                                    </span>
+                                    <span>Edit</span>
+                                </button>
+                                <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white text-xs px-2.5 py-1.5 toggle-active-btn"
+                                        data-item-id="{{ group.primary.id }}">
+                                    <span class="icon text-xs px-2.5 py-1.5">
+                                        <i class="fas fa-toggle-{% if group.primary.is_active %}on{% else %}off{% endif %}"
+                                           style="color: {% if group.primary.is_active %}#28a745{% else %}#dc3545{% endif %};"></i>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Edit Form -->
+                    <div id="quickEdit_{{ group.primary.id }}" class="quick-edit-form">
+                        <div class="flex flex-wrap -mx-3">
+                            <div class="w-full px-3 is-4">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1 text-xs px-2.5 py-1.5">Item Name</label>
+                                    <div class="relative">
+                                        <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xs px-2.5 py-1.5"
+                                               value="{{ group.primary.name }}" name="name">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full px-3 is-2">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1 text-xs px-2.5 py-1.5">Selling Price</label>
+                                    <div class="relative">
+                                        <input type="number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xs px-2.5 py-1.5"
+                                               value="{{ group.primary.selling_price }}" name="selling_price" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full px-3 is-2">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1 text-xs px-2.5 py-1.5">Stock</label>
+                                    <div class="relative">
+                                        <input type="number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xs px-2.5 py-1.5"
+                                               value="{{ group.primary.stock_quantity }}" name="stock_quantity" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full px-3 is-4">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1 text-xs px-2.5 py-1.5">&nbsp;</label>
+                                    <div class="relative">
+                                        <div class="buttons">
+                                            <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white text-xs px-2.5 py-1.5"
+                                                    onclick="saveQuickEdit({{ group.primary.id }})">
+                                                <span class="icon text-xs px-2.5 py-1.5">
+                                                    <i class="fas fa-save"></i>
+                                                </span>
+                                                <span>Save</span>
+                                            </button>
+                                            <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light text-xs px-2.5 py-1.5"
+                                                    onclick="toggleQuickEdit({{ group.primary.id }})">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Duplicate Items -->
+                {% for duplicate in group.duplicates %}
+                <div class="duplicate-item {% if not duplicate.is_active %}inactive-item{% endif %}">
+                    <div class="flex flex-wrap -mx-3 is-vcentered">
+                        <div class="w-full px-3 is-narrow">
+                            <label class="checkbox">
+                                <input type="checkbox" name="item_ids" value="{{ duplicate.id }}" id="item_{{ duplicate.id }}">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium similarity-badge ml-2">DUPLICATE</span>
+                            </label>
+                        </div>
+                        <div class="w-full px-3 is-3">
+                            <p class="text-2xl font-bold text-gray-900 mb-4 is-6 mb-1">{{ duplicate.name }}</p>
+                            <p class="text-lg text-gray-600 mb-4 is-7 has-text-grey">{{ duplicate.category.name }}</p>
+                        </div>
+                        <div class="w-full px-3 is-2">
+                            <p class="has-text-weight-bold">KES {{ duplicate.selling_price }}</p>
+                            <p class="is-size-7 has-text-grey">Cost: {{ duplicate.supplier_cost_price }}</p>
+                        </div>
+                        <div class="w-full px-3 is-2">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if duplicate.stock_quantity > 0 %}is-success{% else %}is-warning{% endif %}">
+                                {{ duplicate.stock_quantity }} {{ duplicate.get_unit_of_measure_display|lower }}
+                            </span>
+                        </div>
+                        <div class="w-full px-3 is-2">
+                            {% if duplicate.is_active %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white">Active</span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">Inactive</span>
+                            {% endif %}
+                        </div>
+                        <div class="w-full px-3 is-3">
+                            <div class="buttons is-right">
+                                <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white text-xs px-2.5 py-1.5"
+                                        onclick="toggleQuickEdit({{ duplicate.id }})">
+                                    <span class="icon text-xs px-2.5 py-1.5">
+                                        <i class="fas fa-edit"></i>
+                                    </span>
+                                    <span>Edit</span>
+                                </button>
+                                <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white text-xs px-2.5 py-1.5 toggle-active-btn"
+                                        data-item-id="{{ duplicate.id }}">
+                                    <span class="icon text-xs px-2.5 py-1.5">
+                                        <i class="fas fa-toggle-{% if duplicate.is_active %}on{% else %}off{% endif %}"
+                                           style="color: {% if duplicate.is_active %}#28a745{% else %}#dc3545{% endif %};"></i>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Edit Form -->
+                    <div id="quickEdit_{{ duplicate.id }}" class="quick-edit-form">
+                        <div class="flex flex-wrap -mx-3">
+                            <div class="w-full px-3 is-4">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1 text-xs px-2.5 py-1.5">Item Name</label>
+                                    <div class="relative">
+                                        <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xs px-2.5 py-1.5"
+                                               value="{{ duplicate.name }}" name="name">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full px-3 is-2">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1 text-xs px-2.5 py-1.5">Selling Price</label>
+                                    <div class="relative">
+                                        <input type="number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xs px-2.5 py-1.5"
+                                               value="{{ duplicate.selling_price }}" name="selling_price" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full px-3 is-2">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1 text-xs px-2.5 py-1.5">Stock</label>
+                                    <div class="relative">
+                                        <input type="number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xs px-2.5 py-1.5"
+                                               value="{{ duplicate.stock_quantity }}" name="stock_quantity" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full px-3 is-4">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1 text-xs px-2.5 py-1.5">&nbsp;</label>
+                                    <div class="relative">
+                                        <div class="buttons">
+                                            <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white text-xs px-2.5 py-1.5"
+                                                    onclick="saveQuickEdit({{ duplicate.id }})">
+                                                <span class="icon text-xs px-2.5 py-1.5">
+                                                    <i class="fas fa-save"></i>
+                                                </span>
+                                                <span>Save</span>
+                                            </button>
+                                            <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light text-xs px-2.5 py-1.5"
+                                                    onclick="toggleQuickEdit({{ duplicate.id }})">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </form>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+    function selectAll() {
+        document.querySelectorAll('input[name="item_ids"]').forEach(checkbox => {
+            checkbox.checked = true;
+        });
+    }
+
+    function clearSelection() {
+        document.querySelectorAll('input[name="item_ids"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    }
+
+    function confirmBulkAction() {
+        const action = document.querySelector('select[name="action"]').value;
+        const selectedItems = document.querySelectorAll('input[name="item_ids"]:checked').length;
+
+        if (!action) {
+            alert('Please select an action');
+            return false;
+        }
+
+        if (selectedItems === 0) {
+            alert('Please select at least one item');
+            return false;
+        }
+
+        let message = '';
+        if (action === 'merge') {
+            message = `This will merge all selected items into the first selected item (combining stock). Continue?`;
+        } else {
+            message = `Are you sure you want to DEACTIVATE ${selectedItems} items? They will be hidden from the POS.`;
+        }
+
+        return confirm(message);
+    }
+
+    function toggleQuickEdit(itemId) {
+        const form = document.getElementById(`quickEdit_${itemId}`);
+        form.style.display = form.style.display === 'none' || !form.style.display ? 'block' : 'none';
+    }
+
+    function saveQuickEdit(itemId) {
+        const form = document.getElementById(`quickEdit_${itemId}`);
+        const inputs = form.querySelectorAll('input[name]');
+
+        const data = {};
+        inputs.forEach(input => {
+            data[input.name] = input.value;
+        });
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(`/edit-menu-item/${itemId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: new URLSearchParams(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                showNotification('Item updated successfully!', 'success');
+                toggleQuickEdit(itemId);
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Error: ' + (result.errors || 'Failed to update'), 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred while saving', 'danger');
+        });
+    }
+
+    // Event delegation for toggle buttons with validation
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.toggle-active-btn')) {
+            const button = e.target.closest('.toggle-active-btn');
+            const itemId = button.getAttribute('data-item-id');
+
+            // Validate itemId exists
+            if (!itemId || itemId === '') {
+                console.error('Invalid item ID');
+                showNotification('Error: Invalid item ID', 'danger');
+                return;
+            }
+
+            const icon = button.querySelector('i');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            // Disable button during request
+            button.disabled = true;
+
+            fetch(`/toggle-menu-item-active/${itemId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update icon
+                    if (icon) {
+                        if (data.is_active) {
+                            icon.className = 'fas fa-toggle-on';
+                            icon.style.color = '#28a745';
+                        } else {
+                            icon.className = 'fas fa-toggle-off';
+                            icon.style.color = '#dc3545';
+                        }
+                    }
+
+                    // Update status tag
+                    const statusTag = button.closest('.columns').querySelector('.column:nth-child(5) .tag');
+                    if (statusTag) {
+                        if (data.is_active) {
+                            statusTag.className = 'tag is-success';
+                            statusTag.textContent = 'Active';
+                        } else {
+                            statusTag.className = 'tag is-light';
+                            statusTag.textContent = 'Inactive';
+                        }
+                    }
+
+                    // Update item styling
+                    const itemRow = button.closest('.duplicate-item');
+                    if (itemRow) {
+                        if (data.is_active) {
+                            itemRow.classList.remove('inactive-item');
+                        } else {
+                            itemRow.classList.add('inactive-item');
+                        }
+                    }
+
+                    showNotification(data.message, 'success');
+                } else {
+                    showNotification('Failed to toggle status.', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('An error occurred while toggling status.', 'danger');
+            })
+            .finally(() => {
+                // Re-enable button
+                button.disabled = false;
+            });
+        }
+    });
+
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification is-${type} is-light`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+            animation: slideInRight 0.3s ease-out;
+        `;
+        notification.innerHTML = `
+            <button class="delete" onclick="this.parentElement.remove()"></button>
+            ${message}
+        `;
+
+        if (!document.querySelector('#notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, 5000);
+    }
+</script>
+{% endblock %}

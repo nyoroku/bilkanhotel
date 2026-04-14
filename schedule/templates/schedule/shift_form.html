@@ -1,0 +1,32 @@
+{% extends 'pos/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}Edit Shift{% else %}Add Shift{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container mx-auto px-4 lg:max-w-7xl">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">
+            {% if object %}Edit Shift{% else %}Add Shift{% endif %}
+        </h1>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="mb-4 flex space-x-2 mt-5">
+                <div class="relative">
+                    <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white">
+                        {% if object %}Save changes{% else %}Create{% endif %}
+                    </button>
+                </div>
+                <div class="relative">
+                    <a href="{% url 'schedule:schedule_detail' form.instance.schedule.pk|default:object.schedule.pk %}"
+                       class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

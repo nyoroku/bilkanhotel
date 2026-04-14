@@ -1,0 +1,65 @@
+{% comment %}
+This is the DEFINITIVE, ready-to-use version of the station ticket.
+- FIX: Printing is now a direct link, which is 100% reliable.
+- FIX: Colors are corrected to a high-contrast Mustard & Navy theme.
+{% endcomment %}
+
+{% with age=order.age_minutes %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden" id="ticket-{{ order.id }}" style="background-color: #34495e; border-radius: 6px;
+    /* --- COLOR FIX: New orders get a high-contrast MUSTARD border --- */
+    border-left: 8px solid {% if age < 10 %}#f1c40f{% elif age > 20 %}#e74c3c{% else %}#4a6279{% endif %};">
+
+    {# Ticket Header #}
+    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between" style="box-shadow: none; border-bottom: 1px solid #4a6279;">
+        <div class="text-lg font-bold text-gray-800 has-text-white is-justify-content-space-between">
+            <div>
+                <p class="has-text-weight-bold text-xl font-medium">Order #{{ order.id }}</p>
+                <p class="is-size-7 has-text-grey-light">{{ order.table.table_number|default:'Takeaway' }}</p>
+            </div>
+            <div class="text-right">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-dark">{{ age }} min ago</span>
+            </div>
+        </div>
+
+        {# --- PRINTING FIX: This is now a standard link styled as a button --- #}
+        <div class="card-header-icon">
+            <a href="{% url 'pos:print_order_receipt' order.id %}" target="_blank" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 is-light bg-transparent border-2" title="Print Production Docket">
+                <span class="icon"><i class="fas fa-print"></i></span>
+            </a>
+        </div>
+    </header>
+
+    {# Ticket Body with Items #}
+    <div class="p-6 p-0">
+        {% for item in order.items.all %}
+            {% if item.menu_item.category.module == module_type %}
+            <div class="is-flex is-align-items-center p-3 {% if not forloop.last %}has-border-bottom{% endif %}">
+                <div class="mr-3">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-white text-lg px-6 py-3">{{ item.quantity|floatformat }}x</span>
+                </div>
+                <div class="is-flex-grow-1">
+                    <p class="has-text-weight-semibold has-text-white">{{ item.menu_item.name }}</p>
+                </div>
+                <div class="ml-2">
+                    {% if item.status == 'Pending' %}
+                    <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 is-light bg-transparent border-2"
+                            hx-post="{% url 'pos:htmx_mark_one_item_ready' item.id %}"
+                            hx-target="#ticket-{{ order.id }}"
+                            hx-swap="outerHTML">
+                        <span>Ready</span>
+                        <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-check"></i></span>
+                    </button>
+                    {% else %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">
+                        <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-check"></i></span>
+                        <span>Ready</span>
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+<style> .has-border-bottom { border-bottom: 1px solid #4a6279; } </style>
+{% endwith %}

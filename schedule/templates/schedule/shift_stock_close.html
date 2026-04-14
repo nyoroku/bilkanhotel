@@ -1,0 +1,106 @@
+{% extends 'pos/base.html' %}
+{% load static %}
+{% load schedule_extra %}
+
+{% block title %}Closing Stock – {{ section }}{% endblock %}
+
+{% block styles %}
+{{ block.super }}
+<style>
+    :root {
+        --navy-dark: #2c3e50;
+        --navy-light: #34495e;
+        --text-light: #ecf0f1;
+        --accent-mustard: #f1c40f;
+    }
+    .main-content-area {
+        background-color: var(--navy-dark);
+        color: var(--text-light);
+    }
+    .station-banner {
+        background-color: var(--navy-light);
+        border-left: 6px solid var(--accent-mustard);
+        padding: 1.5rem 2rem;
+        border-radius: 8px;
+        margin-bottom: 2.5rem;
+    }
+    .section-title {
+        color: var(--text-light);
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 1px;
+    }
+    .table th {
+        color: var(--text-light);
+    }
+    .tag.is-last {
+        background-color: #f1c40f;
+        color: #2c3e50;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="section main-content-area">
+    <div class="station-banner">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2 has-text-white">Closing Stock – {{ section }}</h1>
+        <h2 class="text-lg text-gray-600 mb-4 is-5 has-text-white">Shift {{ shift.start_datetime }} {{ shift.end_datetime }}</h2>
+    </div>
+
+    {% if messages %}
+        {% for m in messages %}
+            <div class="notification {{ m.tags }}">{{ m }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Last Closing</th>
+                    <th>Opening</th>
+                    <th>System Stock</th>
+                    <th>Physical Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for st in stock_takes %}
+                <tr>
+                    <td>{{ st.item.name }}</td>
+                    <td>
+                        {% if last_closing|get_item:st.item.id %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-last">{{ last_closing|get_item:st.item.id }}</span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">—</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">{{ st.opening_physical }}</span></td>
+                    <td><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">{{ st.closing_system|default:st.item.stock_quantity }}</span></td>
+                    <td>
+                        <input type="number" step="0.001" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                               name="item_{{ st.item.id }}" required>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">
+                        <p class="has-text-white">All items already closed or no items for this section.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if stock_takes %}
+        <div class="text-center">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white text-xl px-8 py-4">
+                Save Closing Stock
+            </button>
+        </div>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

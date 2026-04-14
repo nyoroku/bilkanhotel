@@ -1,0 +1,36 @@
+{% extends "trucks/base.html" %}
+{% load static %}
+
+{% block title %}Truck {{ object.truck_number }} - LogiTrack{% endblock %}
+
+{% block page_title %}Truck {{ object.truck_number }}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+  <div class="flex flex-wrap -mx-3">
+    <div class="w-full px-3">
+      <p><strong>Truck Number:</strong> {{ object.truck_number }}</p>
+      <p><strong>Make & Model:</strong> {{ object.make|default:"N/A" }} {{ object.model|default:"" }}</p>
+      <p><strong>Year:</strong> {{ object.year|default:"N/A" }}</p>
+      <p><strong>Type:</strong> {{ object.get_truck_type_display }}</p>
+      <p><strong>Capacity:</strong> {{ object.capacity_tons|default:"N/A" }} tons</p>
+      <p><strong>Fuel Tank:</strong> {{ object.fuel_tank_capacity|default:"N/A" }} L</p>
+      <p><strong>Status:</strong> {% if object.is_active %}<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white">Active</span>{% else %}<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-600 hover:bg-red-700 text-white">Inactive</span>{% endif %}</p>
+    </div>
+    <div class="w-full px-3">
+      {% if object.remarks %}
+        <div class="content">
+          <h4>Remarks</h4>
+          <p>{{ object.remarks }}</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="buttons mt-4">
+    <a href="{% url 'trucks:truck_edit' object.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-yellow-500 hover:bg-yellow-600 text-black">Edit</a>
+    <a href="{% url 'trucks:truck_delete' object.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white" hx-get hx-target="#modal" hx-swap="innerHTML">Delete</a>
+    <a href="{% url 'trucks:truck_list' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light">Back to List</a>
+  </div>
+</div>
+{% endblock %}

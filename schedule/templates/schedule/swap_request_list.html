@@ -1,0 +1,30 @@
+{% extends 'pos/base.html' %}
+{% block title %}Swap Requests{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 mb-4">Swap Requests</h1>
+<table class="min-w-full divide-y divide-gray-200 is-fullwidth">
+  <thead>
+    <tr><th>Requester</th><th>Shift</th><th>Requested</th><th>Notes</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for req in requests %}
+    <tr>
+      <td>{{ req.requester.get_full_name }}</td>
+      <td>{{ req.shift.date|date:"d M" }} – {{ req.shift.name }}</td>
+      <td>{{ req.created_at|date:"d M Y H:i" }}</td>
+      <td>{{ req.notes|linebreaksbr }}</td>
+      <td>
+        {% if req.status == 'pending' %}
+          <a href="{% url 'schedule:approve_swap' req.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white">Approve</a>
+          <a href="{% url 'schedule:reject_swap'  req.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white">Reject</a>
+        {% else %}
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">{{ req.status|title }}</span>
+        {% endif %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="5">No swap requests.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

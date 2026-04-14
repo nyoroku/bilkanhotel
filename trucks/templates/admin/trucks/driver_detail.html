@@ -1,0 +1,91 @@
+{% extends "trucks/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 lg:max-w-7xl">
+    <div class="level">
+        <div class="level-left">
+            <div class="level-item">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4 is-4">{{ driver.get_full_name }}</h2>
+            </div>
+        </div>
+        <div class="level-right">
+            <div class="level-item">
+                <a href="{% url 'trucks:driver_edit' driver.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-yellow-500 hover:bg-yellow-600 text-black is-light mr-2">
+                    <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-edit"></i></span>
+                    <span>Edit</span>
+                </a>
+                <a href="{% url 'trucks:driver_delete' driver.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white is-light">
+                    <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-trash"></i></span>
+                    <span>Delete</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Driver Summary -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+        <div class="flex flex-wrap -mx-3">
+            <div class="w-full px-3 is-6">
+                <p><strong>License Number:</strong> {{ driver.license_number }}</p>
+                <p><strong>Phone:</strong> {{ driver.phone|default:"Not provided" }}</p>
+                <p><strong>Email:</strong> {{ driver.email|default:"Not provided" }}</p>
+            </div>
+            <div class="w-full px-3 is-6">
+                <p><strong>Status:</strong>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if driver.is_active %}is-success{% else %}is-light{% endif %}">
+                        {% if driver.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </p>
+                <p><strong>Created:</strong> {{ driver.created_at|date:"F d, Y" }}</p>
+                <p><strong>Last Updated:</strong> {{ driver.updated_at|date:"F d, Y" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Trips -->
+    {% if recent_trips %}
+    <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5 mt-5">Recent Trips</h3>
+    <div class="table-container">
+        <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+            <thead>
+                <tr>
+                    <th>Trip #</th>
+                    <th>Truck</th>
+                    <th>Destination</th>
+                    <th>Transporter</th>
+                    <th>Planned Departure</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trip in recent_trips %}
+                <tr>
+                    <td>{{ trip.trip_number }}</td>
+                    <td>{{ trip.truck.truck_number }}</td>
+                    <td>{{ trip.destination.name }}</td>
+                    <td>{{ trip.transporter.name }}</td>
+                    <td>{{ trip.planned_departure|date:"M d, H:i" }}</td>
+                    <td>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if trip.status == 'completed' %}is-success{% elif 'in_progress' %}is-warning{% else %}is-light{% endif %}">
+                            {{ trip.get_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Remarks -->
+    {% if driver.remarks %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-4 mt-4">
+        <p><strong>Remarks:</strong> {{ driver.remarks }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+<div class="table-container">
+    <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+        <thead>
+            <tr>
+                <th>Category Name</th>
+                <th>Assigned Section</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in page_obj.object_list %}
+                <tr>
+                    <td style="vertical-align: middle;"><strong>{{ category.name }}</strong></td>
+                    <td style="vertical-align: middle;">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if category.module == 'Kitchen' %}is-warning{% elif 'Bar' %}is-info{% else %}is-light{% endif %}">
+                            {{ category.get_module_display }}
+                        </span>
+                    </td>
+                    <td class="text-center" style="vertical-align: middle;">
+                        <a href="{% url 'pos:category_edit' category.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white is-light">
+                           <span>Edit</span>
+                        </a>
+                         <a href="{% url 'pos:category_delete' category.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white is-light">
+                           <span>Delete</span>
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center">No categories match your filters.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination Links -->
+{% if page_obj.has_other_pages %}
+<nav class="pagination is-centered mt-4" role="navigation" aria-label="pagination"
+     hx-get="{% url 'pos:category_list' %}"
+     hx-target="#category-table-container"
+     hx-swap="innerHTML"
+     hx-include="#category-filters">
+
+    <ul class="pagination-list">
+        {% for num in page_obj.paginator.page_range %}
+            <li>
+                <a href="?page={{ num }}" class="pagination-link {% if page_obj.number == num %}is-current{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}

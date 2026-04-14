@@ -1,0 +1,18 @@
+{% for item in items %}
+<div class="item-result bg-white rounded-lg shadow-md p-6 mb-4 is-clickable mb-2"
+     data-id="{{ item.id }}"
+     data-name="{{ item.name }}"
+     data-price="{{ item.supplier_cost_price|default:0 }}">
+    <div class="is-flex is-justify-content-space-between">
+        <div>
+            <p class="has-text-weight-bold">{{ item.name }}</p>
+            <p class="is-size-7">{{ item.category.name }} | Stock: {{ item.stock_quantity }}</p>
+        </div>
+        <div class="text-right">
+            <p class="has-text-weight-bold">{{ item.supplier_cost_price|default:"-" }} KES</p>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="notification is-light">No items found</div>
+{% endfor %}

@@ -1,0 +1,54 @@
+{% comment %}
+This partial displays the actual report data: the financial summary
+and the list of individual credit sales.
+{% endcomment %}
+
+<div class="bg-white rounded-lg shadow-md p-6 mb-4 has-background-light mb-5">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4 is-4">Summary for Selected Period</h2>
+    <div class="level">
+        <div class="level-item text-center">
+            <div>
+                <p class="heading">New Credit Sales Issued</p>
+                <p class="text-2xl font-bold text-gray-900 mb-4 is-3 text-red-500">{{ total_credit_sales_in_period|floatformat:2 }}</p>
+            </div>
+        </div>
+        <div class="level-item text-center">
+            <div>
+                <p class="heading">Debt Payments Received</p>
+                <p class="text-2xl font-bold text-gray-900 mb-4 is-3 text-green-500">{{ total_payments_in_period|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+    <h3 class="text-2xl font-bold text-gray-900 mb-4 is-4">Credit Sales Issued in Period</h3>
+    <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Waiter</th>
+                <th class="text-right">Credit Amount (KES)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in credit_sales %}
+            <tr>
+                <td>{{ sale.processed_at|date:"d M Y, H:i" }}</td>
+                <td><a href="{% url 'pos:waiter_order_detail' sale.order.id %}">#{{ sale.order.id }}</a></td>
+                <td><strong>{{ sale.order.customer.name }}</strong></td>
+                <td>{{ sale.order.waiter.username }}</td>
+                <td class="text-right has-text-weight-semibold">{{ sale.order.total_amount|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center p-5">
+                    No new credit sales were issued for the selected filters.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

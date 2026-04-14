@@ -1,0 +1,69 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Customer Management{% endblock %}
+
+{% block content %}
+<div class="level mb-5">
+    <div class="level-left">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Customer Management</h1>
+    </div>
+    <div class="level-right">
+        <a href="{% url 'pos:customer_add' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white text-lg px-6 py-3">
+            <span class="icon"><i class="fas fa-user-plus"></i></span>
+            <span>Add New Customer</span>
+        </a>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+    <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Search Customers</label>
+        <div class="relative has-icons-left">
+            <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xl px-8 py-4"
+                   type="search"
+                   name="q"
+                   placeholder="Start typing a name or phone number..."
+                   value="{{ search_query }}"
+                   hx-get="{% url 'pos:customer_list' %}"
+                   hx-trigger="keyup changed delay:300ms, search"
+                   hx-target="#customer-table-content"
+                   hx-swap="innerHTML"
+                   hx-indicator="#search-spinner">
+            <span class="icon is-left"><i class="fas fa-search"></i></span>
+        </div>
+        <p class="help">The list updates automatically as you type.</p>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+    <div class="is-flex is-justify-content-flex-end">
+        <div id="search-spinner" class="htmx-indicator">
+            <p class="has-text-grey">Searching...</p>
+        </div>
+    </div>
+    <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+        <thead>
+            <tr>
+                <th>Customer Name</th>
+                <th>Phone Number</th>
+                <th class="text-right">Credit Balance (KES)</th>
+                <th class="text-right">Credit Limit</th>
+                <th class="text-right">Loyalty Points</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="customer-table-content"
+               hx-get="{% url 'pos:customer_list' %}"
+               hx-trigger="load"
+               hx-swap="innerHTML">
+            <tr>
+                <td colspan="6" class="text-center p-5">
+                    <p class="has-text-grey-light">Loading customers...</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script defer src="https://use.fontawesome.com/releases/v5.15.4/js/all.js"></script>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<section class="section section-large">
+    <div class="container mx-auto px-4 lg:max-w-7xl">
+        <div class="text-center reveal">
+            <h1 class="heading-lg">{{ page_title }}</h1>
+        </div>
+
+        {% for category in categories %}
+        <div class="menu-category reveal">
+            <h2 class="heading-md">{{ category.name }}</h2>
+
+            <div class="menu-grid">
+                {% for item in category.items.all %}
+                <div class="menu-item">
+                    {% if item.image %}
+                    <div class="item-image">
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy">
+                    </div>
+                    {% endif %}
+
+                    <div class="item-content">
+                        <h3 class="item-name">{{ item.name }}</h3>
+                        <div class="item-footer">
+                            <span class="item-price">KSh {{ item.price }}</span>
+                            <button class="btn-add-cart" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" data-item-price="{{ item.price }}">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<style>
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.menu-item {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.menu-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.item-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.item-content {
+    padding: 1.25rem;
+}
+
+.item-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.item-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #059669;
+}
+
+.btn-add-cart {
+    background: #059669;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-add-cart:hover {
+    background: #047857;
+}
+
+.menu-category {
+    margin-bottom: 3rem;
+}
+
+.menu-category:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .item-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+
+    .btn-add-cart {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addToCartButtons = document.querySelectorAll('.btn-add-cart');
+
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const itemName = this.dataset.itemName;
+            const itemPrice = this.dataset.itemPrice;
+
+            // Add your cart logic here
+            console.log('Adding to cart:', { itemId, itemName, itemPrice });
+
+            // Visual feedback
+            const originalText = this.textContent;
+            this.textContent = 'Added!';
+            this.style.background = '#10b981';
+
+            setTimeout(() => {
+                this.textContent = originalText;
+                this.style.background = '#059669';
+            }, 1500);
+        });
+    });
+});
+</script>
+{% endblock %}

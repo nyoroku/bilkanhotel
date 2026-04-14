@@ -1,0 +1,98 @@
+<!-- Modal for Waiter to Request Cancellation -->
+<div class="modal" id="request-cancel-modal">
+  <div class="modal-background" data-close-modal="request-cancel-modal"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">
+        <i class="fas fa-exclamation-triangle"></i> Request Order Cancellation
+      </p>
+      <button class="delete" aria-label="close" data-close-modal="request-cancel-modal"></button>
+    </header>
+    <section class="modal-card-body">
+      <div id="auth-code-section" class="is-hidden">
+        <div class="notification bg-yellow-500 hover:bg-yellow-600 text-black">
+          <p class="has-text-weight-semibold mb-3">Authorization Code Generated</p>
+          <p class="mb-3">Show this code to a Manager or Admin to authorize the cancellation:</p>
+          <div class="text-center my-4">
+            <div id="auth-code-display" class="text-5xl font-extrabold has-text-weight-bold text-[#1e3a8a]"
+                 style="font-family: monospace; letter-spacing: 0.5em;">------</div>
+          </div>
+          <div class="text-center mt-2">
+            <p class="text-red-500 text-xl font-medium" id="countdown-timer">
+              Expires in: <span id="time-remaining">5:00</span>
+            </p>
+          </div>
+        </div>
+        <div class="text-center mt-4">
+          <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light" data-close-modal="request-cancel-modal">Close</button>
+        </div>
+      </div>
+
+      <div id="request-form-section">
+        <div class="notification bg-red-600 hover:bg-red-700 text-white is-light">
+          <p class="has-text-weight-semibold">Warning:</p>
+          <p>This action requires manager authorization. Are you sure you want to request cancellation?</p>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Order Details</label>
+          <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+            <p><strong>Order #:</strong> <span id="cancel-order-id"></span></p>
+            <p><strong>Table:</strong> <span id="cancel-table"></span></p>
+            <p><strong>Total:</strong> <span id="cancel-total"></span> KES</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <footer class="modal-card-foot" id="request-footer">
+      <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white" id="request-cancel-btn">
+        <span class="icon"><i class="fas fa-exclamation-circle"></i></span>
+        <span>Request Cancellation</span>
+      </button>
+      <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150" data-close-modal="request-cancel-modal">Cancel</button>
+    </footer>
+  </div>
+</div>
+
+
+<!-- Modal for Manager Authorization -->
+<div class="modal" id="authorize-cancel-modal">
+  <div class="modal-background" data-close-modal="authorize-cancel-modal"></div>
+  <div class="modal-card">
+    <header class="modal-card-head has-background-danger">
+      <p class="modal-card-title has-text-white">
+        <i class="fas fa-shield-alt"></i> Authorize Cancellation
+      </p>
+      <button class="delete" aria-label="close" data-close-modal="authorize-cancel-modal"></button>
+    </header>
+    <section class="modal-card-body">
+      <div class="notification bg-yellow-500 hover:bg-yellow-600 text-black">
+        <p class="has-text-weight-semibold">Manager Authorization Required</p>
+        <p>Enter the 6-digit code provided by the waiter to authorize this cancellation.</p>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Authorization Code</label>
+        <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xl px-8 py-4 text-center"
+               type="text"
+               id="auth-code-input"
+               placeholder="000000"
+               maxlength="6"
+               inputmode="numeric"
+               pattern="[0-9]{6}"
+               style="letter-spacing: 0.5em; font-size: 1.5rem; font-family: monospace;">
+      </div>
+
+      <div id="auth-error" class="notification bg-red-600 hover:bg-red-700 text-white is-light is-hidden">
+        <p id="auth-error-message"></p>
+      </div>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white" id="authorize-btn">
+        <span class="icon"><i class="fas fa-check"></i></span>
+        <span>Authorize & Cancel Order</span>
+      </button>
+      <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150" data-close-modal="authorize-cancel-modal">Cancel</button>
+    </footer>
+  </div>
+</div>

@@ -1,0 +1,974 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}LogiTrack{% endblock %}</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-light: #f0f1ff;
+      --primary-dark: #4f46e5;
+      --secondary: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --dark: #111827;
+      --dark-card: #1f2937;
+      --dark-hover: #374151;
+      --light: #f9fafb;
+      --light-card: #ffffff;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --sidebar-width: 280px;
+      --border-radius: 12px;
+      --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    html[data-theme="dark"] {
+      --light: #111827;
+      --light-card: #1f2937;
+      --dark: #f9fafb;
+      --text-primary: #f9fafb;
+      --text-secondary: #d1d5db;
+      --primary-light: #1e293b;
+      background: #0f172a;
+      color: #f1f5f9;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: var(--light);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Enhanced Navbar */
+    .navbar {
+      box-shadow: var(--shadow-md);
+      background: var(--light-card) !important;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      z-index: 50;
+    }
+
+    .navbar-brand .navbar-item {
+      font-weight: 700;
+      font-size: 1.25rem;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Enhanced Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--dark-card);
+      color: var(--light);
+      padding: 2rem 1.5rem;
+      overflow-y: auto;
+      transform: translateX(-100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 40;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    html[data-theme="dark"] .sidebar {
+      background: var(--dark-card);
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .sidebar.is-open {
+      transform: translateX(0);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .sidebar .image {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .sidebar .image img {
+      border: 3px solid rgba(255,255,255,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .sidebar .image img:hover {
+      border-color: var(--primary);
+      transform: scale(1.05);
+    }
+
+    /* Enhanced Sidebar Links */
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      padding: 1rem 1.25rem;
+      border-radius: var(--border-radius);
+      color: rgba(255,255,255,0.8);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar a:hover::before {
+      opacity: 1;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      color: #ffffff;
+      background: var(--gradient-primary);
+      transform: translateX(4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .sidebar a.active {
+      background: var(--gradient-primary);
+      color: #ffffff;
+    }
+
+    .sidebar a i {
+      width: 20px;
+      margin-right: 0.75rem;
+      font-size: 1rem;
+    }
+
+    .sidebar hr {
+      border: none;
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      margin: 1.5rem 0;
+    }
+
+    /* Enhanced Main Content */
+    .main-content {
+      margin-left: 0;
+      min-height: 100vh;
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: var(--light);
+    }
+
+    @media (min-width: 1024px) {
+      .sidebar { transform: none; }
+      .main-content { margin-left: var(--sidebar-width); }
+    }
+
+    /* Enhanced Analytics Dropdown */
+    .navbar-dropdown {
+      background: var(--light-card) !important;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-lg);
+      padding: 0.5rem;
+      min-width: 280px;
+    }
+
+    .navbar-dropdown .navbar-item {
+      border-radius: 8px;
+      margin-bottom: 0.25rem;
+      padding: 0.75rem 1rem;
+      transition: all 0.3s ease;
+      color: var(--text-primary);
+    }
+
+    .navbar-dropdown .navbar-item:hover {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      transform: translateX(4px);
+    }
+
+    .navbar-dropdown .navbar-item .icon {
+      margin-right: 0.75rem;
+      width: 20px;
+    }
+
+    .navbar-divider {
+      background-color: rgba(0,0,0,0.1);
+      margin: 0.5rem 0;
+    }
+
+    /* Enhanced Analytics Box */
+    .analytics-box {
+      border-radius: var(--border-radius);
+      background: var(--light-card);
+      margin-bottom: 2rem;
+      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s ease;
+    }
+
+    .analytics-box:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .analytics-box .box {
+      border-radius: var(--border-radius);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(0,0,0,0.05);
+      background: var(--light-card);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .analytics-box .box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-primary);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .analytics-box .box:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary);
+    }
+
+    .analytics-box .box:hover::before {
+      transform: scaleX(1);
+    }
+
+    .analytics-box .box:nth-child(2)::before {
+      background: var(--gradient-secondary);
+    }
+
+    .analytics-box .box:nth-child(3)::before {
+      background: var(--gradient-success);
+    }
+
+    /* Enhanced Buttons */
+    .button {
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .button.is-primary {
+      background: var(--gradient-primary);
+      border: none;
+    }
+
+    .button.is-primary:hover {
+      filter: brightness(110%);
+    }
+
+    /* Enhanced Theme Toggle */
+    #theme-toggle {
+      background: var(--light-card);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    #theme-toggle:hover {
+      background: var(--primary);
+      color: white;
+      transform: rotate(180deg);
+    }
+
+    /* Enhanced Notifications */
+    .notification {
+      border-radius: var(--border-radius);
+      border: none;
+      box-shadow: var(--shadow-md);
+      border-left: 4px solid;
+    }
+
+    .notification.is-success {
+      border-left-color: var(--secondary);
+    }
+
+    .notification.is-warning {
+      border-left-color: var(--warning);
+    }
+
+    .notification.is-danger {
+      border-left-color: var(--danger);
+    }
+
+    /* Enhanced Animations */
+    .message-fade {
+      animation: slideInDown 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slideInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Enhanced Titles */
+    .title {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    /* Loading States */
+    .htmx-indicator {
+      display: none;
+    }
+
+    .htmx-request .htmx-indicator {
+      display: inline-block;
+    }
+
+    .htmx-request.htmx-indicator {
+      display: inline-block;
+    }
+
+    .htmx-request {
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Enhanced Responsive Design */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100vw;
+        padding: 1.5rem 1rem;
+      }
+
+      .analytics-box .columns {
+        flex-direction: column;
+      }
+
+      .analytics-box .column {
+        margin-bottom: 1rem;
+      }
+    }
+
+    /* Scrollbar Styling */
+    .sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.2);
+      border-radius: 3px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.4);
+    }
+
+    /* Focus states for accessibility */
+    .sidebar a:focus,
+    .button:focus,
+    .navbar-item:focus {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    /* Custom cursor for interactive elements */
+    .analytics-box .box,
+    .sidebar a,
+    .button,
+    .navbar-item {
+      cursor: pointer;
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#1e3a8a', 
+          blue: {
+            600: '#1e3a8a',
+            700: '#172554'
+          }
+        }
+      }
+    }
+  }
+</script>
+</head>
+<body>
+  <!-- ===== NAVBAR (mobile top bar) ===== -->
+  <nav class="bg-white shadow-sm w-full top-0 is-fixed-top" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="{% url 'trucks:dashboard_view' %}">
+        <strong>LogiTrack</strong>
+      </a>
+      <a role="button" class="navbar-burger" id="nav-burger" aria-label="menu" aria-expanded="false">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div class="navbar-menu">
+      <div class="navbar-end">
+        <!-- Enhanced Analytics Dropdown in Navbar -->
+        <div class="navbar-item has-dropdown hover:bg-gray-50">
+          <a class="navbar-link" style="color: var(--text-primary); font-weight: 500;">
+            <span class="icon" style="color: var(--primary);"><i class="fas fa-chart-line"></i></span>
+            <span>Analytics</span>
+          </a>
+
+          <div class="navbar-dropdown">
+            <a href="{% url 'trucks:analytics_dashboard' %}" class="navbar-item analytics-nav-item">
+              <span class="icon" style="color: var(--primary);"><i class="fas fa-tachometer-alt"></i></span>
+              <span>
+                <strong>Analytics Dashboard</strong>
+                <br>
+                <small style="color: var(--text-secondary);">Comprehensive business insights</small>
+              </span>
+            </a>
+
+            <a href="{% url 'trucks:truck_comparison' %}" class="navbar-item analytics-nav-item">
+              <span class="icon" style="color: var(--secondary);"><i class="fas fa-truck"></i></span>
+              <span>
+                <strong>Truck Comparison</strong>
+                <br>
+                <small style="color: var(--text-secondary);">Compare fleet performance</small>
+              </span>
+            </a>
+
+            <a href="{% url 'trucks:trip_profitability' %}" class="navbar-item analytics-nav-item">
+              <span class="icon" style="color: var(--warning);"><i class="fas fa-dollar-sign"></i></span>
+              <span>
+                <strong>Trip Profitability</strong>
+                <br>
+                <small style="color: var(--text-secondary);">Analyze trip margins</small>
+              </span>
+            </a>
+
+            <hr class="navbar-divider">
+
+            <a href="{% url 'trucks:logistics_report' %}" class="navbar-item analytics-nav-item">
+              <span class="icon" style="color: var(--danger);"><i class="fas fa-file-alt"></i></span>
+              <span>
+                <strong>Logistics Report</strong>
+                <br>
+                <small style="color: var(--text-secondary);">Detailed operational reports</small>
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <div class="navbar-item">
+          <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150" id="theme-toggle">
+            <i class="fas fa-moon"></i>
+          </button>
+        </div>
+        <div class="navbar-item">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light"></span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== ENHANCED SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="block">
+      <figure class="image is-64x64 mb-4">
+        <img class="is-rounded" src="https://bulma.io/assets/images/placeholders/128x128.png" alt="Logo">
+      </figure>
+    </div>
+    <nav>
+      {% url 'trucks:dashboard_view' as dash_url %}
+      {% url 'trucks:analytics_dashboard' as analytics_dash_url %}
+      {% url 'trucks:truck_comparison' as truck_comparison_url %}
+      {% url 'trucks:trip_profitability' as trip_profitability_url %}
+      {% url 'trucks:logistics_report' as report_url %}
+      {% url 'trucks:trip_list' as trip_url %}
+      {% url 'trucks:invoice_list' as inv_url %}
+      {% url 'trucks:expense_list' as exp_url %}
+      {% url 'trucks:driver_list' as drv_url %}
+      {% url 'trucks:truck_list' as truck_url %}
+      {% url 'trucks:destination_list' as dest_url %}
+      {% url 'trucks:transporter_list' as trans_url %}
+      {% url 'trucks:expense_category_list' as expcat_url %}
+      {% url 'trucks:cargo_type_list' as cargo_url %}
+
+      <a href="{{ dash_url }}" class="{% if request.path == dash_url %}active{% endif %}">
+        <i class="fas fa-tachometer-alt"></i>Dashboard
+      </a>
+
+      <!-- Enhanced Analytics Section -->
+      <a href="{{ analytics_dash_url }}" class="{% if request.path == analytics_dash_url %}active{% endif %}">
+        <i class="fas fa-chart-line"></i>Analytics Dashboard
+      </a>
+      <a href="{{ truck_comparison_url }}" class="{% if request.path == truck_comparison_url %}active{% endif %}">
+        <i class="fas fa-truck"></i>Truck Comparison
+      </a>
+      <a href="{{ trip_profitability_url }}" class="{% if request.path == trip_profitability_url %}active{% endif %}">
+        <i class="fas fa-dollar-sign"></i>Trip Profitability
+      </a>
+
+      <hr>
+      <a href="{{ report_url }}" class="{% if request.path == report_url %}active{% endif %}">
+        <i class="fas fa-chart-line"></i>Logistics Report
+      </a>
+      <a href="{{ trip_url }}" class="{% if request.path == trip_url %}active{% endif %}">
+        <i class="fas fa-route"></i>Manage Trips
+      </a>
+      <a href="{{ inv_url }}" class="{% if request.path == inv_url %}active{% endif %}">
+        <i class="fas fa-file-invoice-dollar"></i>Invoices
+      </a>
+      <a href="{{ exp_url }}" class="{% if request.path == exp_url %}active{% endif %}">
+        <i class="fas fa-receipt"></i>Expenses
+      </a>
+      <hr>
+      <a href="{{ drv_url }}" class="{% if request.path == drv_url %}active{% endif %}">
+        <i class="fas fa-user"></i>Drivers
+      </a>
+      <a href="{{ truck_url }}" class="{% if request.path == truck_url %}active{% endif %}">
+        <i class="fas fa-truck"></i>Trucks
+      </a>
+      <a href="{{ dest_url }}" class="{% if request.path == dest_url %}active{% endif %}">
+        <i class="fas fa-map-marker-alt"></i>Destinations
+      </a>
+      <a href="{{ trans_url }}" class="{% if request.path == trans_url %}active{% endif %}">
+        <i class="fas fa-users"></i>Transporters
+      </a>
+      <a href="{{ expcat_url }}" class="{% if request.path == expcat_url %}active{% endif %}">
+        <i class="fas fa-tags"></i>Expense Categories
+      </a>
+      <a href="{{ cargo_url }}" class="{% if request.path == cargo_url %}active{% endif %}">
+        <i class="fas fa-box"></i>Cargo Types
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <div class="main-content">
+    <section class="section">
+      <!-- Enhanced Messages -->
+      {% if messages %}
+        {% for m in messages %}
+          <div class="notification is-{{ m.tags }} is-light message-fade">
+            <button class="delete"></button>
+            {{ m }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Enhanced Page Title -->
+      <div class="block">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">{% block page_title %}{% endblock %}</h1>
+        <h2 class="text-lg text-gray-600 mb-4 is-4">{% block page_subtitle %}{% endblock %}</h2>
+      </div>
+
+      <!-- Content -->
+      {% block content %}
+        <!-- Enhanced Quick Analytics Cards (will appear on dashboard) -->
+        {% if request.resolver_match.url_name == 'dashboard_view' %}
+        <div class="w-full px-3 is-12">
+          <div class="analytics-box p-6">
+            <div class="level">
+              <div class="level-left">
+                <div class="level-item">
+                  <h3 class="text-2xl font-bold text-gray-900 mb-4 is-4" style="margin-bottom: 0;">📊 Quick Analytics</h3>
+                </div>
+              </div>
+              <div class="level-right">
+                <div class="level-item">
+                  <a href="{% url 'trucks:analytics_dashboard' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">
+                    <span class="icon"><i class="fas fa-chart-line"></i></span>
+                    <span>Full Analytics Dashboard</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap -mx-3">
+              <div class="w-full px-3">
+                <a href="{% url 'trucks:analytics_dashboard' %}" class="bg-white rounded-lg shadow-md p-6 mb-4 text-center">
+                  <span class="icon text-xl px-8 py-4 text-[#1e3a8a]">
+                    <i class="fas fa-chart-bar fa-2x"></i>
+                  </span>
+                  <p class="text-2xl font-bold text-gray-900 mb-4 is-5" style="margin-top: 1rem;">Business Analytics</p>
+                  <p class="text-lg text-gray-600 mb-4 is-6">Comprehensive revenue, profit & expense analysis</p>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white is-light">View Details →</span>
+                </a>
+              </div>
+
+              <div class="w-full px-3">
+                <a href="{% url 'trucks:truck_comparison' %}" class="bg-white rounded-lg shadow-md p-6 mb-4 text-center">
+                  <span class="icon text-xl px-8 py-4 text-blue-500">
+                    <i class="fas fa-truck fa-2x"></i>
+                  </span>
+                  <p class="text-2xl font-bold text-gray-900 mb-4 is-5" style="margin-top: 1rem;">Truck Performance</p>
+                  <p class="text-lg text-gray-600 mb-4 is-6">Compare and analyze truck profitability metrics</p>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500 hover:bg-sky-600 text-white is-light">Compare Now →</span>
+                </a>
+              </div>
+
+              <div class="w-full px-3">
+                <a href="{% url 'trucks:trip_profitability' %}" class="bg-white rounded-lg shadow-md p-6 mb-4 text-center">
+                  <span class="icon text-xl px-8 py-4 text-green-500">
+                    <i class="fas fa-dollar-sign fa-2x"></i>
+                  </span>
+                  <p class="text-2xl font-bold text-gray-900 mb-4 is-5" style="margin-top: 1rem;">Trip Analysis</p>
+                  <p class="text-lg text-gray-600 mb-4 is-6">Individual trip profitability and margins</p>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white is-light">Analyze →</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      {% endblock %}
+    </section>
+  </div>
+
+  <!-- ===== ENHANCED SCRIPTS ===== -->
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script>
+    // Initialize HTMX with enhanced configuration
+    document.addEventListener('DOMContentLoaded', function() {
+      // Configure HTMX for smooth transitions
+      htmx.config.defaultSwapStyle = 'outerHTML';
+      htmx.config.scrollBehavior = 'smooth';
+      htmx.config.historyEnabled = true;
+
+      // Enhanced request indicators
+      htmx.on('htmx:beforeRequest', function(evt) {
+        document.body.classList.add('htmx-request');
+        // Add loading animation to clicked element
+        const target = evt.detail.elt;
+        if (target.classList.contains('box') || target.closest('.box')) {
+          const box = target.classList.contains('box') ? target : target.closest('.box');
+          box.style.transform = 'scale(0.98)';
+          box.style.opacity = '0.7';
+        }
+      });
+
+      htmx.on('htmx:afterRequest', function(evt) {
+        document.body.classList.remove('htmx-request');
+        // Reset animations
+        const boxes = document.querySelectorAll('.box');
+        boxes.forEach(box => {
+          box.style.transform = '';
+          box.style.opacity = '';
+        });
+      });
+
+      // Enhanced analytics navigation
+      document.querySelectorAll('.analytics-nav-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+          // Add ripple effect
+          const ripple = document.createElement('span');
+          ripple.style.cssText = `
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.3);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+          `;
+
+          const rect = this.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height);
+          ripple.style.width = ripple.style.height = size + 'px';
+          ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
+          ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
+
+          this.style.position = 'relative';
+          this.appendChild(ripple);
+
+          setTimeout(() => ripple.remove(), 600);
+        });
+      });
+    });
+
+    // Enhanced nav-burger toggle (mobile)
+    const burger = document.getElementById('nav-burger');
+    const sidebar = document.getElementById('sidebar');
+    burger?.addEventListener('click', () => {
+      burger.classList.toggle('is-active');
+      sidebar.classList.toggle('is-open');
+
+      // Add overlay for mobile
+      if (!document.querySelector('.sidebar-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        overlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0,0,0,0.5);
+          z-index: 35;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        `;
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.style.opacity = '1', 10);
+
+        overlay.addEventListener('click', () => {
+          burger.classList.remove('is-active');
+          sidebar.classList.remove('is-open');
+          overlay.style.opacity = '0';
+          setTimeout(() => overlay.remove(), 300);
+        });
+      }
+    });
+
+    // Enhanced dark-mode toggle with smooth transition
+    const themeBtn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    const saved = localStorage.getItem('theme') || 'light';
+
+    html.setAttribute('data-theme', saved);
+    updateThemeIcon(saved);
+
+    themeBtn?.addEventListener('click', () => {
+      const current = html.getAttribute('data-theme');
+      const next = current === 'light' ? 'dark' : 'light';
+
+      // Add transition class for smooth theme change
+      document.body.style.transition = 'all 0.3s ease';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateThemeIcon(next);
+
+      setTimeout(() => {
+        document.body.style.transition = '';
+      }, 300);
+    });
+
+    function updateThemeIcon(theme) {
+      if (themeBtn) {
+        themeBtn.innerHTML = theme === 'light' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+      }
+    }
+
+    // Enhanced notification close functionality
+    document.querySelectorAll('.notification .delete').forEach(deleteBtn => {
+      deleteBtn.onclick = function() {
+        const notification = this.parentElement;
+        notification.style.transform = 'translateX(100%)';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+      };
+    });
+
+    // Add CSS animation for ripple effect
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ripple {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+
+      .sidebar-overlay {
+        backdrop-filter: blur(2px);
+      }
+
+      @media (max-width: 1023px) {
+        .sidebar.is-open + .main-content::before {
+          content: '';
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0,0,0,0.5);
+          z-index: 35;
+          backdrop-filter: blur(2px);
+        }
+      }
+
+      /* Smooth scroll behavior */
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* Enhanced focus styles */
+      .analytics-box .box:focus-within {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+
+      /* Loading spinner for HTMX requests */
+      .htmx-request::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid var(--primary);
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 1000;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Enhanced HTMX navigation for analytics links
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add enhanced click handlers for analytics links
+      document.querySelectorAll('.sidebar a, .navbar-dropdown a, .analytics-box .box').forEach(link => {
+        if (link.href && (link.href.includes('analytics') || link.href.includes('comparison') || link.href.includes('profitability'))) {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Add visual feedback
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+              this.style.transform = '';
+            }, 150);
+
+            // Use HTMX to load the content smoothly
+            htmx.ajax('GET', this.href, {
+              target: '.main-content',
+              swap: 'outerHTML',
+              settle: 300
+            });
+          });
+        }
+      });
+    });
+
+    // Add intersection observer for scroll animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationDelay = Math.random() * 0.3 + 's';
+          entry.target.classList.add('animate-in');
+        }
+      });
+    }, observerOptions);
+
+    // Observe analytics boxes for scroll animations
+    document.querySelectorAll('.analytics-box, .box').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Add animate-in class styles
+    const animateStyle = document.createElement('style');
+    animateStyle.textContent = `
+      .animate-in {
+        animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    `;
+    document.head.appendChild(animateStyle);
+
+    // Enhanced keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      // ESC to close sidebar on mobile
+      if (e.key === 'Escape' && sidebar.classList.contains('is-open')) {
+        burger.classList.remove('is-active');
+        sidebar.classList.remove('is-open');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (overlay) {
+          overlay.style.opacity = '0';
+          setTimeout(() => overlay.remove(), 300);
+        }
+      }
+
+      // Ctrl/Cmd + K for quick navigation (future enhancement)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        // Focus on search or navigation (can be implemented later)
+      }
+    });
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

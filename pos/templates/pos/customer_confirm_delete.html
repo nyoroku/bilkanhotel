@@ -1,0 +1,24 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Confirm Deletion{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Confirm Deletion</h1>
+
+<div class="notification bg-red-600 hover:bg-red-700 text-white">
+    <p class="text-2xl font-semibold">Are you sure you want to delete the customer: <strong>"{{ customer.name }}"</strong>?</p>
+    <p>This action cannot be undone.</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-4 flex space-x-2">
+        <div class="relative">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white">Yes, Delete</button>
+        </div>
+        <div class="relative">
+            <a href="{% url 'pos:customer_list' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light">Cancel</a>
+        </div>
+    </div>
+</form>
+{% endblock %}

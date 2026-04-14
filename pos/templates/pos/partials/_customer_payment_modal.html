@@ -1,0 +1,66 @@
+<!-- _customer_payment_modal.html -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-60 backdrop-blur-sm transition-opacity duration-300" 
+     id="debt-modal-overlay"
+     onclick="if(event.target == this) this.remove()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all duration-300 scale-100" 
+         onclick="event.stopPropagation()">
+        
+        <header class="bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-4 flex justify-between items-center text-white">
+            <h3 class="text-xl font-bold flex items-center">
+                <i class="fas fa-hand-holding-usd mr-3"></i> Record Debt Payment
+            </h3>
+            <button onclick="document.getElementById('debt-modal-overlay').remove()" class="text-white opacity-70 hover:opacity-100 transition-opacity">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </header>
+
+        <form hx-post="{% url 'pos:htmx_process_customer_payment' %}" 
+              hx-target="#debt-modal-form-container"
+              hx-indicator="#payment-spinner"
+              class="p-6">
+            {% csrf_token %}
+            
+            <div id="debt-modal-form-container">
+                {% if form.errors %}
+                <div class="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">
+                    <p class="font-bold">Please correct the errors below:</p>
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div class="space-y-4">
+                    {% for field in form %}
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 uppercase mb-1">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="mt-8 flex gap-3">
+                <button type="button" 
+                        onclick="document.getElementById('debt-modal-overlay').remove()" 
+                        class="flex-1 px-4 py-3 border border-gray-300 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-all">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="flex-1 px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg transition-all flex items-center justify-center">
+                    <span id="payment-spinner" class="htmx-indicator mr-2">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                    </span>
+                    Record Payment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .htmx-indicator { display: none; }
+    .htmx-request .htmx-indicator { display: inline-block; }
+    .htmx-request.button { opacity: 0.8; cursor: not-allowed; }
+</style>

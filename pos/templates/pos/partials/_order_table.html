@@ -1,0 +1,97 @@
+<div class="table-container">
+    <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50 is-size-7">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Table</th>
+                <th>Waiter</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Created</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in page_obj.object_list %}
+                <tr id="order-row-{{ order.id }}">
+                    <td><strong>#{{ order.id }}</strong></td>
+                    <td>{{ order.customer.name|truncatechars:20 }}</td>
+                    <td>
+                        {% if order.table %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">{{ order.table.table_number }}</span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">Takeaway</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ order.waiter.get_short_name|default:"—" }}</td>
+                    <td><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-rounded">{{ order.total_items_count }}</span></td>
+                    <td>{{ order.total_amount|floatformat:2 }}</td>
+                    <td class="text-center">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if order.status == 'Pending' %}is-warning elif 'Ready' %}is-success 'Completed' %}is-primary 'Cancelled' %}is-danger else %}is-light{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="text-center">{{ order.created_at|date:"M d, H:i" }}</td>
+                    <td class="text-center">
+                        <div class="buttons are-small is-justify-content-center">
+
+                            <!-- View Details -->
+                            <a href="{% url 'pos:order_detail' order.id %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-indigo-600 hover:bg-indigo-700 text-white is-light" title="View Order Details">
+                                <span class="icon"><i class="fas fa-eye"></i></span>
+                            </a>
+
+                            <!-- Authorize Cancellation (if requested) -->
+                            {% if order.has_pending_cancellation_request %}
+                            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-yellow-500 hover:bg-yellow-600 text-black is-light"
+                                    title="Authorize pending cancellation"
+                                    onclick="openAuthorizeCancelModal({{ order.id }})">
+                                <span class="icon"><i class="fas fa-shield-alt"></i></span>
+                            </button>
+                            {% endif %}
+
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <p class="has-text-grey">No orders match your filters.</p>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav class="pagination is-centered mt-4" role="navigation" aria-label="pagination"
+     hx-get="{% url 'pos:order_list' %}"
+     hx-target="#order-table-container"
+     hx-swap="innerHTML"
+     hx-include="#order-filters">
+
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}" class="pagination-previous">Previous</a>
+    {% endif %}
+
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="pagination-next">Next</a>
+    {% endif %}
+
+    <ul class="pagination-list">
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li><a class="pagination-link is-current">{{ num }}</a></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li><a href="?page={{ num }}" class="pagination-link">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}
+
+<!-- Include global modals at the bottom of the page -->
+{% include 'pos/partials/_cancel_authorization_modals.html' %}

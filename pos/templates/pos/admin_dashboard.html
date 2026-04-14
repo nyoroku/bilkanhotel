@@ -1,0 +1,823 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block styles %}
+{{ block.super }}
+<style>
+    .kpi-card {
+        border-top: 4px solid var(--theme-yellow);
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .kpi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    }
+    .kpi-icon {
+        font-size: 2rem;
+        color: var(--deep-blue);
+    }
+    .table-card {
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: transform 0.2s ease-in-out;
+        cursor: pointer;
+    }
+    .table-card:hover {
+        transform: scale(1.05);
+    }
+    .table-available { background-color: #eafaf1; border-left: 5px solid #257942; }
+    .table-occupied { background-color: #fffbeb; border-left: 5px solid #947600; }
+    .table-needs-bill { background-color: #feecf0; border-left: 5px solid #cc0f35; }
+
+    .alert-item, .po-item {
+        position: relative;
+        transition: opacity 0.3s ease;
+    }
+    .alert-item.dismissing, .po-item.processing {
+        opacity: 0.5;
+    }
+    .dismiss-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(255, 255, 255, 0.8);
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        z-index: 10;
+    }
+    .dismiss-btn:hover {
+        background: rgba(255, 255, 255, 1);
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    .po-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        flex-wrap: wrap;
+    }
+    .po-item-list {
+        margin-top: 0.5rem;
+        padding-left: 1rem;
+        border-left: 2px solid #e8e8e8;
+    }
+    .po-item-detail {
+        font-size: 0.875rem;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+    .po-total {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e8e8e8;
+    }
+    .action-buttons {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        display: flex;
+        gap: 0.25rem;
+        z-index: 10;
+    }
+    .action-btn {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.75rem;
+    }
+    .action-btn:hover {
+        background: rgba(255, 255, 255, 1);
+        transform: scale(1.1);
+    }
+    .action-btn.approve {
+        color: #257942;
+        border-color: #257942;
+    }
+    .action-btn.approve:hover {
+        background: #257942;
+        color: white;
+    }
+    .action-btn.dismiss {
+        color: #cc0f35;
+        border-color: #cc0f35;
+    }
+    .action-btn.dismiss:hover {
+        background: #cc0f35;
+        color: white;
+    }
+
+    /* Duplicate Items Styles */
+    .duplicate-alert-card {
+        border-left: 4px solid var(--theme-yellow);
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    }
+
+    .duplicate-group-mini {
+        background: white;
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        border-left: 3px solid #ffc107;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
+    }
+
+    .duplicate-group-mini:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .duplicate-item-mini {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+
+    .duplicate-primary {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .duplicate-count-badge {
+        background: linear-gradient(45deg, #ffc107, #ffb700);
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+    }
+
+    .duplicate-actions {
+        display: flex;
+        gap: 0.25rem;
+        margin-top: 0.5rem;
+    }
+
+    .btn-mini {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="section pt-0">
+    <div class="container mx-auto px-4 lg:max-w-7xl is-fluid">
+        <!-- Welcome Header -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Welcome Back, {{ request.user.first_name }}!</h1>
+            <p class="text-lg text-gray-600 mb-4 is-5 has-text-grey">Here's a snapshot of your restaurant's performance today, {{ "now"|date:"l, F jS" }}.</p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="flex flex-wrap -mx-3 is-multiline">
+            <div class="w-full px-3 md:w-1/4">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden kpi-card has-background-white">
+                    <div class="p-6">
+                        <div class="is-flex is-justify-content-space-between">
+                            <div>
+                                <p class="heading">Total Sales Today</p>
+                                <p class="text-2xl font-bold text-gray-900 mb-4 is-3">{{ kpi_data.total_sales|floatformat:2 }} KES</p>
+                            </div>
+                            <span class="icon kpi-icon text-green-500"><i class="fas fa-coins fa-2x"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full px-3 md:w-1/4">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden kpi-card has-background-white">
+                    <div class="p-6">
+                        <div class="is-flex is-justify-content-space-between">
+                            <div>
+                                <p class="heading">Orders Today</p>
+                                <p class="text-2xl font-bold text-gray-900 mb-4 is-3">{{ kpi_data.total_orders }}</p>
+                            </div>
+                            <span class="icon kpi-icon text-blue-500"><i class="fas fa-receipt fa-2x"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full px-3 md:w-1/4">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden kpi-card has-background-white">
+                    <div class="p-6">
+                        <div class="is-flex is-justify-content-space-between">
+                            <div>
+                                <p class="heading">Average Sale</p>
+                                <p class="text-2xl font-bold text-gray-900 mb-4 is-3">{{ kpi_data.average_sale|floatformat:2 }} KES</p>
+                            </div>
+                            <span class="icon kpi-icon text-yellow-500"><i class="fas fa-chart-pie fa-2x"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full px-3 md:w-1/4">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden kpi-card has-background-white">
+                    <div class="p-6">
+                        <div class="is-flex is-justify-content-space-between">
+                            <div>
+                                <p class="heading">Top Seller</p>
+                                <p class="text-2xl font-bold text-gray-900 mb-4 is-5">{{ kpi_data.top_selling_item }}</p>
+                            </div>
+                            <span class="icon kpi-icon text-red-500"><i class="fas fa-star fa-2x"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap -mx-3 mt-4">
+            <div class="w-full px-3 md:w-2/3">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                        <p class="text-lg font-bold text-gray-800">Sales This Week</p>
+                    </header>
+                    <div class="p-6">
+                        <div class="chart-container">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                {% if draft_purchase_orders %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden mt-4" id="purchaseOrdersCard">
+                    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                        <p class="text-lg font-bold text-gray-800 text-blue-500">
+                            <span class="icon"><i class="fas fa-shopping-cart"></i></span>
+                            Draft Purchase Orders ({{ draft_purchase_orders|length }})
+                        </p>
+                        <div class="card-header-icon">
+                            <div class="mb-4 flex space-x-2">
+                                <div class="relative">
+                                    <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white is-light" onclick="approveAllPurchaseOrders()">
+                                        <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-check-double"></i></span>
+                                        <span>Approve All</span>
+                                    </button>
+                                </div>
+                                <div class="relative">
+                                    <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white is-light" onclick="dismissAllPurchaseOrders()">
+                                        <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-times-circle"></i></span>
+                                        <span>Dismiss All</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+                    <div class="p-6" id="purchaseOrdersContainer">
+                        {% for po in draft_purchase_orders %}
+                        <div class="notification bg-sky-500 hover:bg-sky-600 text-white is-light p-4 mb-3 po-item" data-po-id="{{ po.id }}">
+                            <div class="action-buttons">
+                                <button class="action-btn approve" onclick="approvePurchaseOrder({{ po.id }})" title="Approve & Send to Supplier">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="action-btn dismiss" onclick="dismissPurchaseOrder({{ po.id }})" title="Dismiss Purchase Order">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="mb-2">
+                                <strong class="text-base">PO #{{ po.id }} - {{ po.supplier.name }}</strong>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500 hover:bg-sky-600 text-white py-1.5 ml-2">{{ po.get_requested_for_section_display }}</span>
+                            </div>
+                            <p class="is-size-7 has-text-grey mb-2">
+                                Created: {{ po.order_date|date:"M j, Y" }}
+                                {% if po.notes %}
+                                <br>Notes: {{ po.notes|truncatechars:80 }}
+                                {% endif %}
+                            </p>
+                            <div class="po-item-list">
+                                {% for item in po.items.all %}
+                                <div class="po-item-detail">
+                                    • {{ item.quantity_ordered|floatformat:0 }} {{ item.menu_item.get_unit_of_measure_display|lower }} of
+                                    <strong>{{ item.menu_item.name }}</strong>
+                                    @ {{ item.unit_price|floatformat:2 }} KES each
+                                    <span class="has-text-weight-semibold"> = {{ item.total_cost|floatformat:2 }} KES</span>
+                                </div>
+                                {% endfor %}
+                                <div class="po-total">
+                                    Total: {{ po.total_cost|floatformat:2 }} KES
+                                    ({{ po.items.count }} item{{ po.items.count|pluralize }})
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if duplicate_stats.duplicate_groups > 0 %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden mt-4 duplicate-alert-card" id="duplicatesCard">
+                    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                        <p class="text-lg font-bold text-gray-800 has-text-warning-dark">
+                            <span class="icon"><i class="fas fa-clone"></i></span>
+                            Duplicate Menu Items Detected
+                        </p>
+                        <div class="card-header-icon">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500 hover:bg-yellow-600 text-black">{{ duplicate_stats.duplicate_groups }} Groups</span>
+                            <form method="post" action="{% url 'pos:clear_duplicate_cache' %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-black bg-transparent border-2 ml-2"
+                                        title="Re-scan for duplicates">
+                                    <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-sync-alt"></i></span>
+                                </button>
+                            </form>
+                            <a href="{% url 'pos:duplicate_menu_items' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-black ml-2">
+                                <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-cog"></i></span>
+                                <span>Manage All</span>
+                            </a>
+                        </div>
+                    </header>
+                    <div class="p-6" id="duplicatesContainer">
+                        <div class="notification bg-yellow-500 hover:bg-yellow-600 text-black is-light mb-3">
+                            <div class="is-flex is-justify-content-space-between is-align-items-center">
+                                <div>
+                                    <strong>{{ duplicate_stats.total_duplicates }} duplicate items</strong> found across {{ duplicate_stats.duplicate_groups }} groups.
+                                    This may cause confusion during order taking and inventory management.
+                                </div>
+                                <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-black bg-transparent border-2" onclick="dismissAllDashboardDuplicates()">
+                                    <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-eye-slash"></i></span>
+                                    <span>Hide from dashboard</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {% for group in dashboard_duplicates %}
+                        <div class="duplicate-group-mini" data-group-index="{{ forloop.counter0 }}">
+                            <div class="is-flex is-justify-content-space-between is-align-items-start">
+                                <div class="is-flex-grow-1">
+                                    <div class="is-flex is-align-items-center mb-2">
+                                        <span class="duplicate-count-badge mr-2">{{ group.total_count }} items</span>
+                                        <span class="has-text-weight-semibold">Similar to "{{ group.primary.name }}"</span>
+                                    </div>
+                                    <div class="duplicate-item-mini duplicate-primary">
+                                        <i class="fas fa-crown text-yellow-500 mr-1"></i>
+                                        {{ group.primary.name }} ({{ group.primary.selling_price }} KES)
+                                        {% if not group.primary.is_active %}<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light py-1.5">Inactive</span>{% endif %}
+                                    </div>
+                                    {% for duplicate in group.duplicates|slice:":2" %}
+                                    <div class="duplicate-item-mini">
+                                        <i class="fas fa-copy has-text-grey-light mr-1"></i>
+                                        {{ duplicate.name }} ({{ duplicate.selling_price }} KES)
+                                        {% if not duplicate.is_active %}<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light py-1.5">Inactive</span>{% endif %}
+                                    </div>
+                                    {% endfor %}
+                                    {% if group.duplicates|length > 2 %}
+                                    <div class="duplicate-item-mini has-text-grey">
+                                        <i class="fas fa-ellipsis-h mr-1"></i>
+                                        and {{ group.duplicates|length|add:-2 }} more...
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="duplicate-actions">
+                                    <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white is-light btn-mini"
+                                            onclick="quickMergeGroup({{ forloop.counter0 }}, [{{ group.primary.id }}{% for d in group.duplicates %},{{ d.id }}{% endfor %}])"
+                                            title="Merge all items in this group">
+                                        <i class="fas fa-compress-arrows-alt"></i>
+                                    </button>
+                                    <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white is-light btn-mini"
+                                            onclick="dismissDuplicateGroup({{ forloop.counter0 }})"
+                                            title="Hide this group from dashboard">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        {% if has_more_duplicates %}
+                        <div class="text-center mt-3">
+                            <a href="{% url 'pos:duplicate_menu_items' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-yellow-500 hover:bg-yellow-600 text-black is-light">
+                                <span class="icon"><i class="fas fa-plus"></i></span>
+                                <span>View {{ duplicate_stats.duplicate_groups|add:-3 }} more duplicate groups</span>
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if active_alerts %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden mt-4" id="alertsCard">
+                    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                        <p class="text-lg font-bold text-gray-800 text-red-500">
+                            <span class="icon"><i class="fas fa-exclamation-triangle"></i></span>
+                            Urgent: Low Stock Alerts
+                        </p>
+                        <div class="card-header-icon">
+                            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 is-light" onclick="dismissAllAlerts()">
+                                <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-check-double"></i></span>
+                                <span>Dismiss All</span>
+                            </button>
+                        </div>
+                    </header>
+                    <div class="p-6" id="alertsContainer">
+                        {% for alert in active_alerts %}
+                        <div class="notification bg-yellow-500 hover:bg-yellow-600 text-black is-light p-3 mb-2 alert-item" data-alert-id="{{ alert.id }}">
+                            <button class="dismiss-btn" onclick="dismissAlert({{ alert.id }})" title="Dismiss alert">
+                                <i class="fas fa-times is-size-7"></i>
+                            </button>
+                            <strong>{{ alert.menu_item.name }}</strong> is low. Current stock: {{ alert.menu_item.stock_quantity|floatformat:2 }} {{ alert.menu_item.get_unit_of_measure_display|lower }}.
+                            {% if alert.menu_item.preferred_supplier %}
+                            <br><small class="has-text-grey">Supplier: {{ alert.menu_item.preferred_supplier.name }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="w-full px-3">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                     <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                         <p class="text-lg font-bold text-gray-800">Live Table Status</p>
+                     </header>
+                     <div class="p-6">
+                         <div class="flex flex-wrap -mx-3 is-multiline is-mobile">
+                             {% for table in tables %}
+                             <div class="w-full px-3 md:w-1/2">
+                                <div class="table-card {% if table.status == 'Available' %}table-available elif 'Occupied' %}table-occupied else %}table-needs-bill{% endif %}">
+                                    <p class="has-text-weight-bold">{{ table.table_number }}</p>
+                                    <p class="is-size-7">{{ table.get_status_display }}</p>
+                                </div>
+                             </div>
+                             {% endfor %}
+                         </div>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    const salesData = {{ sales_chart_data|safe }};
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: salesData.map(d => d.day),
+            datasets: [{
+                label: 'Daily Sales (KES)',
+                data: salesData.map(d => d.sales),
+                backgroundColor: 'rgba(44, 62, 80, 0.8)',
+                borderColor: 'rgba(44, 62, 80, 1)',
+                borderWidth: 1,
+                borderRadius: 4,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true, position: 'top' }
+            },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Sales (KES)' } },
+                x: { title: { display: true, text: 'Day of Week' } }
+            }
+        }
+    });
+});
+
+// === Purchase Order Functions ===
+function approvePurchaseOrder(poId) {
+    const poElement = document.querySelector(`[data-po-id="${poId}"]`);
+    poElement.classList.add('processing');
+    fetch(`/approve-purchase-order/${poId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            poElement.style.transition = 'all 0.4s ease';
+            poElement.style.opacity = '0';
+            poElement.style.transform = 'translateX(100%)';
+            setTimeout(() => poElement.remove(), 400);
+            showNotification('Purchase Order approved!', 'success');
+        } else {
+            poElement.classList.remove('processing');
+            showNotification(data.message || 'Failed to approve.', 'danger');
+        }
+    }).catch(error => {
+        poElement.classList.remove('processing');
+        showNotification('Error occurred.', 'danger');
+    });
+}
+function dismissPurchaseOrder(poId) {
+    if (!confirm('Are you sure? This cannot be undone.')) return;
+    const poElement = document.querySelector(`[data-po-id="${poId}"]`);
+    poElement.classList.add('processing');
+    fetch(`/dismiss-purchase-order/${poId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            poElement.style.opacity = '0';
+            poElement.style.transform = 'translateX(-100%)';
+            setTimeout(() => poElement.remove(), 400);
+            showNotification('Purchase Order dismissed.', 'info');
+        } else {
+            poElement.classList.remove('processing');
+            showNotification(data.message || 'Failed to dismiss.', 'danger');
+        }
+    }).catch(error => {
+        poElement.classList.remove('processing');
+        showNotification('Error occurred.', 'danger');
+    });
+}
+function approveAllPurchaseOrders() {
+    const poElements = document.querySelectorAll('.po-item');
+    if (poElements.length === 0) return;
+    if (!confirm(`Approve all ${poElements.length} purchase orders?`)) return;
+    poElements.forEach(el => el.classList.add('processing'));
+    fetch('/approve-all-purchase-orders/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            poElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateX(100%)';
+            });
+            setTimeout(() => document.getElementById('purchaseOrdersCard').remove(), 400);
+            showNotification(`${data.approved_count} orders approved!`, 'success');
+        } else {
+            poElements.forEach(el => el.classList.remove('processing'));
+            showNotification(data.message || 'Failed to approve.', 'danger');
+        }
+    }).catch(error => {
+        poElements.forEach(el => el.classList.remove('processing'));
+        showNotification('Error occurred.', 'danger');
+    });
+}
+function dismissAllPurchaseOrders() {
+    const poElements = document.querySelectorAll('.po-item');
+    if (poElements.length === 0) return;
+    if (!confirm(`Dismiss all ${poElements.length} purchase orders?`)) return;
+    poElements.forEach(el => el.classList.add('processing'));
+    fetch('/dismiss-all-purchase-orders/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            poElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateX(-100%)';
+            });
+            setTimeout(() => document.getElementById('purchaseOrdersCard').remove(), 400);
+            showNotification(`${data.dismissed_count} orders dismissed.`, 'info');
+        } else {
+            poElements.forEach(el => el.classList.remove('processing'));
+            showNotification(data.message || 'Failed to dismiss.', 'danger');
+        }
+    }).catch(error => {
+        poElements.forEach(el => el.classList.remove('processing'));
+        showNotification('Error occurred.', 'danger');
+    });
+}
+
+// === Duplicate Management ===
+function quickMergeGroup(groupIndex, itemIds) {
+    if (!confirm('This will merge all items in this group, combining stock. Continue?')) return;
+    const groupElement = document.querySelector(`[data-group-index="${groupIndex}"]`);
+    groupElement.style.opacity = '0.5';
+    const formData = new FormData();
+    formData.append('action', 'merge');
+    itemIds.forEach(id => formData.append('item_ids', id));
+    fetch('/bulk-manage-duplicates/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        body: formData
+    }).then(response => {
+        if (response.ok) {
+            groupElement.style.transform = 'translateX(-100%)';
+            groupElement.style.opacity = '0';
+            setTimeout(() => groupElement.remove(), 400);
+            showNotification('Items merged successfully!', 'success');
+        } else {
+            groupElement.style.opacity = '1';
+            showNotification('Merge failed.', 'danger');
+        }
+    }).catch(error => {
+        groupElement.style.opacity = '1';
+        showNotification('Error occurred.', 'danger');
+    });
+}
+function dismissDuplicateGroup(groupIndex) {
+    const groupElement = document.querySelector(`[data-group-index="${groupIndex}"]`);
+    fetch(`/dismiss-duplicate-group/${groupIndex}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            groupElement.style.opacity = '0';
+            groupElement.style.transform = 'translateX(-100%)';
+            setTimeout(() => groupElement.remove(), 300);
+            showNotification('Group hidden.', 'info');
+        }
+    }).catch(error => {
+        showNotification('Failed to dismiss group.', 'danger');
+    });
+}
+function dismissAllDashboardDuplicates() {
+    if (!confirm('Hide all duplicate groups from dashboard?')) return;
+    const duplicatesCard = document.getElementById('duplicatesCard');
+    fetch('/dismiss-all-dashboard-duplicates/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            duplicatesCard.style.opacity = '0';
+            duplicatesCard.style.transform = 'translateY(-20px)';
+            setTimeout(() => duplicatesCard.remove(), 400);
+            showNotification('All groups hidden.', 'info');
+        }
+    }).catch(error => {
+        showNotification('Failed to hide groups.', 'danger');
+    });
+}
+
+// === Alert Functions ===
+function dismissAlert(alertId) {
+    const alertElement = document.querySelector(`[data-alert-id="${alertId}"]`);
+    alertElement.classList.add('dismissing');
+    fetch(`/dismiss-alert/${alertId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            alertElement.style.opacity = '0';
+            alertElement.style.transform = 'translateX(-100%)';
+            setTimeout(() => alertElement.remove(), 300);
+        } else {
+            alertElement.classList.remove('dismissing');
+            showNotification('Failed to dismiss alert.', 'danger');
+        }
+    }).catch(error => {
+        alertElement.classList.remove('dismissing');
+        showNotification('Error occurred.', 'danger');
+    });
+}
+function dismissAllAlerts() {
+    if (!confirm('Dismiss all alerts?')) return;
+    const alertElements = document.querySelectorAll('.alert-item');
+    alertElements.forEach(el => el.classList.add('dismissing'));
+    fetch('/dismiss-all-alerts/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            alertElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateX(-100%)';
+            });
+            setTimeout(() => document.getElementById('alertsCard').remove(), 300);
+        } else {
+            alertElements.forEach(el => el.classList.remove('dismissing'));
+            showNotification('Failed to dismiss alerts.', 'danger');
+        }
+    }).catch(error => {
+        alertElements.forEach(el => el.classList.remove('dismissing'));
+        showNotification('Error occurred.', 'danger');
+    });
+}
+
+function toggleActive(itemId) {
+    const button = document.querySelector(`button[onclick="toggleActive(${itemId})"]`);
+    if (!button) return;
+
+    const icon = button.querySelector('i');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch(`/toggle-menu-item-active/${itemId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.is_active) {
+                icon.className = 'fas fa-toggle-on';
+                icon.style.color = '#28a745';
+            } else {
+                icon.className = 'fas fa-toggle-off';
+                icon.style.color = '#dc3545';
+            }
+            showNotification(data.message, 'success');
+        } else {
+            showNotification('Failed to toggle status.', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred while toggling status.', 'danger');
+    });
+}
+
+
+// === Quick Edit ===
+function toggleQuickEdit(itemId) {
+    const form = document.getElementById(`quickEdit_${itemId}`);
+    form.style.display = form.style.display === 'none' || !form.style.display ? 'block' : 'none';
+}
+
+function saveQuickEdit(itemId) {
+    const form = document.getElementById(`quickEdit_${itemId}`);
+    const inputs = form.querySelectorAll('input[name]');
+
+    const data = {};
+    inputs.forEach(input => {
+        data[input.name] = input.value;
+    });
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch(`/edit-menu-item/${itemId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: new URLSearchParams(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showNotification('Item updated successfully!', 'success');
+            toggleQuickEdit(itemId);
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showNotification('Error: ' + (result.errors || 'Update failed'), 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred while saving', 'danger');
+    });
+}
+
+// === Utility Functions ===
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification is-${type} is-light`;
+    notification.style.cssText = `position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 300px; animation: slideIn 0.3s ease-out;`;
+    notification.innerHTML = `<button class="delete" onclick="this.parentElement.remove()"></button>${message}`;
+    if (!document.querySelector('#notification-styles')) {
+        const style = document.createElement('style');
+        style.id = 'notification-styles';
+        style.textContent = `@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`;
+        document.head.appendChild(style);
+    }
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideIn 0.3s ease-out reverse';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,625 @@
+<style>
+    /* Final "Light Grey, Mustard, and Navy Blue" Theme */
+    :root {
+        --pay-bg-light-grey: #f4f7fa;
+        --pay-bg-white: #ffffff;
+        --pay-text-navy: #2c3e50;
+        --pay-text-secondary: #7f8c8d;
+        --pay-accent-mustard: #f1c40f;
+        --pay-border-grey: #e6e9ed;
+        --pay-success: #27ae60;
+    }
+
+    #payment-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(44, 62, 80, 0.85);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        opacity: 0;
+        animation: fadeIn 0.3s ease forwards;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .payment-terminal-container {
+        display: grid;
+        grid-template-columns: 3fr 4fr 3fr;
+        gap: 1.5rem;
+        width: 100%;
+        height: 100%;
+        max-width: 1400px;
+        max-height: 850px;
+        background-color: var(--pay-bg-light-grey);
+        color: var(--pay-text-navy);
+        border-radius: 12px;
+        padding: 2rem;
+        position: relative;
+    }
+
+    .payment-column {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .payment-column .box {
+        background-color: var(--pay-bg-white);
+        box-shadow: 0 4px 12px rgba(44, 62, 80, 0.08);
+        border: 1px solid var(--pay-border-grey);
+    }
+
+    .payment-column .label {
+        color: var(--pay-text-secondary);
+        font-weight: 600;
+    }
+
+    .payment-column .input, .payment-column .select select {
+        border-color: var(--pay-border-grey);
+    }
+
+    .payment-column .input:focus, .payment-column .select select:focus {
+        border-color: var(--pay-accent-mustard);
+        box-shadow: 0 0 0 0.125em rgba(241, 196, 15, 0.25);
+    }
+
+    .payment-method-btn.is-primary {
+        background-color: var(--pay-accent-mustard);
+        border-color: var(--pay-accent-mustard);
+        color: var(--pay-text-navy);
+    }
+
+    #confirm-payment-btn {
+        background-color: var(--pay-text-navy);
+        color: var(--pay-accent-mustard);
+        font-weight: 700;
+        border: none;
+    }
+
+    #confirm-payment-btn:disabled {
+        background-color: #b5b5b5;
+        color: #f5f5f5;
+    }
+
+    #keypad-section {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        gap: 1.5rem;
+        min-height: 0;
+    }
+
+    #payment-terminal-keypad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: 1fr;
+        gap: 1rem;
+        flex-grow: 1;
+    }
+
+    #payment-terminal-keypad .button {
+        font-size: 1.75rem;
+        height: 100%;
+    }
+
+    #close-payment-terminal-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        transform: scale(1.2);
+    }
+
+    .htmx-request .spinner {
+        display: inline-block !important;
+    }
+
+    .htmx-request .button-text {
+        display: none;
+    }
+
+    .spinner {
+        display: none;
+    }
+</style>
+
+<div id="payment-overlay">
+    <div class="payment-terminal-container">
+        <button id="close-payment-terminal-btn" class="delete text-xl px-8 py-4" aria-label="close" type="button"></button>
+
+        <!-- Column 1: Bill & Discounts -->
+        <div class="payment-column">
+            <div id="bill-summary-wrapper" class="bg-white rounded-lg shadow-md overflow-hidden bill-summary-card p-6 mb-4">
+                {% include 'pos/partials/_bill_summary.html' %}
+            </div>
+
+            <form class="bg-white rounded-lg shadow-md p-6 mb-4 p-4"
+                  hx-post="{% url 'pos:htmx_apply_coupon' order.id %}"
+                  hx-target="#bill-discounts-and-total"
+                  hx-swap="outerHTML">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Apply Coupon/Voucher</label>
+                <div class="mb-4 has-addons">
+                    <div class="relative is-expanded">
+                        <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" type="text" name="coupon_code" placeholder="Enter code" autocomplete="off">
+                    </div>
+                    <div class="relative">
+                        <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-dark" type="submit">Apply</button>
+                    </div>
+                </div>
+            </form>
+
+            {% if loyalty_settings and loyalty_settings.is_active and order.customer.id > 1 and order.customer.loyalty_points >= loyalty_settings.minimum_redeemable_points %}
+            <form class="bg-white rounded-lg shadow-md p-6 mb-4 p-4"
+                  hx-post="{% url 'pos:htmx_apply_loyalty_discount' order.id %}"
+                  hx-target="#bill-discounts-and-total"
+                  hx-swap="outerHTML">
+                <p class="has-text-weight-bold">
+                    {{ order.customer.name }} has
+                    <span class="has-text-info-dark">{{ order.customer.loyalty_points }}</span>
+                    redeemable points.
+                </p>
+                <div class="mb-4 has-addons mt-2">
+                    <div class="relative is-expanded">
+                        <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" type="number" name="points_to_redeem"
+                               placeholder="Points to use" max="{{ order.customer.loyalty_points }}">
+                    </div>
+                    <div class="relative">
+                        <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white" type="submit">Use Points</button>
+                    </div>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+
+        <!-- Column 2: Keypad & Amount Tendered -->
+        <div class="payment-column" style="justify-content: space-between;">
+            <div id="keypad-section" style="display: none;">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-4 text-right p-4">
+                    <p class="heading">Amount Tendered</p>
+                    <p id="amount-display" class="text-2xl font-bold text-gray-900 mb-4 is-1 has-text-dark mb-0">0.00</p>
+                </div>
+                <div id="payment-terminal-keypad"></div>
+            </div>
+
+            <div id="change-due-notification" class="notification bg-green-600 hover:bg-green-700 text-white text-center" style="display: none;">
+                <p class="text-2xl font-semibold">Change Due: <strong id="change-due">0.00</strong> KES</p>
+            </div>
+        </div>
+
+        <!-- Column 3: Actions & Options -->
+        <div class="payment-column" style="justify-content: space-between;">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1 text-lg px-6 py-3 text-center">1. Select Payment Method</label>
+                <div class="buttons are-large is-vertical">
+                    {% for method_val, method_label in payment_methods %}
+                    <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-fullwidth payment-method-btn"
+                            data-method="{{ method_val }}">
+                        {{ method_label }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div id="conditional-fields">
+                <div id="mpesa-field" class="bg-white rounded-lg shadow-md p-6 mb-4" style="display: none;">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">M-Pesa Code</label>
+                    <div class="relative">
+                        <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" type="text" id="mpesa-code-field" placeholder="Enter transaction code">
+                    </div>
+                </div>
+
+                <div id="credit-info-panel" class="bg-white rounded-lg shadow-md p-6 mb-4" style="display: none;">
+                    <!-- Credit info will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <form id="main-payment-form"
+                  hx-post="{% url 'pos:process_order_payment' order.id %}"
+                  hx-target="#payment-overlay"
+                  hx-swap="outerHTML">
+                <input type="hidden" name="payment_method" id="payment-method-input" required>
+                <input type="hidden" name="amount_paid" id="amount-input" value="0">
+                <input type="hidden" name="mpesa_transaction_id" id="mpesa-code-input">
+
+                <button id="confirm-payment-btn" type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xl px-8 py-4 is-fullwidth" disabled>
+                    <span class="button-text">Confirm Payment</span>
+                    <span class="spinner" style="border-width: 3px; width: 1.5em; height: 1.5em;"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const paymentOverlay = document.getElementById('payment-overlay');
+        if (!paymentOverlay) return;
+
+        // Close modal function
+        function closeModal() {
+            const container = document.getElementById('payment-overlay-container');
+            if (container) {
+                container.innerHTML = '';
+            } else {
+                // Fallback if container doesn't exist
+                paymentOverlay.remove();
+            }
+        }
+
+        // Close button event
+        paymentOverlay.querySelector('#close-payment-terminal-btn').addEventListener('click', closeModal);
+
+        // Element references
+        const confirmBtn = paymentOverlay.querySelector('#confirm-payment-btn');
+        const mainPaymentForm = paymentOverlay.querySelector('#main-payment-form');
+        const paymentMethodInput = paymentOverlay.querySelector('#payment-method-input');
+        const keypadSection = paymentOverlay.querySelector('#keypad-section');
+        const keypadContainer = paymentOverlay.querySelector('#payment-terminal-keypad');
+        const amountDisplay = paymentOverlay.querySelector('#amount-display');
+        const amountInput = paymentOverlay.querySelector('#amount-input');
+        const changeDueDisplay = paymentOverlay.querySelector('#change-due');
+        const changeDueNotification = paymentOverlay.querySelector('#change-due-notification');
+        const creditInfoPanel = paymentOverlay.querySelector('#credit-info-panel');
+        const mpesaField = paymentOverlay.querySelector('#mpesa-field');
+        const mpesaCodeInput = paymentOverlay.querySelector('#mpesa-code-input');
+        const mpesaCodeField = paymentOverlay.querySelector('#mpesa-code-field');
+
+        // Customer data
+        const customerCreditLimit = parseFloat("{{ order.customer.credit_limit|default:0 }}");
+        const customerCurrentDebt = parseFloat("{{ order.customer.credit_balance|default:0 }}");
+        const customerIsWalkIn = "{{ order.customer.id }}" === "1";
+
+        // Amount tracking
+        let currentAmountStr = '';
+
+        // Get total due amount with multiple fallback methods
+        function getTotalDue() {
+            // Method 1: Check for data-total attribute
+            const el = paymentOverlay.querySelector('#total-due');
+            if (el && el.dataset.total) {
+                return parseFloat(el.dataset.total);
+            }
+
+            // Method 2: Check for final-total or grand-total elements
+            const finalTotalEl = paymentOverlay.querySelector('#final-total, #grand-total, .final-total, .grand-total');
+            if (finalTotalEl) {
+                if (finalTotalEl.dataset.total) {
+                    return parseFloat(finalTotalEl.dataset.total);
+                }
+                const text = finalTotalEl.textContent.replace(/[^\d.]/g, '');
+                const amount = parseFloat(text);
+                if (!isNaN(amount)) return amount;
+            }
+
+            // Method 3: Try to get from text content of #total-due
+            if (el) {
+                const text = el.textContent.replace(/[^\d.]/g, '');
+                const amount = parseFloat(text);
+                if (!isNaN(amount)) return amount;
+            }
+
+            // Method 4: Look for any element with total in class name
+            const totalEls = paymentOverlay.querySelectorAll('[class*="total"]');
+            for (let totalEl of totalEls) {
+                if (totalEl.dataset.total) {
+                    const amount = parseFloat(totalEl.dataset.total);
+                    if (!isNaN(amount)) return amount;
+                }
+            }
+
+            console.warn('Could not find total due amount');
+            return 0;
+        }
+
+        // Keypad handler
+        function handleKeypad(value) {
+            if (value === 'C') {
+                currentAmountStr = '';
+            } else if (value === 'DEL') {
+                currentAmountStr = currentAmountStr.slice(0, -1);
+            } else if (currentAmountStr.length < 9) {
+                if (currentAmountStr === '0') currentAmountStr = '';
+                currentAmountStr += value;
+            }
+            updateCashDisplay();
+        }
+
+        // Update cash display and change calculation
+        function updateCashDisplay() {
+            const totalDue = getTotalDue();
+            const amountFloat = parseFloat(currentAmountStr || '0');
+
+            amountDisplay.textContent = amountFloat.toFixed(2);
+            amountInput.value = amountFloat.toFixed(2);
+
+            if (amountFloat >= totalDue && totalDue > 0) {
+                const change = amountFloat - totalDue;
+                changeDueDisplay.textContent = change.toFixed(2);
+                changeDueNotification.style.display = 'block';
+            } else {
+                changeDueNotification.style.display = 'none';
+            }
+
+            checkConfirmButtonState();
+        }
+
+        // Handle credit selection
+        function handleCreditSelection() {
+            const totalDue = getTotalDue();
+            const newDebt = customerCurrentDebt + totalDue;
+
+            creditInfoPanel.innerHTML = `
+                <h4 class="text-2xl font-bold text-gray-900 mb-4 is-5">Credit Status for {{ order.customer.name|escapejs }}</h4>
+                <p>Limit: <strong>${customerCreditLimit.toFixed(2)}</strong> |
+                   Current Debt: <strong>${customerCurrentDebt.toFixed(2)}</strong></p>
+                <p class="mt-2">New Balance:
+                   <strong class="${newDebt > customerCreditLimit ? 'has-text-danger' : 'has-text-success-dark'}">
+                       ${newDebt.toFixed(2)}
+                   </strong>
+                </p>
+                ${newDebt > customerCreditLimit ?
+                    `<div class="notification bg-red-600 hover:bg-red-700 text-white p-2 mt-2">
+                        <strong>Warning:</strong> Credit limit will be exceeded.
+                     </div>` : ''}
+            `;
+
+            checkConfirmButtonState();
+        }
+
+        // Check if confirm button should be enabled
+        function checkConfirmButtonState() {
+            const totalDue = getTotalDue();
+            const selectedMethod = paymentMethodInput.value;
+
+            console.log('Checking button state:', {
+                totalDue,
+                selectedMethod,
+                amountInput: amountInput.value,
+                customerIsWalkIn,
+                customerCreditLimit,
+                customerCurrentDebt
+            });
+
+            // Basic validation
+            if (!selectedMethod) {
+                confirmBtn.disabled = true;
+                console.log('Button disabled: No payment method selected');
+                return;
+            }
+
+            if (totalDue <= 0) {
+                confirmBtn.disabled = true;
+                console.log('Button disabled: Total due is 0 or negative');
+                return;
+            }
+
+            // Method-specific validation
+            if (selectedMethod === 'Credit') {
+                const newDebt = customerCurrentDebt + totalDue;
+                const disabled = customerIsWalkIn || newDebt > customerCreditLimit;
+                confirmBtn.disabled = disabled;
+                console.log('Credit validation:', {
+                    disabled,
+                    reason: disabled ? (customerIsWalkIn ? 'Walk-in customer' : 'Credit limit exceeded') : 'Valid'
+                });
+            } else if (selectedMethod === 'Cash' || selectedMethod === 'Mpesa') {
+                const amountPaid = parseFloat(amountInput.value) || 0;
+                const disabled = amountPaid < totalDue;
+                confirmBtn.disabled = disabled;
+                console.log('Cash/Mpesa validation:', {
+                    disabled,
+                    amountPaid,
+                    totalDue,
+                    reason: disabled ? 'Insufficient amount' : 'Valid'
+                });
+            } else {
+                // For other payment methods (Card, etc.)
+                confirmBtn.disabled = false;
+                console.log('Other payment method: enabled');
+            }
+
+            console.log('Final button state - disabled:', confirmBtn.disabled);
+        }
+
+        // Create keypad
+        const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', 'DEL'];
+        keypadContainer.innerHTML = '';
+        keys.forEach(key => {
+            let btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'button is-large';
+            if (key === 'C' || key === 'DEL') {
+                btn.classList.add('is-light');
+            }
+            btn.textContent = key;
+            btn.addEventListener('click', () => handleKeypad(key));
+            keypadContainer.appendChild(btn);
+        });
+
+        // Payment method selection
+        paymentOverlay.querySelectorAll('.payment-method-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active state from all buttons
+                paymentOverlay.querySelectorAll('.payment-method-btn').forEach(b =>
+                    b.classList.remove('is-primary')
+                );
+
+                // Add active state to clicked button
+                btn.classList.add('is-primary');
+
+                const selectedMethod = btn.dataset.method;
+                paymentMethodInput.value = selectedMethod;
+
+                // Show/hide relevant fields
+                mpesaField.style.display = (selectedMethod === 'Mpesa') ? 'block' : 'none';
+                keypadSection.style.display = (selectedMethod === 'Cash' || selectedMethod === 'Mpesa') ? 'flex' : 'none';
+                creditInfoPanel.style.display = (selectedMethod === 'Credit') ? 'block' : 'none';
+
+                // Handle specific method logic
+                if (selectedMethod === 'Credit') {
+                    handleCreditSelection();
+                } else {
+                    updateCashDisplay();
+                }
+            });
+        });
+
+        // M-Pesa code field handling
+        if (mpesaCodeField) {
+            mpesaCodeField.addEventListener('input', () => {
+                mpesaCodeInput.value = mpesaCodeField.value;
+            });
+        }
+
+        // HTMX event handlers
+        mainPaymentForm.addEventListener('htmx:configRequest', function(evt) {
+            const selectedMethod = paymentMethodInput.value;
+            const totalDue = getTotalDue();
+
+            console.log('=== FORM SUBMISSION ===');
+            console.log('Submitting payment:', {
+                method: selectedMethod,
+                amount: amountInput.value,
+                totalDue: totalDue,
+                mpesaCode: mpesaCodeInput.value
+            });
+
+            // Pre-submission validation
+            if (!selectedMethod) {
+                evt.preventDefault();
+                alert('Please select a payment method');
+                console.log('Submission blocked: No payment method');
+                return;
+            }
+
+            if (totalDue <= 0) {
+                evt.preventDefault();
+                alert('Invalid total amount');
+                console.log('Submission blocked: Invalid total');
+                return;
+            }
+
+            if (selectedMethod === 'Mpesa' && !mpesaCodeInput.value.trim()) {
+                evt.preventDefault();
+                alert('Please enter M-Pesa transaction code');
+                console.log('Submission blocked: Missing M-Pesa code');
+                return;
+            }
+
+            if ((selectedMethod === 'Cash' || selectedMethod === 'Mpesa')) {
+                const amountPaid = parseFloat(amountInput.value) || 0;
+                if (amountPaid < totalDue) {
+                    evt.preventDefault();
+                    alert(`Amount paid (${amountPaid.toFixed(2)}) must be at least the total due (${totalDue.toFixed(2)})`);
+                    console.log('Submission blocked: Insufficient amount');
+                    return;
+                }
+            }
+
+            if (selectedMethod === 'Credit') {
+                if (customerIsWalkIn) {
+                    evt.preventDefault();
+                    alert('Credit not available for walk-in customers');
+                    console.log('Submission blocked: Walk-in credit');
+                    return;
+                }
+
+                const newDebt = customerCurrentDebt + totalDue;
+                if (newDebt > customerCreditLimit) {
+                    evt.preventDefault();
+                    alert('Credit limit would be exceeded');
+                    console.log('Submission blocked: Credit limit exceeded');
+                    return;
+                }
+            }
+
+            console.log('Form validation passed, submitting...');
+        });
+
+        mainPaymentForm.addEventListener('htmx:responseError', function(evt) {
+            console.error('HTMX Error:', evt.detail);
+            alert("Payment failed. Please check your connection and try again.");
+        });
+
+        mainPaymentForm.addEventListener('htmx:afterRequest', function(evt) {
+            console.log('HTMX Request completed:', evt.detail);
+            if (evt.detail.successful) {
+                console.log('Payment successful');
+                // The response should handle closing the modal or redirecting
+            } else {
+                console.error('Payment request failed');
+                alert("Payment failed. Please try again.");
+            }
+        });
+
+        // Handle discount form updates
+        paymentOverlay.addEventListener('htmx:afterSettle', function(evt) {
+            const isDiscountForm = evt.detail.elt.hasAttribute('hx-target') &&
+                                  evt.detail.elt.getAttribute('hx-target') === '#bill-discounts-and-total';
+
+            if (isDiscountForm) {
+                setTimeout(() => {
+                    const selectedMethod = paymentMethodInput.value;
+                    if (selectedMethod === 'Credit') {
+                        handleCreditSelection();
+                    } else if (selectedMethod) {
+                        updateCashDisplay();
+                    }
+                }, 100);
+            }
+        });
+
+        // Initial button state check
+        checkConfirmButtonState();
+
+        // Debug: Log initial state
+        console.log('Payment terminal initialized:', {
+            totalDue: getTotalDue(),
+            customerData: {
+                id: "{{ order.customer.id }}",
+                name: "{{ order.customer.name|escapejs }}",
+                creditLimit: customerCreditLimit,
+                currentDebt: customerCurrentDebt,
+                isWalkIn: customerIsWalkIn
+            }
+        });
+    })();
+    // Handle payment completion and close modal
+document.body.addEventListener('closePaymentModal', function(event) {
+    const data = event.detail;
+
+    // Close the modal (adjust selector based on your modal structure)
+    const modal = document.getElementById('paymentModal') ||
+                  document.querySelector('.payment-modal') ||
+                  document.querySelector('[data-modal="payment"]');
+
+    if (modal) {
+        // For Bootstrap modal
+        if (window.bootstrap) {
+            bootstrap.Modal.getInstance(modal)?.hide();
+        }
+        // For custom modal
+        else {
+            modal.style.display = 'none';
+            modal.classList.remove('show', 'active');
+        }
+    }
+
+    // Show success message
+    if (data.message) {
+        // Use your notification system here
+        alert(data.message); // Replace with your preferred notification
+    }
+
+    // Optionally refresh the order list or specific sections
+    // htmx.trigger('#ordersList', 'refresh');
+});
+</script>

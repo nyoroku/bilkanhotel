@@ -1,0 +1,72 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Category Management{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <p class="text-lg font-bold text-gray-800 is-centered text-2xl font-semibold">
+            Category Management
+        </p>
+        <div class="card-header-icon">
+            <a href="{% url 'pos:category_add' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">
+                <span class="icon"><i class="fas fa-plus"></i></span>
+                <span>Add New Category</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="p-6">
+        <!-- Filter Bar -->
+        <form id="category-filters"
+              hx-get="{% url 'pos:category_list' %}"
+              hx-target="#category-table-container"
+              hx-swap="innerHTML"
+              class="bg-white rounded-lg shadow-md p-6 mb-4 has-background-light p-4">
+
+            <div class="mb-4 is-horizontal">
+                <div class="field-body">
+                    <div class="mb-4 is-expanded">
+                        <div class="relative has-icons-left">
+                            <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" type="text" name="q" placeholder="Search by name..." value="{{ search_query }}">
+                            <span class="icon text-xs px-2.5 py-1.5 is-left"><i class="fas fa-search"></i></span>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="relative">
+                            <div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
+                                <select name="section">
+                                    <option value="">All Sections</option>
+                                    {% for value, label in sections %}
+                                        <option value="{{ value }}" {% if value == selected_section %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="mb-4">
+                        <div class="relative">
+                            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white">Filter</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Container for the dynamic table -->
+        <div id="category-table-container">
+            {% include 'pos/partials/_category_table.html' %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Optional: Auto-submit the form when a filter dropdown changes.
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterForm = document.getElementById('category-filters');
+        filterForm.querySelector('select').addEventListener('change', function() {
+            htmx.trigger(filterForm, 'submit');
+        });
+    });
+</script>
+{% endblock %}

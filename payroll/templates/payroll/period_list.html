@@ -1,0 +1,9 @@
+{% extends 'pos/base.html' %}
+{% block title %}Payroll Runs{% endblock %}
+{% block content %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between"><p class="text-lg font-bold text-gray-800">Payroll Runs</p><div class="card-header-icon"><a href="{% url 'payroll:run_new' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white">Run New Payroll</a></div></header>
+    <div class="p-6"><table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white"><thead><tr><th>Name</th><th>Period</th><th>Pay Date</th><th>Status</th><th>Action</th></tr></thead><tbody>
+    {% for period in periods %}<tr><td>{{ period.name }}</td><td>{{ period.start_date|date:"d M Y" }} - {{ period.end_date|date:"d M Y" }}</td><td>{{ period.pay_date|date:"d M Y" }}</td><td><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500 hover:bg-sky-600 text-white">{{ period.get_status_display }}</span></td><td><a href="{% url 'payroll:period_detail' period.id %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5">View & Process</a></td></tr>{% endfor %}
+    </tbody></table></div></div>
+{% endblock %}

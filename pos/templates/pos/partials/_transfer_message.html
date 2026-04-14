@@ -1,0 +1,17 @@
+<!-- templates/pos/partials/_transfer_message.html -->
+<div id="transfer-message-{{ item_id }}" class="notification bg-green-600 hover:bg-green-700 text-white is-light" hx-swap-oob="innerHTML:#transfer-message-{{ item_id }}">
+    <button class="delete" aria-label="close"></button>
+    Requested {{ quantity|floatformat:3 }} kg of {{ item_name }} to {{ transferred_to_user_name }} in {{ destination_section }}.
+</div>
+<script>
+    (function() {
+        const form = document.getElementById('transfer-form-{{ item_id }}');
+        if (form) {
+            form.querySelector('input[name="quantity"]').value = '';
+            form.querySelector('input[name="amount"]').value = '';
+            // Reset selects if desired
+            // form.querySelector('select[name="destination_section"]').selectedIndex = 0;
+            // form.querySelector('select[name="transferred_to_user"]').selectedIndex = 0;
+        }
+    })();
+</script>

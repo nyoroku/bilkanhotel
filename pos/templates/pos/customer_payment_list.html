@@ -1,0 +1,46 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Customer Payment History{% endblock %}
+
+{% block content %}
+<div class="level mb-5">
+    <div class="level-left">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Customer Payment History</h1>
+    </div>
+    <div class="level-right">
+        <a href="{% url 'pos:add_customer_payment' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white text-lg px-6 py-3">
+            <span class="icon"><i class="fas fa-plus"></i></span>
+            <span>Record New Payment</span>
+        </a>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+    <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+        <thead>
+            <tr>
+                <th>Date / Time</th>
+                <th>Customer</th>
+                <th class="text-right">Amount Paid (KES)</th>
+                <th>Method</th>
+                <th>Processed By</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>{{ payment.payment_date|date:"d M Y, H:i" }}</td>
+                <td><strong>{{ payment.customer.name }}</strong></td>
+                <td class="text-right has-text-weight-semibold">{{ payment.amount_paid|floatformat:2 }}</td>
+                <td><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500 hover:bg-sky-600 text-white is-light">{{ payment.get_payment_method_display }}</span></td>
+                <td>{{ payment.processed_by.username|default:"N/A" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center p-4">No customer credit payments have been recorded yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

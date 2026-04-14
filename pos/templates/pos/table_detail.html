@@ -1,0 +1,1039 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Manage {{ table.table_number }}{% endblock %}
+
+{% block styles %}
+{{ block.super }}
+<style>
+    :root {
+        --primary-color: #6366f1;
+        --primary-dark: #4f46e5;
+        --primary-light: #a5b4fc;
+        --success-color: #10b981;
+        --success-light: #d1fae5;
+        --warning-color: #f59e0b;
+        --warning-light: #fef3c7;
+        --danger-color: #ef4444;
+        --info-color: #3b82f6;
+        --info-light: #dbeafe;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --border-radius: 0.75rem;
+        --border-radius-sm: 0.5rem;
+        --border-radius-lg: 1rem;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        --backdrop-blur: blur(10px);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .modern-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: var(--backdrop-blur);
+        -webkit-backdrop-filter: var(--backdrop-blur);
+        padding: 1.5rem 2rem;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .page-title {
+        font-size: 1.875rem;
+        font-weight: 800;
+        color: var(--gray-900);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .table-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 0.75rem 1.25rem;
+        border-radius: var(--border-radius);
+        font-weight: 700;
+        font-size: 1rem;
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .table-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
+    }
+
+    .table-badge:hover::before {
+        left: 100%;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--gray-700);
+        padding: 0.875rem 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        backdrop-filter: var(--backdrop-blur);
+        -webkit-backdrop-filter: var(--backdrop-blur);
+    }
+
+    .back-btn:hover {
+        background: white;
+        color: var(--gray-900);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .orders-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: var(--backdrop-blur);
+        -webkit-backdrop-filter: var(--backdrop-blur);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, var(--gray-50), rgba(255, 255, 255, 0.8));
+        padding: 2rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-title::before {
+        content: '';
+        width: 4px;
+        height: 1.5rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border-radius: 2px;
+    }
+
+    .add-order-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 0.875rem 1.5rem;
+        border: none;
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .add-order-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
+    }
+
+    .add-order-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .add-order-btn:hover::before {
+        left: 100%;
+    }
+
+    .orders-container {
+        padding: 2rem;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .orders-container::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .orders-container::-webkit-scrollbar-track {
+        background: var(--gray-100);
+        border-radius: 4px;
+    }
+
+    .orders-container::-webkit-scrollbar-thumb {
+        background: var(--gray-400);
+        border-radius: 4px;
+    }
+
+    .orders-container::-webkit-scrollbar-thumb:hover {
+        background: var(--gray-500);
+    }
+
+    .order-card {
+        background: white;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .order-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .order-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+
+    .order-card.status-ready::before {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+    }
+
+    .order-card.status-pending::before {
+        background: linear-gradient(135deg, var(--warning-color), #d97706);
+    }
+
+    .order-card.status-preparing::before {
+        background: linear-gradient(135deg, var(--info-color), #2563eb);
+    }
+
+    .order-card.status-ready {
+        background: linear-gradient(135deg, var(--success-light), rgba(255, 255, 255, 0.9));
+    }
+
+    .order-card.status-pending {
+        background: linear-gradient(135deg, var(--warning-light), rgba(255, 255, 255, 0.9));
+    }
+
+    .order-card.status-preparing {
+        background: linear-gradient(135deg, var(--info-light), rgba(255, 255, 255, 0.9));
+    }
+
+    /* Fixed Order Header Layout */
+    .order-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .order-checkbox {
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 0.375rem;
+        border: 2px solid var(--gray-300);
+        cursor: pointer;
+        transition: var(--transition);
+        appearance: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin-top: 0.25rem;
+        flex-shrink: 0;
+    }
+
+    .order-checkbox:checked {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border-color: var(--primary-color);
+    }
+
+    .order-checkbox:checked::after {
+        content: '✓';
+        color: white;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+
+    .order-checkbox:hover {
+        border-color: var(--primary-color);
+        transform: scale(1.1);
+    }
+
+    .order-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .order-number {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin: 0 0 0.75rem 0;
+    }
+
+    /* Fixed Order Meta Layout */
+    .order-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    .order-meta > span {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        white-space: nowrap;
+    }
+
+    .order-meta i {
+        color: var(--gray-400);
+        flex-shrink: 0;
+    }
+
+    /* Fixed Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+        min-width: fit-content;
+    }
+
+    .status-ready {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .status-pending {
+        background: var(--warning-color);
+        color: white;
+    }
+
+    .status-preparing {
+        background: var(--info-color);
+        color: white;
+    }
+
+    /* Fixed Action Buttons Layout */
+    .order-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--gray-700);
+        padding: 0.625rem 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: var(--border-radius-sm);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        transition: var(--transition);
+        backdrop-filter: var(--backdrop-blur);
+        -webkit-backdrop-filter: var(--backdrop-blur);
+        white-space: nowrap;
+        min-width: fit-content;
+    }
+
+    .action-button:hover {
+        background: white;
+        color: var(--gray-900);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .action-button.primary {
+        background: linear-gradient(135deg, var(--primary-light), rgba(255, 255, 255, 0.9));
+        color: var(--primary-dark);
+        border: 1px solid var(--primary-light);
+    }
+
+    .action-button.primary:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .actions-panel {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: var(--backdrop-blur);
+        -webkit-backdrop-filter: var(--backdrop-blur);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: sticky;
+        top: 2rem;
+        overflow: hidden;
+    }
+
+    .actions-content {
+        padding: 2rem;
+    }
+
+    .select-all-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, var(--gray-50), rgba(255, 255, 255, 0.8));
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .select-all-checkbox {
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 0.375rem;
+        border: 2px solid var(--gray-300);
+        cursor: pointer;
+        transition: var(--transition);
+        appearance: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .select-all-checkbox:checked {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border-color: var(--primary-color);
+    }
+
+    .select-all-checkbox:checked::after {
+        content: '✓';
+        color: white;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+
+    .select-all-checkbox:hover {
+        border-color: var(--primary-color);
+        transform: scale(1.1);
+    }
+
+    .select-all-container label {
+        font-weight: 600;
+        color: var(--gray-700);
+        cursor: pointer;
+    }
+
+    .actions-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem 1.5rem;
+        border: none;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.875rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
+    }
+
+    .action-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .action-btn:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .action-btn:not(:disabled):hover::before {
+        left: 100%;
+    }
+
+    .btn-info {
+        background: linear-gradient(135deg, var(--info-color), #2563eb);
+        color: white;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, var(--gray-600), var(--gray-700));
+        color: white;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+        color: white;
+        padding: 1.25rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+        box-shadow: var(--shadow-md);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--gray-500);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.3;
+        color: var(--gray-400);
+    }
+
+    .empty-state p {
+        font-size: 1.125rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p:last-child {
+        font-size: 0.875rem;
+        color: var(--gray-400);
+    }
+
+    .loading-spinner {
+        display: none;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Floating action buttons for mobile */
+    .floating-actions {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        display: none;
+        flex-direction: column;
+        gap: 1rem;
+        z-index: 1000;
+    }
+
+    .floating-btn {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        box-shadow: var(--shadow-lg);
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .floating-btn:hover {
+        transform: scale(1.1);
+    }
+
+    @media (max-width: 768px) {
+        .modern-container {
+            padding: 1rem;
+        }
+
+        .main-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+            padding: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .actions-panel {
+            position: static;
+            order: -1;
+        }
+
+        .floating-actions {
+            display: flex;
+        }
+
+        .section-header {
+            padding: 1.5rem;
+        }
+
+        .orders-container {
+            padding: 1.5rem;
+        }
+
+        .order-card {
+            padding: 1.25rem;
+        }
+
+        .order-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .order-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .order-actions {
+            flex-direction: column;
+        }
+
+        .action-button {
+            justify-content: center;
+        }
+    }
+
+    /* Smooth scroll behavior */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Enhanced focus styles for accessibility */
+    .order-checkbox:focus,
+    .select-all-checkbox:focus,
+    .action-btn:focus,
+    .back-btn:focus,
+    .add-order-btn:focus,
+    .action-button:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+
+    /* Improved contrast for better readability */
+    .order-meta {
+        color: var(--gray-700);
+    }
+
+    /* Subtle animations for better UX */
+    .order-card,
+    .actions-panel,
+    .orders-section {
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span class="table-badge">
+                    <i class="fas fa-table"></i>
+                    {{ table.table_number }}
+                </span>
+                Table Management
+            </h1>
+        </div>
+        <a href="{% url 'pos:waiter_dashboard' %}" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            <span>All Tables</span>
+        </a>
+    </div>
+
+    <div class="main-grid">
+        <!-- Orders Section -->
+        <div class="orders-section">
+            <div class="section-header">
+                <h2 class="section-title">Active Orders</h2>
+                <a href="{% url 'pos:create_order_for_table' table.id %}" class="add-order-btn">
+                    <i class="fas fa-plus"></i>
+                    <span>New Order</span>
+                </a>
+            </div>
+            <div class="orders-container">
+                {% for order in open_orders %}
+                <div class="order-card status-{{ order.status|lower }}">
+                    <div class="order-header">
+                        <input type="checkbox" class="order-checkbox" value="{{ order.id }}" checked>
+                        <div class="order-info">
+                            <h3 class="order-number">Order #{{ order.id }}</h3>
+                            <div class="order-meta">
+                                <span>
+                                    <i class="fas fa-user"></i>
+                                    {{ order.waiter.get_full_name }}
+                                </span>
+                                <span>
+                                    <i class="fas fa-clock"></i>
+                                    {% if order.created_at %}
+                                        {{ order.created_at|timesince }} ago
+                                    {% else %}
+                                        Just now
+                                    {% endif %}
+                                </span>
+                                <span class="status-badge status-{{ order.status|lower }}">
+                                    {% if order.status == 'Ready' %}
+                                        <i class="fas fa-check-circle"></i>
+                                    {% elif order.status == 'Preparing' %}
+                                        <i class="fas fa-clock"></i>
+                                    {% else %}
+                                        <i class="fas fa-hourglass-half"></i>
+                                    {% endif %}
+                                    {{ order.status }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="order-actions">
+                        {% if order.status == 'Pending' or order.status == 'Ready' %}
+                        <a href="{% url 'pos:add_items_to_order' order.id %}" class="action-button primary" title="Add more items to this order">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Items</span>
+                        </a>
+                        {% endif %}
+
+                        <a href="{% url 'pos:waiter_order_detail' order.id %}" class="action-button">
+                            <i class="fas fa-eye"></i>
+                            <span>View</span>
+                        </a>
+
+                        <a href="{% url 'pos:print_order_receipt' order.id %}" class="action-button" target="_blank">
+                            <i class="fas fa-print"></i>
+                            <span>Print</span>
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <p>No active orders for this table</p>
+                    <p>Create a new order to get started</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Actions Panel -->
+        <div class="actions-panel">
+            <div class="section-header">
+                <h3 class="section-title">Actions</h3>
+            </div>
+            <div class="actions-content">
+                <div class="select-all-container">
+                    <input type="checkbox" id="select-all-orders" class="select-all-checkbox" checked>
+                    <label for="select-all-orders">Select All Orders</label>
+                </div>
+
+                <div class="actions-buttons">
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+                        <button id="print-kitchen-dockets-btn" class="action-btn btn-info" style="flex: 1;">
+                            <i class="fas fa-utensils"></i>
+                            <span>Kitchen</span>
+                            <div class="loading-spinner"></div>
+                        </button>
+                        <button id="print-bar-dockets-btn" class="action-btn btn-info" style="flex: 1;">
+                            <i class="fas fa-cocktail"></i>
+                            <span>Bar</span>
+                            <div class="loading-spinner"></div>
+                        </button>
+                    </div>
+
+                    <button id="print-table-bill-btn" class="action-btn btn-secondary">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Print Table Bill</span>
+                        <div class="loading-spinner"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating actions for mobile -->
+<div class="floating-actions">
+    <button class="floating-btn" onclick="document.getElementById('print-kitchen-dockets-btn').click()">
+        <i class="fas fa-utensils"></i>
+    </button>
+    <button class="floating-btn" onclick="document.getElementById('print-bar-dockets-btn').click()">
+        <i class="fas fa-cocktail"></i>
+    </button>
+    <button class="floating-btn" onclick="document.getElementById('print-table-bill-btn').click()">
+        <i class="fas fa-file-invoice"></i>
+    </button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const orderCheckboxes = document.querySelectorAll('.order-checkbox');
+    const selectAllCheckbox = document.getElementById('select-all-orders');
+    const printKitchenDocketsBtn = document.getElementById('print-kitchen-dockets-btn');
+    const printBarDocketsBtn = document.getElementById('print-bar-dockets-btn');
+    const printTableBillBtn = document.getElementById('print-table-bill-btn');
+
+    function getSelectedOrderIds() {
+        return Array.from(orderCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+    }
+
+    function updateActionButtons() {
+        const selectedIds = getSelectedOrderIds();
+        const hasSelection = selectedIds.length > 0;
+
+        printKitchenDocketsBtn.disabled = !hasSelection;
+        printBarDocketsBtn.disabled = !hasSelection;
+        printTableBillBtn.disabled = !hasSelection;
+    }
+
+    function showLoading(button) {
+        const spinner = button.querySelector('.loading-spinner');
+        const span = button.querySelector('span');
+        const originalText = span.textContent;
+        spinner.style.display = 'block';
+        span.textContent = 'Processing...';
+        button.disabled = true;
+        return originalText;
+    }
+
+    function hideLoading(button, originalText) {
+        const spinner = button.querySelector('.loading-spinner');
+        const span = button.querySelector('span');
+        spinner.style.display = 'none';
+        span.textContent = originalText;
+        updateActionButtons(); // Re-enable based on selection
+    }
+
+    // Event listeners
+    orderCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateActionButtons);
+    });
+
+    selectAllCheckbox.addEventListener('change', function() {
+        orderCheckboxes.forEach(cb => {
+            cb.checked = this.checked;
+        });
+        updateActionButtons();
+    });
+
+    // Update select all checkbox state when individual checkboxes change
+    orderCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            const checkedCount = Array.from(orderCheckboxes).filter(cb => cb.checked).length;
+            selectAllCheckbox.checked = checkedCount === orderCheckboxes.length;
+            selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < orderCheckboxes.length;
+        });
+    });
+
+    // Kitchen Dockets - Print kitchen items only
+    printKitchenDocketsBtn.addEventListener('click', function() {
+        const selectedIds = getSelectedOrderIds();
+        if (selectedIds.length === 0) return;
+
+        const originalText = showLoading(this);
+
+        selectedIds.forEach(id => {
+            const url = `/print/kitchen-docket/${id}/`;
+            window.open(url, '_blank');
+        });
+
+        setTimeout(() => {
+            hideLoading(this, originalText);
+        }, 1000);
+    });
+
+    // Bar Dockets - Print bar items only
+    printBarDocketsBtn.addEventListener('click', function() {
+        const selectedIds = getSelectedOrderIds();
+        if (selectedIds.length === 0) return;
+
+        const originalText = showLoading(this);
+
+        selectedIds.forEach(id => {
+            const url = `/print/bar-docket/${id}/`;
+            window.open(url, '_blank');
+        });
+
+        setTimeout(() => {
+            hideLoading(this, originalText);
+        }, 1000);
+    });
+
+    // Table Bill - Print consolidated bill for selected orders
+    printTableBillBtn.addEventListener('click', function() {
+        const selectedIds = getSelectedOrderIds();
+        if (selectedIds.length === 0) return;
+
+        const originalText = showLoading(this);
+
+        const ids = selectedIds.join(',');
+        const url = `{% url 'pos:print_consolidated_bill' %}?order_ids=${ids}`;
+        window.open(url, '_blank');
+
+        setTimeout(() => {
+            hideLoading(this, originalText);
+        }, 1000);
+    });
+
+    // Initialize button states
+    updateActionButtons();
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key) {
+                case 'a':
+                    e.preventDefault();
+                    selectAllCheckbox.click();
+                    break;
+                case 'k':
+                    e.preventDefault();
+                    if (!printKitchenDocketsBtn.disabled) {
+                        printKitchenDocketsBtn.click();
+                    }
+                    break;
+                case 'b':
+                    e.preventDefault();
+                    if (!printBarDocketsBtn.disabled) {
+                        printBarDocketsBtn.click();
+                    }
+                    break;
+                case 'p':
+                    e.preventDefault();
+                    if (!printTableBillBtn.disabled) {
+                        printTableBillBtn.click();
+                    }
+                    break;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

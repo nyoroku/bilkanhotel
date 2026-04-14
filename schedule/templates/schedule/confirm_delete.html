@@ -1,0 +1,31 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Confirm deletion{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container mx-auto px-4 lg:max-w-7xl">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">Delete {{ object|default:"item" }}?</h1>
+        <p class="text-lg text-gray-600 mb-4">
+            Are you sure you want to delete <strong>{{ object }}</strong>? This action
+            cannot be undone.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-4 flex space-x-2">
+                <div class="relative">
+                    <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white">
+                        <span class="icon"><i class="fas fa-trash"></i></span>
+                        <span>Delete</span>
+                    </button>
+                </div>
+                <div class="relative">
+                    <a onclick="history.back()"
+                       class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 is-light">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

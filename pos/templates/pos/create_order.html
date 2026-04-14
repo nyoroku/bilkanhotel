@@ -1,0 +1,307 @@
+{% extends 'pos/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if existing_order %}
+        Add Items to Order #{{ existing_order.id }}
+    {% else %}
+        Create New Order
+    {% endif %}
+{% endblock %}
+
+{% block styles %}
+{{ block.super }}
+<style>
+    /* Final, working theme from the version you liked */
+    .tabs.is-toggle li a { transition: all 0.2s; }
+    .tabs.is-toggle li.is-active a { background-color: var(--theme-yellow) !important; border-color: var(--theme-yellow) !important; color: var(--sidebar-active-text) !important; font-weight: 700; }
+    .finalize-order-btn { background-color: var(--deep-blue) !important; color: var(--theme-yellow) !important; font-weight: 700 !important; }
+
+    /* Disabled tab styling */
+    .tabs.is-toggle li.is-disabled a {
+        background-color: #f5f5f5 !important;
+        border-color: #dbdbdb !important;
+        color: #b5b5b5 !important;
+        cursor: not-allowed !important;
+        opacity: 0.6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="error-toast-container" style="position: fixed; top: 80px; right: 20px; z-index: 100; width: 350px;"></div>
+
+<form id="create-order-form" method="POST" action="{% url 'pos:finalize_orders' %}">
+    {% csrf_token %}
+
+    {# --- If we are editing, we pass the order ID back to the view --- #}
+    {% if existing_order %}
+        <input type="hidden" name="existing_order_id" value="{{ existing_order.id }}">
+    {% endif %}
+
+    <div class="flex flex-wrap -mx-3 is-variable is-5">
+
+        {# --- LEFT COLUMN: Order Details & Summaries --- #}
+        <div class="w-full px-3 md:w-1/3">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden" style="position: sticky; top: 1.5rem;">
+                <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between"><p class="text-lg font-bold text-gray-800 is-centered">
+                    {% if existing_order %}Add to Order #{{ existing_order.id }}{% else %}Current Order{% endif %}
+                </p></header>
+                <div class="p-6">
+                    {% if existing_order %}
+                        {# Customer and Table fields are read-only when adding items #}
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                            <div class="relative">
+                                <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" value="{{ form.initial.customer.get_full_name }}" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-4 mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Table</label>
+                            <div class="relative">
+                                <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" value="{{ form.initial.table.table_number }}" readonly>
+                            </div>
+                        </div>
+                        {{ form.customer.as_hidden }}
+                        {{ form.table.as_hidden }}
+                    {% else %}
+                        {# New order - show customer search and table selection #}
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="customer-search-input">Customer</label>
+                            <div class="relative has-icons-left dropdown is-active" style="width: 100%;">
+                                <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" type="text" id="customer-search-input" name="q" placeholder="Search customer..." value="{{ default_customer_name }}" hx-get="{% url 'pos:htmx_customer_search' %}" hx-trigger="keyup changed delay:300ms" hx-target="#customer-search-results" autocomplete="off">
+                                <span class="icon text-xs px-2.5 py-1.5 is-left"><i class="fas fa-user"></i></span>
+                                <div class="dropdown-menu" style="width: 100%;"><div class="dropdown-content" id="customer-search-results"></div></div>
+                            </div>
+                            {{ form.customer }}
+                        </div>
+                        <div class="mb-4 mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Table</label>
+                            <div class="relative">
+                                {% if selected_table %}
+                                    <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" value="{{ selected_table.table_number }}" readonly>
+                                    {{ form.table.as_hidden }}
+                                {% else %}
+                                    {{ form.table|as_crispy_field }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    <hr>
+
+                    {# Show appropriate cart summary based on locked section or both for new orders #}
+                    {% if locked_section == 'Kitchen' %}
+                        <div id="kitchen-cart-summary">{% include 'pos/partials/_order_summary.html' with cart=kitchen_cart module="Kitchen" %}</div>
+                    {% elif locked_section == 'Bar' %}
+                        <div id="bar-cart-summary">{% include 'pos/partials/_order_summary.html' with cart=bar_cart module="Bar" %}</div>
+                    {% else %}
+                        <div id="kitchen-cart-summary">{% include 'pos/partials/_order_summary.html' with cart=kitchen_cart module="Kitchen" %}</div>
+                        <div id="bar-cart-summary" class="mt-4">{% include 'pos/partials/_order_summary.html' with cart=bar_cart module="Bar" %}</div>
+                    {% endif %}
+                </div>
+                <footer class="border-t border-gray-200 bg-gray-50 flex">
+                    <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white is-fullwidth flex-1 text-center py-3 text-blue-600 hover:bg-gray-100 text-xl font-medium has-text-weight-bold finalize-order-btn">
+                        {% if existing_order %}Add Selected Items to Order{% else %}Finalize & Send Order{% endif %}
+                    </button>
+                </footer>
+            </div>
+        </div>
+
+        {# --- RIGHT COLUMN: Menu Interface --- #}
+        <div class="w-full px-3">
+            {# TABS - Only show if not locked to a specific section #}
+            {% if not locked_section %}
+            <div class="tabs is-toggle is-fullwidth mb-0">
+                <ul id="section-tabs">
+                    {% for value, label in sections %}
+                    <li class="{% if value == active_module %}is-active{% endif %}">
+                        <a  hx-get="{% url 'pos:htmx_menu_content' %}"
+                            hx-target="#menu-content-wrapper"
+                            hx-vals='{"section": "{{ value }}"}'>
+                            <span>{{ label }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {# This single container will be replaced by HTMX, ensuring filters are always in sync #}
+            <div id="menu-content-wrapper">
+                {# This renders the initial state correctly from the main view #}
+                {% include 'pos/partials/_menu_content.html' with menu_items=initial_menu_items categories=initial_categories active_section=active_module search_query="" selected_category="" %}
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+    // Customer search functionality (only for new orders)
+    function selectCustomer(customerId, customerName) {
+        const customerField = document.getElementById('id_customer');
+        const customerInput = document.getElementById('customer-search-input');
+        const resultsContainer = document.getElementById('customer-search-results');
+
+        if (customerField) customerField.value = customerId;
+        if (customerInput) customerInput.value = customerName;
+        if (resultsContainer) resultsContainer.innerHTML = '';
+    }
+
+    document.addEventListener('click', function(event) {
+        const dropdown = event.target.closest('.dropdown');
+        if (!dropdown) {
+            const resultsContainer = document.getElementById('customer-search-results');
+            if (resultsContainer) { resultsContainer.innerHTML = ''; }
+        }
+    });
+
+    // Get the current active section
+    function getCurrentSection() {
+        // For locked sections, use the locked section value
+        {% if locked_section %}
+            return '{{ locked_section }}';
+        {% else %}
+            // For non-locked sections, get from active tab
+            const activeTab = document.querySelector('#section-tabs li.is-active a');
+            if (activeTab) {
+                const hxVals = activeTab.getAttribute('hx-vals');
+                if (hxVals) {
+                    try {
+                        const parsed = JSON.parse(hxVals);
+                        return parsed.section;
+                    } catch (e) {
+                        console.error('Error parsing hx-vals:', e);
+                    }
+                }
+            }
+            return '{{ active_module }}'; // fallback
+        {% endif %}
+    }
+
+    // Search timeout for debouncing
+    let searchTimeout;
+
+    // Manual search handling to prevent input replacement while typing
+    function handleSearchInput(event) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const searchValue = event.target.value;
+            console.log('Search input changed:', searchValue);
+
+            // Get current section and category
+            const section = getCurrentSection();
+            const categoryChips = document.querySelectorAll('#menu-content-wrapper .button.is-primary');
+            let selectedCategory = '';
+
+            // Find selected category from chips
+            categoryChips.forEach(chip => {
+                const hxVals = chip.getAttribute('hx-vals');
+                if (hxVals) {
+                    try {
+                        const parsed = JSON.parse(hxVals);
+                        if (parsed.category && chip.classList.contains('is-primary')) {
+                            selectedCategory = parsed.category;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing category hx-vals:', e);
+                    }
+                }
+            });
+
+            // Make HTMX request with search value
+            htmx.ajax('GET', '{% url "pos:htmx_menu_content" %}', {
+                values: {
+                    section: section,
+                    category: selectedCategory,
+                    search: searchValue
+                },
+                target: '#menu-content-wrapper'
+            });
+        }, 300);
+    }
+
+    // Initialize search handling
+    function initializeSearch() {
+        console.log('Initializing search...');
+
+        const searchInput = document.querySelector('#menu-content-wrapper input[name="search"]');
+
+        if (searchInput) {
+            console.log('Found search input - setting up manual handling');
+
+            // Remove HTMX attributes to prevent automatic handling
+            searchInput.removeAttribute('hx-get');
+            searchInput.removeAttribute('hx-trigger');
+            searchInput.removeAttribute('hx-target');
+            searchInput.removeAttribute('hx-vals');
+
+            // Remove any existing listeners
+            searchInput.removeEventListener('input', handleSearchInput);
+            searchInput.removeEventListener('keyup', handleSearchInput);
+
+            // Add manual event listener
+            searchInput.addEventListener('input', handleSearchInput);
+            searchInput.addEventListener('keyup', handleSearchInput);
+
+            console.log('Search input initialized with manual handling');
+        }
+    }
+
+    // Tab switching handler (only for new orders)
+    document.body.addEventListener('htmx:beforeRequest', function(evt) {
+        const trigger = evt.detail.elt;
+        const tabContainer = trigger.closest('#section-tabs');
+        if (tabContainer) {
+            tabContainer.querySelectorAll('li').forEach(li => li.classList.remove('is-active'));
+            trigger.closest('li').classList.add('is-active');
+        }
+    });
+
+    // Handle content swaps
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        console.log('Content swapped in:', evt.target.id);
+
+        // Special handling for menu content wrapper
+        if (evt.target.id === 'menu-content-wrapper') {
+            console.log('Menu content wrapper swapped - reinitializing search');
+
+            // Reinitialize search after content swap
+            setTimeout(() => {
+                initializeSearch();
+            }, 50);
+        }
+    });
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Page loaded - initializing content');
+
+        // Process all HTMX elements on the page
+        htmx.process(document.body);
+
+        // Initialize search on initial load
+        setTimeout(() => {
+            initializeSearch();
+        }, 100);
+    });
+
+    // Debug HTMX errors
+    document.body.addEventListener('htmx:responseError', function(evt) {
+        console.error('HTMX Response Error:', evt.detail);
+        if (typeof showToast === 'function') {
+            showToast('Filter request failed. Please try again.', 'is-danger');
+        }
+    });
+
+    // Handle failed requests
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+        if (evt.detail.xhr.status !== 200) {
+            console.error('HTMX request failed:', evt.detail.xhr.status, evt.detail.xhr.responseText);
+        }
+    });
+</script>
+{% endblock %}

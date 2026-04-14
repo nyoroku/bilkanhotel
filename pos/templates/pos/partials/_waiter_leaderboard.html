@@ -1,0 +1,389 @@
+<!-- templates/pos/partials/_waiter_leaderboard.html - COMPLETE VERSION -->
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6 mb-4 leaderboard-box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 16px; overflow: hidden;">
+    <!-- Collapsible Header -->
+    <div class="leaderboard-header" style="cursor: pointer; user-select: none; padding: 1.5rem;" onclick="toggleLeaderboard()">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-4 is-4 has-text-white mb-2">
+                    <span class="icon"><i class="fas fa-trophy"></i></span>
+                    <span>Waiter Leaderboard - Total Points 🔴</span>
+                </h2>
+                <p class="is-size-7 has-text-white-ter">
+                    Rankings based on lifetime points • Click to expand/collapse
+                </p>
+            </div>
+            <div>
+                <span class="icon text-xl px-8 py-4" id="leaderboard-toggle-icon">
+                    <i class="fas fa-chevron-down fa-2x"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collapsible Content -->
+    <div id="leaderboard-content" style="display: none; padding: 0 1.5rem 1.5rem;">
+        {% if leaderboard_settings and leaderboard_settings.is_active %}
+            <div class="notification bg-yellow-500 hover:bg-yellow-600 text-black is-light mb-4">
+                <p class="is-size-7">
+                    ⚡ <strong>Live Rankings</strong> - Based on total accumulated points!
+                    <br>
+                    🏆 Top 3 earn bonus points added to their total:
+                    🥇 {{ leaderboard_settings.gold_bonus_points }} |
+                    🥈 {{ leaderboard_settings.silver_bonus_points }} |
+                    🥉 {{ leaderboard_settings.bronze_bonus_points }}
+                    <br>
+                    💰 Points are redeemed on payday along with position bonuses
+                </p>
+            </div>
+
+            <!-- Top 3 Podium -->
+            {% if leaderboard_top_three %}
+                <div class="flex flex-wrap -mx-3 is-mobile is-multiline mb-5">
+                    {% for waiter_data in leaderboard_top_three %}
+                        <div class="w-full px-3 is-one-third-desktop is-full-mobile">
+                            <div class="bg-white rounded-lg shadow-md p-6 mb-4 text-center"
+                                 style="background: {% if waiter_data.medal == 'gold' %}linear-gradient(135deg, #FFD700, #FFA500)
+                                        {% elif waiter_data.medal == 'silver' %}linear-gradient(135deg, #C0C0C0, #808080)
+                                        {% else %}linear-gradient(135deg, #CD7F32, #8B4513){% endif %};
+                                        color: white; border: 3px solid white; position: relative;
+                                        animation: pulse-glow 2s infinite; min-height: 320px;">
+
+                                <!-- Medal Icon -->
+                                <div style="position: absolute; top: -15px; right: -15px; font-size: 3rem; animation: bounce 2s infinite;">
+                                    {{ waiter_data.medal_icon }}
+                                </div>
+
+                                <!-- Rank Badge -->
+                                <div style="position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.3); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold;">
+                                    #{{ waiter_data.rank }}
+                                </div>
+
+                                <!-- Profile Image -->
+                                {% if waiter_data.profile_image %}
+                                    <figure class="image is-96x96 is-inline-block mb-3 mt-4">
+                                        <img src="{{ waiter_data.profile_image }}"
+                                             alt="{{ waiter_data.waiter_name }}"
+                                             style="border-radius: 50%; border: 4px solid white; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+                                    </figure>
+                                {% else %}
+                                    <div class="is-inline-block mb-3 mt-4"
+                                         style="width: 96px; height: 96px; background: white; border-radius: 50%;
+                                                display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
+                                                border: 4px solid rgba(255,255,255,0.8); font-weight: bold;
+                                                color: {% if waiter_data.medal == 'gold' %}#FFA500{% elif waiter_data.medal == 'silver' %}#808080{% else %}#8B4513{% endif %};">
+                                        {{ waiter_data.waiter_name|slice:":1" }}
+                                    </div>
+                                {% endif %}
+
+                                <!-- Waiter Name -->
+                                <p class="text-2xl font-bold text-gray-900 mb-4 is-5 has-text-white mb-3" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                                    {{ waiter_data.waiter_name }}
+                                </p>
+
+                                <!-- Total Points Display -->
+                                <div class="notification is-light mt-2 mb-2" style="padding: 0.75rem; background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.4);">
+                                    <p class="heading has-text-white mb-1" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">TOTAL POINTS</p>
+                                    <p class="text-2xl font-bold text-gray-900 mb-4 is-2 has-text-white mb-0" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3); font-weight: 800;">
+                                        {{ waiter_data.display_total|floatformat:0 }}
+                                    </p>
+                                </div>
+
+                                <!-- Bonus Breakdown with Total -->
+                                <div style="background: rgba(255,255,255,0.15); padding: 0.5rem; border-radius: 8px; font-size: 0.85rem; margin-top: 0.75rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                        <span>Base Points:</span>
+                                        <strong>{{ waiter_data.base_points|floatformat:0 }}</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                        <span>Position Bonus:</span>
+                                        <strong style="color: #90EE90;">+{{ waiter_data.display_bonus|floatformat:0 }}</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding-top: 0.25rem; border-top: 1px solid rgba(255,255,255,0.3); font-weight: bold;">
+                                        <span>= Total:</span>
+                                        <strong>{{ waiter_data.display_total|floatformat:0 }}</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Highlight if current user -->
+                                {% if waiter_data.waiter_id == user.id %}
+                                    <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white is-light mt-3" style="font-size: 1rem; animation: pulse-green 1.5s infinite;">
+                                        <span class="icon"><i class="fas fa-star"></i></span>
+                                        <span><strong>YOU!</strong></span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Full Leaderboard Table -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-4" style="background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); max-height: 500px; overflow-y: auto;">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4 is-5 has-text-white">
+                    <span class="icon"><i class="fas fa-list-ol"></i></span>
+                    <span>Complete Rankings - All Waiters</span>
+                </h3>
+
+                <table class="min-w-full divide-y divide-gray-200 is-fullwidth hover:bg-gray-50" style="background: transparent; color: white;">
+                    <thead>
+                        <tr style="background: rgba(255,255,255,0.2); position: sticky; top: 0; z-index: 10;">
+                            <th class="has-text-white" style="border: none; width: 80px;">Rank</th>
+                            <th class="has-text-white" style="border: none;">Waiter</th>
+                            <th class="has-text-white text-center" style="border: none; width: 120px;">Base Points</th>
+                            <th class="has-text-white text-center" style="border: none; width: 100px;">Bonus</th>
+                            <th class="has-text-white text-center" style="border: none; width: 140px;">Total Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for waiter_data in all_leaderboard_data %}
+                            <tr style="background: {% if waiter_data.waiter_id == user.id %}rgba(46, 204, 113, 0.3){% else %}rgba(255,255,255,0.05){% endif %};
+                                       {% if waiter_data.waiter_id == user.id %}border-left: 4px solid #2ecc71;{% endif %}
+                                       transition: all 0.3s ease;">
+                                <td class="has-text-white" style="border: none; vertical-align: middle;">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if waiter_data.rank <= 3 %}is-warning{% else %}is-light{% endif %}"
+                                          style="font-weight: bold; font-size: 1.1rem; min-width: 50px; justify-content: center;">
+                                        {% if waiter_data.rank == 1 %}🥇
+                                        {% elif waiter_data.rank == 2 %}🥈
+                                        {% elif waiter_data.rank == 3 %}🥉
+                                        {% else %}{{ waiter_data.rank }}
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="has-text-white" style="border: none; vertical-align: middle;">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        {% if waiter_data.profile_image %}
+                                            <figure class="image is-32x32">
+                                                <img src="{{ waiter_data.profile_image }}"
+                                                     alt="{{ waiter_data.waiter_name }}"
+                                                     style="border-radius: 50%; object-fit: cover; border: 2px solid white;">
+                                            </figure>
+                                        {% else %}
+                                            <div style="width: 32px; height: 32px; background: white; color: #667eea;
+                                                        border-radius: 50%; display: flex; align-items: center;
+                                                        justify-content: center; font-weight: bold; font-size: 0.875rem;">
+                                                {{ waiter_data.waiter_name|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <strong style="font-size: 1rem;">{{ waiter_data.waiter_name }}</strong>
+                                            {% if waiter_data.waiter_id == user.id %}
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white is-light py-1.5 ml-2">YOU</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="has-text-white text-center" style="border: none; vertical-align: middle;">
+                                    <span style="font-size: 1.1rem; font-weight: 600;">
+                                        {{ waiter_data.base_points|floatformat:0 }}
+                                    </span>
+                                </td>
+                                <td class="has-text-white text-center" style="border: none; vertical-align: middle;">
+                                    {% if waiter_data.display_bonus > 0 %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white" style="font-weight: bold; font-size: 0.95rem;">
+                                            +{{ waiter_data.display_bonus|floatformat:0 }}
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light" style="font-size: 0.95rem;">--</span>
+                                    {% endif %}
+                                </td>
+                                <td class="has-text-white text-center" style="border: none; vertical-align: middle;">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500 hover:bg-sky-600 text-white text-xl px-8 py-4" style="font-weight: bold; font-size: 1.2rem; min-width: 80px;">
+                                        {{ waiter_data.display_total|floatformat:0 }}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center has-text-white" style="padding: 2rem;">
+                                    No waiters found
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Current User Summary -->
+            {% if current_waiter_rank %}
+                <div class="notification {% if current_waiter_rank.rank <= 3 %}is-success{% else %}is-info{% endif %}"
+                     style="background: rgba({% if current_waiter_rank.rank <= 3 %}46, 204, 113{% else %}52, 152, 219{% endif %}, 0.2);
+                            border: 2px solid rgba({% if current_waiter_rank.rank <= 3 %}46, 204, 113{% else %}52, 152, 219{% endif %}, 0.5);
+                            margin-top: 1.5rem;">
+                    <div class="content has-text-white">
+                        <p class="text-2xl font-bold text-gray-900 mb-4 is-4 has-text-white mb-3 text-center">
+                            {% if current_waiter_rank.rank <= 3 %}
+                                🎉 You're in the Top 3! Keep it up!
+                            {% else %}
+                                📊 Your Current Position
+                            {% endif %}
+                        </p>
+                        <div class="flex flex-wrap -mx-3 is-mobile text-center">
+                            <div class="w-full px-3">
+                                <p class="heading has-text-white">Your Rank</p>
+                                <p class="text-2xl font-bold text-gray-900 mb-4 is-3 has-text-white">#{{ current_waiter_rank.rank }}</p>
+                            </div>
+                            <div class="w-full px-3">
+                                <p class="heading has-text-white">Base Points</p>
+                                <p class="text-2xl font-bold text-gray-900 mb-4 is-3 has-text-white">{{ current_waiter_rank.base_points|floatformat:0 }}</p>
+                            </div>
+                            <div class="w-full px-3">
+                                <p class="heading has-text-white">Bonus</p>
+                                <p class="text-2xl font-bold text-gray-900 mb-4 is-3 {% if current_waiter_rank.display_bonus > 0 %}has-text-success{% else %}has-text-white{% endif %}">
+                                    {% if current_waiter_rank.display_bonus > 0 %}
+                                        +{{ current_waiter_rank.display_bonus|floatformat:0 }}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="w-full px-3">
+                                <p class="heading has-text-white">Total Points</p>
+                                <p class="text-2xl font-bold text-gray-900 mb-4 is-2 has-text-white" style="font-weight: 800;">
+                                    {{ current_waiter_rank.display_total|floatformat:0 }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            {% if current_waiter_rank.rank > 3 %}
+                                <p class="text-base has-text-white">
+                                    💡 Keep serving to earn more points and reach the Top 3 for bonus rewards!
+                                </p>
+                            {% else %}
+                                <p class="text-base has-text-white">
+                                    💰 Your bonus ({{ current_waiter_rank.display_bonus }} pts) is included in your total and will be paid out on payday!
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+        {% else %}
+            <div class="notification bg-yellow-500 hover:bg-yellow-600 text-black">
+                <p><strong>Leaderboard is currently disabled</strong></p>
+                <p class="is-size-7 mt-2">Contact your manager to enable the waiter rewards program.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+        50% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.8); }
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+        60% { transform: translateY(-5px); }
+    }
+
+    @keyframes pulse-green {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .leaderboard-box {
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .leaderboard-box:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    #leaderboard-content {
+        transition: max-height 0.4s ease, opacity 0.3s ease;
+    }
+
+    #leaderboard-toggle-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .leaderboard-header:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+    }
+
+    .box::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .box::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+    }
+
+    .box::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 5px;
+        transition: background 0.3s ease;
+    }
+
+    .box::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    tbody tr:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        transform: scale(1.01);
+        cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+        .leaderboard-header {
+            padding: 1rem !important;
+        }
+
+        #leaderboard-content {
+            padding: 0 1rem 1rem !important;
+        }
+
+        .box {
+            max-height: 400px !important;
+        }
+
+        table {
+            font-size: 0.875rem;
+        }
+
+        .title.is-2 {
+            font-size: 1.75rem !important;
+        }
+
+        .title.is-3 {
+            font-size: 1.5rem !important;
+        }
+    }
+</style>
+
+<script>
+function toggleLeaderboard() {
+    const content = document.getElementById('leaderboard-content');
+    const icon = document.getElementById('leaderboard-toggle-icon');
+
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        icon.innerHTML = '<i class="fas fa-chevron-up fa-2x"></i>';
+        localStorage.setItem('leaderboard-expanded', 'true');
+    } else {
+        content.style.display = 'none';
+        icon.innerHTML = '<i class="fas fa-chevron-down fa-2x"></i>';
+        localStorage.setItem('leaderboard-expanded', 'false');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const isExpanded = localStorage.getItem('leaderboard-expanded');
+    if (isExpanded === 'true') {
+        toggleLeaderboard();
+    }
+});
+</script>

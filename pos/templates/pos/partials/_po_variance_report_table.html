@@ -1,0 +1,56 @@
+<div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
+    <table class="w-full text-left border-collapse">
+        <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">PO #</th>
+                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Supplier</th>
+                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Item</th>
+                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Qty Ordered</th>
+                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Qty Received</th>
+                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Variance</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for data in variance_data %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <a href="{% url 'pos:purchase_order_detail' data.po.id %}" class="text-indigo-600 font-bold hover:text-indigo-900">
+                            #{{ data.po.id }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">
+                        {{ data.po.supplier.name }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {{ data.po_item.menu_item.name }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right font-mono">
+                        {{ data.po_item.quantity_ordered|floatformat:2 }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right font-mono">
+                        {{ data.total_received|floatformat:2 }}
+                    </td>
+
+                    {# Color-code the variance for clarity #}
+                    <td class="px-6 py-4 whitespace-nowrap text-right font-bold font-mono
+                        {% if data.quantity_variance < 0 %}text-red-600
+                        {% elif data.quantity_variance > 0 %}text-green-600
+                        {% else %}text-gray-400{% endif %}">
+                        {{ data.quantity_variance|floatformat:2 }}
+                        {% if data.quantity_variance < 0 %}
+                            <i class="fas fa-arrow-down ml-1 text-xs"></i>
+                        {% elif data.quantity_variance > 0 %}
+                            <i class="fas fa-arrow-up ml-1 text-xs"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">
+                        No variances found for the selected period.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

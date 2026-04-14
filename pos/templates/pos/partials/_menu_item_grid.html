@@ -1,0 +1,92 @@
+<!-- pos/partials/_menu_item_grid.html -->
+<div class="flex flex-wrap -mx-3 is-multiline is-mobile">
+    {% for item in menu_items %}
+    <div class="w-full px-3 is-one-third-desktop is-half-tablet">
+        {% if item.sell_by_weight %}
+            <!-- Weight-based item: opens modal -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden has-background-white has-background-white-ter-hover"
+                 style="cursor:pointer; height:100%;"
+                 hx-get="{% url 'pos:htmx_item_add_modal' item.id %}?module={{ module }}"
+                 hx-target="#modal-container"
+                 hx-trigger="click"
+                 title="Set custom amount for {{ item.name }}">
+
+                <div class="p-6 p-3">
+                    <div class="media is-align-items-center">
+                        <div class="media-left">
+                            <figure class="image is-64x64">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" style="object-fit:cover; border-radius:6px;">
+                                {% else %}
+                                    <div class="has-background-grey-lighter is-flex is-align-items-center is-justify-content-center"
+                                         style="width:64px; height:64px; border-radius:6px;">
+                                        <span class="text-2xl font-bold text-gray-900 mb-4 is-3 has-text-grey-light">{{ item.name|first|upper }}</span>
+                                    </div>
+                                {% endif %}
+                            </figure>
+                        </div>
+
+                        <div class="media-content">
+                            <p class="text-2xl font-bold text-gray-900 mb-4 is-6 mb-1">{{ item.name }}</p>
+                            <p class="mb-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if item.category.module == 'Kitchen' %}is-warning elif 'Bar' %}is-info else %}is-light{% endif %} is-rounded">
+                                    {{ item.category.name }}
+                                </span>
+                            </p>
+                            <p class="text-base has-text-weight-bold text-[#1e3a8a]">
+                                {{ item.selling_price }} KES/kg
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Standard item: direct add -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden has-background-white has-background-white-ter-hover"
+                 style="height:100%;"
+                 hx-post="{% url 'pos:htmx_add_order_item' %}"
+                 hx-vals='{"menu_item_id": "{{ item.id }}", "module": "{{ module }}"}'
+                 hx-target="#{{ module|lower }}-cart-summary"
+                 hx-swap="outerHTML"
+                 title="Add {{ item.name }} to order">
+
+                <div class="p-6 p-3">
+                    <div class="media is-align-items-center">
+                        <div class="media-left">
+                            <figure class="image is-64x64">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" style="object-fit:cover; border-radius:6px;">
+                                {% else %}
+                                    <div class="has-background-grey-lighter is-flex is-align-items-center is-justify-content-center"
+                                         style="width:64px; height:64px; border-radius:6px;">
+                                        <span class="text-2xl font-bold text-gray-900 mb-4 is-3 has-text-grey-light">{{ item.name|first|upper }}</span>
+                                    </div>
+                                {% endif %}
+                            </figure>
+                        </div>
+
+                        <div class="media-content">
+                            <p class="text-2xl font-bold text-gray-900 mb-4 is-6 mb-1">{{ item.name }}</p>
+                            <p class="mb-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if item.category.module == 'Kitchen' %}is-warning elif 'Bar' %}is-info else %}is-light{% endif %} is-rounded">
+                                    {{ item.category.name }}
+                                </span>
+                            </p>
+                            <p class="text-base has-text-weight-bold text-[#1e3a8a]">
+                                {{ item.selling_price }} KES
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="w-full px-3">
+        <p class="has-text-grey-light text-center">No items found.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modal container -->
+<div id="modal-container"></div>

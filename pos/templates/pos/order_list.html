@@ -1,0 +1,79 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Order Management{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <p class="text-lg font-bold text-gray-800 is-centered text-2xl font-semibold">
+            Order Management
+        </p>
+
+    </header>
+
+    <div class="p-6">
+        <!-- Filter Bar -->
+        <form id="order-filters"
+              hx-get="{% url 'pos:order_list' %}"
+              hx-target="#order-table-container"
+              hx-swap="innerHTML"
+              class="bg-white rounded-lg shadow-md p-6 mb-4 has-background-light p-4">
+
+            <div class="mb-4 is-horizontal">
+                <div class="field-body">
+                    <div class="mb-4 is-expanded">
+                        <p class="relative has-icons-left">
+                            <input class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" type="text" name="q" placeholder="Search by customer, table or ID..." value="{{ search_query }}">
+                            <span class="icon text-xs px-2.5 py-1.5 is-left"><i class="fas fa-search"></i></span>
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <p class="relative">
+                            <div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
+                                <select name="status" onchange="this.form.requestSubmit()">
+                                    <option value="">Status (All)</option>
+                                    {% for value, label in status_choices %}
+                                        <option value="{{ value }}" {% if value == selected_status %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <p class="relative">
+                            <div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
+                                <select name="waiter" onchange="this.form.requestSubmit()">
+                                    <option value="">Waiter (All)</option>
+                                    {% for waiter in waiters %}
+                                        <option value="{{ waiter.id }}" {% if waiter.id == selected_waiter|add:0 %}selected{% endif %}>{{ waiter.get_full_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <p class="relative">
+                            <input type="date" name="date_from" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" value="{{ date_from }}" onchange="this.form.requestSubmit()" placeholder="From date">
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <p class="relative">
+                            <input type="date" name="date_to" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" value="{{ date_to }}" onchange="this.form.requestSubmit()" placeholder="To date">
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <p class="relative">
+                            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white">Filter</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Container for the dynamic table -->
+        <div id="order-table-container">
+            {% include 'pos/partials/_order_table.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}

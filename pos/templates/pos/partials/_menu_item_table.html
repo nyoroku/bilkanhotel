@@ -1,0 +1,72 @@
+<div class="table-container">
+    <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50 is-size-7">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th class="text-right">Selling Price</th>
+                <th class="text-right">Cost Price</th>
+                <th class="text-right">Stock Qty</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in page_obj.object_list %}
+                {# Highlight rows of items with low stock #}
+                <tr class="{% if item.low_stock_threshold > 0 and item.stock_quantity <= %}has-background-danger-light{% endif %}">
+                    <td style="vertical-align: middle;">
+                        <div class="is-flex is-align-items-center">
+                            {% if item.image %}
+                                <figure class="image is-32x32 mr-3">
+                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="is-rounded">
+                                </figure>
+                            {% endif %}
+                            <strong>{{ item.name }}</strong>
+                        </div>
+                    </td>
+                    <td style="vertical-align: middle;">{{ item.category.name }}</td>
+                    <td class="text-right" style="vertical-align: middle;">{{ item.selling_price|floatformat:2 }} KES</td>
+                    <td class="text-right" style="vertical-align: middle;">{{ item.supplier_cost_price|floatformat:2 }} KES</td>
+                    <td class="text-right" style="vertical-align: middle;">{{ item.stock_quantity|floatformat:2 }}</td>
+                    <td class="text-center" style="vertical-align: middle;">
+                        {% if item.is_active %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white is-light">Active</span>
+                        {% else %}
+                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center" style="vertical-align: middle;">
+                        <a href="{% url 'pos:menu_item_edit' item.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white is-light">
+                           <span>Edit</span>
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No menu items match your filters.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination Links -->
+{% if page_obj.has_other_pages %}
+<nav class="pagination is-centered mt-4" role="navigation" aria-label="pagination"
+     hx-get="{% url 'pos:menu_item_list' %}"
+     hx-target="#menu-item-table-container"
+     hx-swap="innerHTML"
+     hx-include="#menu-item-filters">
+
+    <ul class="pagination-list">
+        {% for num in page_obj.paginator.page_range %}
+            <li>
+                <a href="?page={{ num }}" class="pagination-link {% if page_obj.number == num %}is-current{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}

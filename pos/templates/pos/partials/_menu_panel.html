@@ -1,0 +1,53 @@
+<div class="bg-white rounded-lg shadow-md overflow-hidden" style="height: 100%; display: flex; flex-direction: column;">
+    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div class="tabs is-toggle is-toggle-rounded is-fullwidth" style="margin: 0.75rem;">
+            <li class="{% if active_section == 'Kitchen' %}is-active{% endif %}">
+                <a hx-get="{% url 'pos:htmx_menu_panel' %}?section=Kitchen"
+                   hx-target="#menu-panel-wrapper"
+                   hx-swap="innerHTML">
+                   <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-utensils" aria-hidden="true"></i></span>
+                   <span>Kitchen</span>
+                </a>
+            </li>
+            <li class="{% if active_section == 'Bar' %}is-active{% endif %}">
+                <a hx-get="{% url 'pos:htmx_menu_panel' %}?section=Bar"
+                   hx-target="#menu-panel-wrapper"
+                   hx-swap="innerHTML">
+                   <span class="icon text-xs px-2.5 py-1.5"><i class="fas fa-cocktail" aria-hidden="true"></i></span>
+                   <span>Bar</span>
+                </a>
+            </li>
+        </div>
+    </header>
+
+    <div class="p-6">
+        <form class="mb-4 flex space-x-2"
+             hx-get="{% url 'pos:htmx_menu_grid' %}"
+             hx-trigger="keyup from:#search-input changed delay:300ms, change from:#category-filter"
+             hx-target="#menu-item-grid"
+             hx-swap="innerHTML">
+
+            <input type="hidden" name="section" value="{{ active_section }}">
+
+            <p class="relative is-expanded has-icons-left">
+                <input id="search-input" name="q" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-lg px-6 py-3" type="search" placeholder="Search in {{ active_section }}..." autocomplete="off">
+                <span class="icon text-xs px-2.5 py-1.5 is-left"><i class="fas fa-search"></i></span>
+            </p>
+            <p class="relative">
+                <span class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border text-lg px-6 py-3">
+                    <select id="category-filter" name="category">
+                        <option value="">All {{ active_section }} Categories</option>
+                        {% for cat in all_categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </span>
+            </p>
+        </form>
+    </div>
+
+    <div id="menu-item-grid" class="p-4" style="flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1.5rem;">
+        {% include 'pos/partials/_menu_item_grid.html' with menu_items=menu_items module=active_section %}
+        <div class="htmx-indicator text-center">Loading...</div>
+    </div>
+</div>

@@ -1,0 +1,71 @@
+{% comment %}
+This partial renders the detailed bill for the payment terminal.
+Updated to show loyalty, coupon, and accurate total.
+{% endcomment %}
+
+<header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+    <p class="text-lg font-bold text-gray-800 is-centered">Bill Summary for Order #{{ order.id }}</p>
+</header>
+
+<div class="p-6">
+    <div class="content text-xs px-2.5 py-1.5">
+        <table class="min-w-full divide-y divide-gray-200 is-fullwidth" style="background: transparent; color: inherit;">
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td>{{ item.quantity|floatformat }}x</td>
+                    <td>{{ item.menu_item.name }}</td>
+                    <td class="text-right">
+                    {% if item.menu_item.sell_by_weight %}
+             {{ item.price_at_sale|add:0|floatformat:2 }} KES
+             {% else %}
+             {{ item.subtotal }} KES
+             {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <hr class="my-3">
+
+    <div class="content text-xs px-2.5 py-1.5">
+        <div class="is-flex is-justify-content-space-between mb-2">
+            <span class="has-text-weight-semibold">Subtotal</span>
+            <span>{{ order.subtotal|floatformat:2 }} KES</span>
+        </div>
+
+        <div class="is-flex is-justify-content-space-between mb-2">
+            <span class="has-text-weight-semibold">VAT</span>
+            <span>{{ order.vat_amount|floatformat:2 }} KES</span>
+        </div>
+
+        {# --- LOYALTY DISCOUNT --- #}
+        {% if order.loyalty_discount > 0 %}
+        <div class="is-flex is-justify-content-space-between mb-2 text-success">
+            <span>Loyalty Discount</span>
+            <span>-{{ order.loyalty_discount|floatformat:2 }} KES</span>
+        </div>
+        {% endif %}
+
+        {# --- COUPON DISCOUNT --- #}
+        {% if order.coupon_discount > 0 %}
+        <div class="is-flex is-justify-content-space-between mb-2 text-success">
+            <span>Coupon Discount</span>
+            <span>-{{ order.coupon_discount|floatformat:2 }} KES</span>
+        </div>
+        {% endif %}
+
+        {# --- TARGET FOR HTMX DISCOUNT UPDATES --- #}
+        <div id="bill-discounts-and-total">
+            <hr class="my-3">
+            <div class="is-flex is-justify-content-space-between has-text-weight-bold text-xl font-medium">
+                <span>Grand Total</span>
+                <span id="total-due" data-total="{{ order.subtotal }}">
+                    {{ final_total_due|floatformat:2 }} KES
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Print Order #{{ order.id }}</title>
+    <style>
+        @media print {
+            body { -webkit-print-color-adjust: exact; }
+            @page {
+                margin: 5mm 3mm;
+                size: 80mm auto; /* Thermal printer width */
+            }
+        }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            width: 280px;
+            margin: 0 auto;
+            color: #000;
+            background: #fff;
+            font-size: 12px; /* Reduced from 14px */
+            line-height: 1.2; /* Reduced line height */
+        }
+        .receipt-header {
+            text-align: center;
+            border-bottom: 1px dashed #000; /* Thinner border */
+            padding-bottom: 5px; /* Reduced from 10px */
+            margin-bottom: 5px; /* Reduced from 10px */
+        }
+        .receipt-header h2 {
+            margin: 0 0 3px 0; /* Reduced margin */
+            font-size: 1.2rem; /* Reduced from 1.5rem */
+            text-transform: uppercase;
+        }
+        .business-details {
+            font-size: 11px; /* Reduced from 13px */
+            margin-top: 2px; /* Reduced from 5px */
+        }
+        .business-details p {
+            margin: 1px 0; /* Very tight spacing */
+        }
+        .receipt-info {
+            margin: 5px 0; /* Reduced spacing */
+        }
+        .receipt-info p {
+            margin: 2px 0; /* Reduced from 3px */
+            font-size: 11px;
+        }
+        .item-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0; /* Reduced from 10px */
+        }
+        .item-table th, .item-table td {
+            padding: 2px 0; /* Reduced from 5px */
+            font-size: 11px;
+        }
+        .item-table thead tr {
+            border-bottom: 1px solid #000;
+        }
+        .col-qty { text-align: left; width: 40px; }
+        .col-item { text-align: left; }
+        .col-price { text-align: right; }
+        .receipt-footer {
+            text-align: center;
+            margin-top: 5px; /* Reduced from 10px */
+            padding-top: 5px; /* Reduced from 10px */
+            border-top: 1px dashed #000; /* Thinner border */
+        }
+        .receipt-footer p {
+            margin: 3px 0; /* Tight spacing */
+        }
+        .thank-you {
+            margin-top: 4px; /* Reduced from 8px */
+            font-size: 12px; /* Reduced from 14px */
+            font-weight: bold;
+        }
+        /* Remove any extra spacing */
+        * {
+            box-sizing: border-box;
+        }
+        p {
+            margin: 2px 0;
+        }
+    </style>
+</head>
+<body onload="window.print(); setTimeout(window.close, 100);">
+
+    <div class="receipt-header">
+        <h2>{{ receipt_title }}</h2>
+        <div class="business-details">
+            <p>Phone: 0704944977</p>
+            <p>Location: Mutithi, Mwea</p>
+            <p>Nairobi - Meru Highway</p>
+            <p>Next to Whiterose Hospital</p>
+            <p>Till No: 4994904</p>
+        </div>
+    </div>
+
+    <div class="receipt-info">
+        <p><strong>Order #:</strong> {{ order.id }}</p>
+        <p><strong>Table:</strong> {{ order.table.table_number|default:"Takeaway" }}</p>
+        <p><strong>Waiter:</strong> {{ order.waiter.first_name }}</p>
+        <p><strong>Date:</strong> {{ order.created_at|date:"d M Y, H:i" }}</p>
+    </div>
+
+    <table class="item-table">
+        <thead>
+            <tr>
+                <th class="col-qty">QTY</th>
+                <th class="col-item">ITEM</th>
+                <th class="col-price">TOTAL</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td class="col-qty">{{ item.quantity|floatformat:0 }}</td>
+                <td class="col-item">{{ item.menu_item.name }}</td>
+                <td class="col-price">{{ item.subtotal|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="receipt-footer">
+        <p style="font-size: 1rem; margin: 2px 0;">Total: <strong>{{ order.subtotal|floatformat:2 }} KES</strong></p>
+        <p class="thank-you">Welcome Again!</p>
+    </div>
+
+</body>
+</html>

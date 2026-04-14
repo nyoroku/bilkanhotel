@@ -1,0 +1,29 @@
+
+<div class="search-results-grid">
+    {% for item in menu_items %}
+        <button class="menu-item-btn"
+                hx-post="{% url 'pos:htmx_add_order_item' %}"
+                hx-vals='{"menu_item_id": "{{ item.id }}"}'
+                hx-target="#order-summary"
+                hx-swap="outerHTML">
+            <span class="item-name">{{ item.name }}</span>
+            <small class="item-category-badge">{{ item.category.name }}</small>
+        </button>
+    {% empty %}
+        <p class="no-results-msg">No items found matching your search.</p>
+    {% endfor %}
+</div>
+
+<style>
+    .search-results-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .search-results-grid .menu-item-btn { display: flex; justify-content: space-between; align-items: center; }
+    .item-category-badge {
+        background-color: var(--gray-200);
+        color: var(--gray-600);
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+    .no-results-msg { text-align: center; color: var(--gray-600); padding: 1rem; }
+</style>

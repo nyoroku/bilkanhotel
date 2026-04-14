@@ -1,0 +1,59 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Table Management{% endblock %}
+
+{% block content %}
+<div class="level mb-5">
+    <div class="level-left">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Table Management</h1>
+    </div>
+    <div class="level-right">
+        <a href="{% url 'pos:table_add' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white text-lg px-6 py-3">
+            <span class="icon"><i class="fas fa-plus"></i></span>
+            <span>Add New Table</span>
+        </a>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow-md p-6 mb-4">
+    <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white hover:bg-gray-50">
+        <thead>
+            <tr>
+                <th>Table Number / Name</th>
+                <th>Current Status</th>
+                <th>Is Active?</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for table in tables %}
+            <tr>
+                <td><strong>{{ table.table_number }}</strong></td>
+                <td>
+                    {% if table.status == 'Occupied' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-600 hover:bg-red-700 text-white">{{ table.status }}</span>
+                    {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 hover:bg-green-700 text-white">{{ table.status }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if table.is_active %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light bg-sky-500 hover:bg-sky-600 text-white">Yes</span>
+                    {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium is-light">No</span>
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    <a href="{% url 'pos:table_edit' table.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white is-light">Edit</a>
+                    <a href="{% url 'pos:table_delete' table.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white is-light">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center p-4">No tables have been configured yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

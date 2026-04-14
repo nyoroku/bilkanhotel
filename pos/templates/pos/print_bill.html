@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bill for Table {{ table.table_number }}</title>
+    <style>
+        /* Same receipt styling as above */
+        @media print {
+            body { -webkit-print-color-adjust: exact; }
+            @page { margin: 10mm 5mm; }
+        }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            width: 280px;
+            margin: 0 auto;
+            color: #000;
+            background: #fff;
+            font-size: 14px;
+        }
+        .receipt-header { text-align: center; }
+        .receipt-header h2 { margin: 0; font-size: 1.5rem; }
+        .receipt-info { border-top: 2px dashed #000; border-bottom: 2px dashed #000; padding: 10px 0; margin: 10px 0; }
+        .receipt-info p { margin: 3px 0; }
+        .item-table { width: 100%; border-collapse: collapse; }
+        .item-table th, .item-table td { padding: 5px 0; }
+        .item-table thead tr { border-bottom: 1px solid #000; }
+        .col-qty { text-align: left; width: 40px; }
+        .col-item { text-align: left; }
+        .col-price { text-align: right; }
+        .receipt-footer { text-align: right; margin-top: 10px; padding-top: 10px; border-top: 2px dashed #000; }
+        .receipt-footer h3 { margin: 5px 0; }
+        .thank-you { text-align: center; margin-top: 20px; }
+    </style>
+</head>
+<body onload="window.print(); setTimeout(window.close, 100);">
+
+    <div class="receipt-header">
+        <h2>JuliFarm Restaurant</h2>
+        <p>FINAL BILL</p>
+    </div>
+
+    <div class="receipt-info">
+        <p><strong>Table:</strong> {{ table.table_number }}</p>
+        <p><strong>Date:</strong> {{ timestamp|date:"d M Y, H:i" }}</p>
+    </div>
+
+    <table class="item-table">
+        <thead>
+            <tr>
+                <th class="col-qty">QTY</th>
+                <th class="col-item">ITEM</th>
+                <th class="col-price">TOTAL</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders_for_bill %}
+                {% for item in order.items.all %}
+                <tr>
+                    <td class="col-qty">{{ item.quantity|floatformat:0 }}</td>
+                    <td class="col-item">{{ item.menu_item.name }}</td>
+                    <td class="col-price">{{ item.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="receipt-footer">
+        <h3>GRAND TOTAL: {{ grand_total|floatformat:2 }} KES</h3>
+    </div>
+
+    <div class="thank-you">
+        <p>Thank you for dining with us!</p>
+    </div>
+
+</body>
+</html>
