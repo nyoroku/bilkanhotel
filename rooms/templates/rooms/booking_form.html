@@ -1,0 +1,78 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Check In Guest | JuliFarm{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-8">
+        <a href="{% url 'rooms:rooms_dashboard' %}" class="text-sm text-emerald-600 font-semibold hover:text-emerald-800 mb-2 inline-block">
+            <i class="fas fa-arrow-left mr-1"></i>Back to Dashboard
+        </a>
+        <h1 class="text-2xl font-extrabold text-slate-900">Check In Guest</h1>
+        <p class="mt-1 text-sm text-slate-500">Assign a guest to an available room</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+        <form method="post">
+            {% csrf_token %}
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select Room</label>
+                    <select name="room" required class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="">-- Choose a room --</option>
+                        {% for room in available_rooms %}
+                        <option value="{{ room.pk }}">Room {{ room.number }} — {{ room.get_room_type_display }} (KES {{ room.price_per_night|floatformat:0 }}/night)</option>
+                        {% endfor %}
+                    </select>
+                    {% if not available_rooms %}
+                    <p class="text-xs text-rose-500 mt-2"><i class="fas fa-exclamation-circle mr-1"></i>No rooms are currently available.</p>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Guest Name</label>
+                        <input type="text" name="guest_name" required
+                               class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                               placeholder="Full name">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Phone Number</label>
+                        <input type="text" name="guest_phone"
+                               class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                               placeholder="e.g. 0712345678">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">ID / Passport Number</label>
+                        <input type="text" name="guest_id_number"
+                               class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                               placeholder="Optional">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Number of Nights</label>
+                        <input type="number" name="nights" value="1" min="1" required
+                               class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Notes</label>
+                    <textarea name="notes" rows="2"
+                              class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                              placeholder="Special requests, preferences..."></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                    <a href="{% url 'rooms:rooms_dashboard' %}" class="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition">Cancel</a>
+                    <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition shadow-sm">
+                        <i class="fas fa-sign-in-alt mr-1"></i>Check In
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

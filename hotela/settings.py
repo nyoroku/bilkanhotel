@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_tailwind',
     'schedule.apps.ScheduleConfig',
+    'rooms.apps.RoomsConfig',
     'tinymce',
     'django_select2',
     'django_filters',

@@ -1,7 +1,7 @@
 {% extends 'pos/base.html' %}
 {% load static %}
 
-{% block title %}Hotela Dashboard{% endblock %}
+{% block title %}JuliFarm Dashboard{% endblock %}
 
 {% block styles %}
 {{ block.super }}
@@ -9,188 +9,212 @@
     .module-card {
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         backdrop-filter: blur(8px);
+        position: relative;
+        overflow: hidden;
+    }
+    .module-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #10b981, #34d399);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+        transform-origin: left;
     }
     .module-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
     }
-    .glass-effect {
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+    .module-card:hover::before {
+        transform: scaleX(1);
     }
-    .gradient-text {
-        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+    .glass-banner {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    .glass-banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .glass-banner::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(52,211,153,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .stat-card {
+        transition: all 0.2s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header/Banner -->
-    <div class="relative overflow-hidden bg-white shadow-2xl rounded-3xl mb-12 border border-gray-100 p-8 glass-effect">
-        <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Header Banner -->
+    <div class="glass-banner rounded-2xl mb-10 p-8 md:p-10">
+        <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="text-center md:text-left">
-                <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">
-                    Welcome back, <span class="gradient-text">{{ request.user.first_name|default:request.user.username }}</span>
+                <p class="text-emerald-400 text-sm font-semibold uppercase tracking-widest mb-2">Welcome back</p>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-1">
+                    {{ request.user.first_name|default:request.user.username }}
                 </h1>
-                <p class="text-gray-500 text-lg">Manage your hospitality operations with precision.</p>
+                <p class="text-slate-400 text-base">Manage your hospitality operations with precision.</p>
             </div>
-            <div class="flex flex-wrap justify-center md:justify-end gap-4">
-                <div class="bg-blue-50 px-6 py-3 rounded-2xl border border-blue-100 text-center min-w-[140px]">
-                    <span class="block text-xs font-black uppercase tracking-widest text-blue-600 mb-1">Shift Status</span>
-                    <span class="text-lg font-bold text-blue-900">ACTIVE - DAY</span>
+            <div class="flex flex-wrap justify-center md:justify-end gap-3">
+                <div class="bg-white/5 backdrop-blur-sm px-5 py-3 rounded-xl border border-white/10 text-center min-w-[130px]">
+                    <span class="block text-[0.65rem] font-bold uppercase tracking-widest text-emerald-400 mb-1">Shift</span>
+                    <span class="text-base font-bold text-white">ACTIVE</span>
                 </div>
-                <div class="bg-indigo-50 px-6 py-3 rounded-2xl border border-indigo-100 text-center min-w-[140px]">
-                    <span class="block text-xs font-black uppercase tracking-widest text-indigo-600 mb-1">Time</span>
-                    <span class="text-lg font-bold text-indigo-900" id="current-time">00:00:00</span>
+                <div class="bg-white/5 backdrop-blur-sm px-5 py-3 rounded-xl border border-white/10 text-center min-w-[130px]">
+                    <span class="block text-[0.65rem] font-bold uppercase tracking-widest text-emerald-400 mb-1">Time</span>
+                    <span class="text-base font-bold text-white" id="current-time">00:00:00</span>
                 </div>
             </div>
         </div>
-        <!-- Decorative abstract shape -->
-        <div class="absolute top-0 right-0 -m-12 w-64 h-64 bg-blue-50 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-        <div class="absolute bottom-0 left-0 -m-12 w-64 h-64 bg-purple-50 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style="animation-delay: 2s"></div>
     </div>
 
-    <!-- Quick Stats Section -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center text-xl">
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg">
                     <i class="fas fa-dollar-sign"></i>
                 </div>
-                <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg">+12.5%</span>
+                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">+12.5%</span>
             </div>
-            <h3 class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Daily Sales</h3>
-            <p class="text-2xl font-black text-gray-900">KES 45,200</p>
+            <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Daily Sales</h3>
+            <p class="text-xl font-black text-slate-900">KES 45,200</p>
         </div>
 
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center text-xl">
+        <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-lg">
                     <i class="fas fa-clipboard-list"></i>
                 </div>
-                <span class="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">8 Pending</span>
+                <span class="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg">8 Pending</span>
             </div>
-            <h3 class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Active Orders</h3>
-            <p class="text-2xl font-black text-gray-900">24</p>
+            <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Active Orders</h3>
+            <p class="text-xl font-black text-slate-900">24</p>
         </div>
 
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-xl">
+        <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg">
                     <i class="fas fa-users"></i>
                 </div>
-                <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">4 Shifts</span>
+                <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">4 Shifts</span>
             </div>
-            <h3 class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Staff Present</h3>
-            <p class="text-2xl font-black text-gray-900">12 Workers</p>
+            <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Staff Present</h3>
+            <p class="text-xl font-black text-slate-900">12 Workers</p>
         </div>
 
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center text-xl">
+        <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-lg">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <span class="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-lg">Low Stock</span>
+                <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-lg">Low Stock</span>
             </div>
-            <h3 class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Alerts</h3>
-            <p class="text-2xl font-black text-gray-900">3 Notifications</p>
+            <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Alerts</h3>
+            <p class="text-xl font-black text-slate-900">3</p>
         </div>
     </div>
 
     <!-- Operation Modules -->
-    <h2 class="text-2xl font-bold text-gray-800 mb-8 border-l-4 border-blue-600 pl-4 uppercase tracking-wider">Operational Hub</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    <h2 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-3">
+        <span class="w-1 h-6 bg-emerald-500 rounded-full"></span>
+        Operational Hub
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <!-- Sales & POS -->
-        <a href="{% url 'pos:pos' %}" class="module-card bg-white p-8 rounded-[2rem] border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-[1.5rem] flex items-center justify-center text-3xl shadow-lg mb-6">
+        <a href="{% url 'pos:pos' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
                 <i class="fas fa-cash-register"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">Sales & POS</h3>
-            <p class="text-gray-500 text-sm">Real-time order management and multi-channel payments.</p>
+            <h3 class="text-base font-bold text-slate-900 mb-1">Sales & POS</h3>
+            <p class="text-slate-400 text-xs">Real-time order management</p>
         </a>
 
         <!-- Kitchen Station -->
-        <a href="{% url 'pos:unified_station_view' 'kitchen' %}" class="module-card bg-white p-8 rounded-[2rem] border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-[1.5rem] flex items-center justify-center text-3xl shadow-lg mb-6">
+        <a href="{% url 'pos:unified_station_view' 'kitchen' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
                 <i class="fas fa-utensils"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">Kitchen KDS</h3>
-            <p class="text-gray-500 text-sm">Order preparation tracking and production management.</p>
+            <h3 class="text-base font-bold text-slate-900 mb-1">Kitchen KDS</h3>
+            <p class="text-slate-400 text-xs">Order preparation tracking</p>
         </a>
 
         <!-- Bar Station -->
-        <a href="{% url 'pos:unified_station_view' 'bar' %}" class="module-card bg-white p-8 rounded-[2rem] border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-[1.5rem] flex items-center justify-center text-3xl shadow-lg mb-6">
+        <a href="{% url 'pos:unified_station_view' 'bar' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
                 <i class="fas fa-cocktail"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">Bar Display</h3>
-            <p class="text-gray-500 text-sm">Beverage service and bottle inventory flow.</p>
+            <h3 class="text-base font-bold text-slate-900 mb-1">Bar Display</h3>
+            <p class="text-slate-400 text-xs">Beverage & bottle flow</p>
         </a>
 
-        <!-- Cashier Dashboard -->
-        <a href="{% url 'pos:cashier_dashboard' %}" class="module-card bg-white p-8 rounded-[2rem] border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-700 text-white rounded-[1.5rem] flex items-center justify-center text-3xl shadow-lg mb-6">
+        <!-- Cashier -->
+        <a href="{% url 'pos:cashier_dashboard' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-700 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
                 <i class="fas fa-money-check-alt"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">Cashier Station</h3>
-            <p class="text-gray-500 text-sm">Payment processing, waiter drops, and stock audits.</p>
+            <h3 class="text-base font-bold text-slate-900 mb-1">Cashier Station</h3>
+            <p class="text-slate-400 text-xs">Payment processing</p>
+        </a>
+
+        <!-- Rooms -->
+        <a href="{% url 'rooms:rooms_dashboard' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-700 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
+                <i class="fas fa-door-open"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-900 mb-1">Rooms</h3>
+            <p class="text-slate-400 text-xs">Guest rooms & bookings</p>
         </a>
 
         <!-- Scheduling -->
-        <a href="{% url 'schedule:schedule_list' %}" class="module-card bg-white p-8 rounded-[2rem] border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-700 text-white rounded-[1.5rem] flex items-center justify-center text-3xl shadow-lg mb-6">
+        <a href="{% url 'schedule:schedule_list' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-700 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
                 <i class="fas fa-calendar-alt"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">Staff Scheduling</h3>
-            <p class="text-gray-500 text-sm">Advanced roster planning and shift handover flows.</p>
+            <h3 class="text-base font-bold text-slate-900 mb-1">Staff Scheduling</h3>
+            <p class="text-slate-400 text-xs">Roster planning & shifts</p>
         </a>
 
         <!-- Inventory -->
-        <a href="{% url 'pos:menu_item_list' %}" class="module-card bg-white p-8 rounded-[2rem] border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-900 text-white rounded-[1.5rem] flex items-center justify-center text-3xl shadow-lg mb-6">
-                <i class="fas fa-boxes"></i>
+        <a href="{% url 'pos:menu_item_list' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-800 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
+                <i class="fas fa-boxes-stacked"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">Master Inventory</h3>
-            <p class="text-gray-500 text-sm">Catalogue management, pricing, and stock controls.</p>
+            <h3 class="text-base font-bold text-slate-900 mb-1">Inventory</h3>
+            <p class="text-slate-400 text-xs">Stock & catalogue control</p>
         </a>
 
         <!-- Reports -->
-        <a href="{% url 'pos:sales_report' %}" class="module-card bg-white p-8 rounded-[2rem] border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-20 h-20 bg-gradient-to-br from-rose-500 to-pink-700 text-white rounded-[1.5rem] flex items-center justify-center text-3xl shadow-lg mb-6">
+        <a href="{% url 'pos:sales_report' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-rose-500 to-pink-700 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
                 <i class="fas fa-chart-pie"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">Insights & Reports</h3>
-            <p class="text-gray-500 text-sm">Deep analytics on sales, costs, and profit trends.</p>
+            <h3 class="text-base font-bold text-slate-900 mb-1">Reports</h3>
+            <p class="text-slate-400 text-xs">Sales & profit analytics</p>
         </a>
-
-        <!-- Butchery -->
-        <a href="{% url 'pos:butchery_section' %}" class="module-card bg-white p-8 rounded-[2rem] border border-gray-100 text-center flex flex-col items-center text-gray-400 opacity-60">
-            <div class="w-20 h-20 bg-gray-200 text-gray-400 rounded-[1.5rem] flex items-center justify-center text-3xl mb-6">
-                <i class="fas fa-drumstick-bite"></i>
-            </div>
-            <h3 class="text-xl font-bold mb-2">Meat Processing</h3>
-            <p class="text-sm italic">Coming soon: Integrated butcher flow.</p>
-        </a>
-    </div>
-
-    <!-- Floating Quick Actions (Mobile Only) -->
-    <div class="fixed bottom-8 right-8 z-40 md:hidden">
-        <button class="w-16 h-16 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl" 
-                onclick="document.getElementById('mobile-quick-menu').classList.toggle('hidden')">
-            <i class="fas fa-plus"></i>
-        </button>
-        <div id="mobile-quick-menu" class="hidden absolute bottom-20 right-0 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 space-y-4">
-            <a href="{% url 'pos:pos' %}" class="flex items-center text-gray-700 font-bold hover:text-blue-600">
-                <i class="fas fa-plus-circle mr-3"></i> New Order
-            </a>
-            <a href="{% url 'pos:cashier_dashboard' %}" class="flex items-center text-gray-700 font-bold hover:text-blue-600">
-                <i class="fas fa-coins mr-3"></i> Settle Debt
-            </a>
-        </div>
     </div>
 </div>
 

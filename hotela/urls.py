@@ -47,6 +47,7 @@ urlpatterns = [
     path("", include("schedule.urls")),
     path("", include("trucks.urls")),
     path("", include("accounts.urls")),
+    path("rooms/", include("rooms.urls")),
     path('select2/', include('django_select2.urls')),
     path('trucks/printable-report/', logistics_report_view, name='logistics_printable_report'),
 

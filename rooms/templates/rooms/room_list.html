@@ -1,0 +1,65 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}Rooms | JuliFarm{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">Room Management</h1>
+            <p class="mt-1 text-sm text-slate-500">Configure and monitor all rooms</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex gap-3">
+            <a href="{% url 'rooms:room_add' %}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition shadow-sm">
+                <i class="fas fa-plus mr-2"></i>Add Room
+            </a>
+            <a href="{% url 'rooms:rooms_dashboard' %}" class="inline-flex items-center px-4 py-2 bg-white text-slate-700 text-sm font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 transition shadow-sm">
+                <i class="fas fa-arrow-left mr-2"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {% for room in rooms %}
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+            <div class="p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-black
+                            {% if room.status == 'available' %}bg-emerald-50 text-emerald-600
+                            {% elif room.status == 'occupied' %}bg-rose-50 text-rose-600
+                            {% else %}bg-amber-50 text-amber-600{% endif %}">
+                            {{ room.number }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-900">{{ room.get_room_type_display }}</p>
+                            <p class="text-xs text-slate-400">Floor {{ room.floor }}</p>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full text-[0.65rem] font-bold uppercase tracking-wider
+                        {% if room.status == 'available' %}bg-emerald-100 text-emerald-700
+                        {% elif room.status == 'occupied' %}bg-rose-100 text-rose-700
+                        {% else %}bg-amber-100 text-amber-700{% endif %}">
+                        {{ room.get_status_display }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between pt-3 border-t border-slate-50">
+                    <p class="text-lg font-black text-slate-900">KES {{ room.price_per_night|floatformat:0 }}<span class="text-xs font-normal text-slate-400">/night</span></p>
+                    <a href="{% url 'rooms:room_edit' room.pk %}" class="text-emerald-600 hover:text-emerald-800 text-sm font-semibold">
+                        <i class="fas fa-pen"></i> Edit
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full bg-white rounded-2xl border border-slate-100 p-12 text-center">
+            <i class="fas fa-door-open text-4xl text-slate-300 mb-4"></i>
+            <p class="text-slate-500">No rooms configured yet.</p>
+            <a href="{% url 'rooms:room_add' %}" class="mt-4 inline-flex items-center text-emerald-600 font-semibold text-sm hover:text-emerald-800">
+                <i class="fas fa-plus mr-1"></i>Add your first room
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

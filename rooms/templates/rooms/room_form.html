@@ -1,0 +1,77 @@
+{% extends 'pos/base.html' %}
+
+{% block title %}{% if room %}Edit Room {{ room.number }}{% else %}Add Room{% endif %} | JuliFarm{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-8">
+        <a href="{% url 'rooms:room_list' %}" class="text-sm text-emerald-600 font-semibold hover:text-emerald-800 mb-2 inline-block">
+            <i class="fas fa-arrow-left mr-1"></i>Back to Rooms
+        </a>
+        <h1 class="text-2xl font-extrabold text-slate-900">{% if room %}Edit Room {{ room.number }}{% else %}Add New Room{% endif %}</h1>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+        <form method="post">
+            {% csrf_token %}
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Room Number</label>
+                        <input type="text" name="number" value="{{ room.number|default:'' }}" required
+                               class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                               placeholder="e.g. 101">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Room Type</label>
+                        <select name="room_type" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                            {% for code, label in room_types %}
+                            <option value="{{ code }}" {% if room.room_type == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Price Per Night (KES)</label>
+                        <input type="number" name="price_per_night" value="{{ room.price_per_night|default:'' }}" step="0.01" required
+                               class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                               placeholder="e.g. 3500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Floor</label>
+                        <input type="number" name="floor" value="{{ room.floor|default:1 }}" min="1"
+                               class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                    </div>
+                </div>
+
+                {% if room %}
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Status</label>
+                    <select name="status" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        {% for code, label in status_choices %}
+                        <option value="{{ code }}" {% if room.status == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
+                    <textarea name="description" rows="3"
+                              class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                              placeholder="Optional description...">{{ room.description|default:'' }}</textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                    <a href="{% url 'rooms:room_list' %}" class="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition">Cancel</a>
+                    <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition shadow-sm">
+                        <i class="fas fa-save mr-1"></i>{% if room %}Update Room{% else %}Create Room{% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
