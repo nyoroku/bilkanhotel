@@ -14,7 +14,7 @@
         <tbody>
             {% for item in page_obj.object_list %}
                 {# Highlight rows of items with low stock #}
-                <tr class="{% if item.low_stock_threshold > 0 and item.stock_quantity <= %}has-background-danger-light{% endif %}">
+                <tr class="{% if item.low_stock_threshold > 0 and item.stock_quantity <= item.low_stock_threshold %}has-background-danger-light{% endif %}">
                     <td style="vertical-align: middle;">
                         <div class="is-flex is-align-items-center">
                             {% if item.image %}
