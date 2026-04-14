@@ -38,7 +38,7 @@ django-taggit==6.1.0
 django-tailwind-cli==4.6.0
 django-tinymce==5.0.0
 django-typer==3.7.1
-django-unfold==0.89.0
+django-unfold==0.81.0
 django-widget-tweaks==1.5.1
 gunicorn==25.1.0
 idna==3.11
