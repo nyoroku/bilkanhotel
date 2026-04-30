@@ -794,3 +794,4 @@ def shift_handover_summary(request, shift_id):
     }
     
     return render(request, 'schedule/handover_summary.html', context)
+

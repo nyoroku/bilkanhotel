@@ -40,3 +40,5 @@ class Command(BaseCommand):
                     self.stderr.write(f"Error importing {row['name']}: {str(e)}")
 
         self.stdout.write(self.style.SUCCESS('✅ Import complete!'))
+
+

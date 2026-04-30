@@ -396,3 +396,6 @@ class Migration(migrations.Migration):
             index=models.Index(fields=['category'], name='trucks_expe_categor_0c1eb3_idx'),
         ),
     ]
+
+
+

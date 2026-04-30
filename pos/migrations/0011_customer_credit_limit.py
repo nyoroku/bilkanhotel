@@ -17,3 +17,6 @@ class Migration(migrations.Migration):
             field=models.DecimalField(decimal_places=2, default=Decimal('0.00'), help_text='The maximum credit amount that can be extended to this customer.', max_digits=10),
         ),
     ]
+
+
+

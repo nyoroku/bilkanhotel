@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JuliFarm Expense Report</title>
+    <title>Bilken Hotel Expense Report</title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 11pt; color: #000; }
         .report-header { text-align: center; margin-bottom: 2rem; }
@@ -17,7 +17,7 @@
 </head>
 <body onload="window.print();">
     <div class="report-header">
-        <h1>JuliFarm Expense Report</h1>
+        <h1>Bilken Hotel Expense Report</h1>
         <h2>For period: {{ start_date|date:"d M Y" }} to {{ end_date|date:"d M Y" }}</h2>
         <p><small>Report generated on: {{ ran_at|date:"d M Y, H:i" }}</small></p>
     </div>
@@ -50,3 +50,4 @@
     </table>
 </body>
 </html>
+

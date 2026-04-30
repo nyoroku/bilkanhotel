@@ -125,3 +125,5 @@ for root, _, files in os.walk(directory):
                 modified_count += 1
                 
 print(f"Modified {modified_count} templates.")
+
+

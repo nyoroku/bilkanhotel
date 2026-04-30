@@ -25,14 +25,14 @@ from trucks.views import logistics_report_view
 # --- 1. CUSTOMIZE THE ADMIN SITE ---
 # ===================================================================
 
-# This sets the main title in the admin header (e.g., "JuliFarm Administration")
-admin.site.site_header = "JuliFarm Administration"
+# This sets the main title in the admin header (e.g., "Bilken Hotel Administration")
+admin.site.site_header = "Bilken Hotel Administration"
 
 # This sets the title in the browser tab for the admin pages
-admin.site.site_title = "JuliFarm Admin Portal"
+admin.site.site_title = "Bilken Hotel Admin Portal"
 
 # This sets the welcome text on the admin homepage
-admin.site.index_title = "Welcome to the JuliFarm Manager Portal"
+admin.site.index_title = "Welcome to the Bilken Hotel Manager Portal"
 
 # --- 2. SET THE "VIEW SITE" URL ---
 # This tells Django that the "View site" link should go to your main POS dashboard
@@ -56,3 +56,6 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
                           document_root=settings.MEDIA_ROOT)
+
+
+

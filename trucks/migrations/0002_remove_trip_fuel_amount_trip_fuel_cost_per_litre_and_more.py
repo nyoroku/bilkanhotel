@@ -44,3 +44,6 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(blank=True, help_text='Driver assigned to this trip — auto-filled from truck if not specified', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='trips', to='trucks.driver'),
         ),
     ]
+
+
+

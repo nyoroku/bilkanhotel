@@ -26,3 +26,4 @@ def currency(value):
         return f"KSh {float(value):,.2f}"
     except (ValueError, TypeError):
         return "KSh 0.00"
+

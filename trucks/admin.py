@@ -86,3 +86,5 @@ class TruckLogisticsRecordAdmin(ModelAdmin):
         return response
 
     export_as_csv.short_description = "📤 Export selected records to CSV"
+
+

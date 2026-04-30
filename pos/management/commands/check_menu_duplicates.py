@@ -22,3 +22,4 @@ class Command(BaseCommand):
             for i, group in enumerate(groups, 1):
                 names = " | ".join(group['names'])
                 self.stdout.write(f"  Group {i}: {names}")
+

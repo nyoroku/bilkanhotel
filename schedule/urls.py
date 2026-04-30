@@ -41,3 +41,4 @@ urlpatterns = [
     path('shift-summary/<str:section>/', views.section_shift_summary_view, name='section_shift_summary'),
     path('shift/<int:shift_id>/handover/', views.shift_handover_summary, name='shift_handover_summary'),
 ]
+

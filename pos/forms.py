@@ -253,3 +253,4 @@ RecipeIngredientFormSet = inlineformset_factory(
         'quantity': forms.NumberInput(attrs={'class': 'input', 'step': '0.001'}),
     }
 )
+

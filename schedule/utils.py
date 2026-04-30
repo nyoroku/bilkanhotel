@@ -20,3 +20,4 @@ def current_shift_for_user(user):
         .first()
     )
     return assignment.shift if assignment else None
+

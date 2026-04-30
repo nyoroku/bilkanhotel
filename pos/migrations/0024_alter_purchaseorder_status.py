@@ -16,3 +16,6 @@ class Migration(migrations.Migration):
             field=models.CharField(choices=[('Draft', 'Draft'), ('Pending', 'Pending'), ('Partially Received', 'Partially Received'), ('Fully Received', 'Fully Received')], default='Pending', max_length=20),
         ),
     ]
+
+
+

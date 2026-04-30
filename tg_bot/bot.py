@@ -28,7 +28,7 @@ SELECT_SUPPLIER, SELECT_SECTION, ADD_ITEM, CHOOSE_QTY, CONFIRM = range(5)
 # ---------- Helper ----------
 def get_user(chat_id: int) -> User | None:
     """
-    Return the linked JuliFarm user for this chat_id (or None).
+    Return the linked Bilken Hotel user for this chat_id (or None).
     """
     try:
         return TelegramUser.objects.get(chat_id=chat_id).user
@@ -211,3 +211,5 @@ def run_bot():
     )
     app.add_handler(conv)
     app.run_polling()
+
+

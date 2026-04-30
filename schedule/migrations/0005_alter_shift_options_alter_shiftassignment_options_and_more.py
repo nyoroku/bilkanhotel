@@ -55,3 +55,6 @@ class Migration(migrations.Migration):
             index=models.Index(fields=['schedule', 'start_datetime'], name='schedule_sh_schedul_77c7ff_idx'),
         ),
     ]
+
+
+

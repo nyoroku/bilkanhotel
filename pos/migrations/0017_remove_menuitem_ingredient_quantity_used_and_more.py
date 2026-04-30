@@ -73,3 +73,6 @@ class Migration(migrations.Migration):
             field=models.ManyToManyField(blank=True, related_name='used_in_dishes', through='pos.RecipeIngredient', to='pos.menuitem'),
         ),
     ]
+
+
+

@@ -20,3 +20,6 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=False, help_text="Can be sold by total amount (e.g., 'KES 700 of beef')"),
         ),
     ]
+
+
+

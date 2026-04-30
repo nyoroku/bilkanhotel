@@ -1195,3 +1195,4 @@ class TruckLogisticsRecord(models.Model):
 
     def __str__(self):
         return f"Legacy: {self.truck_number} to {self.destination or 'N/A'} on {self.date or 'Unknown Date'}"
+

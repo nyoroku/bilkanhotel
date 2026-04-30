@@ -92,3 +92,4 @@ urlpatterns = [
     path('analytics/trips/profitability/', views.trip_profitability_view, name='trip_profitability'),
     path('analytics/api/chart-data/', views.analytics_api_chart_data, name='analytics_api_chart_data'),
 ]
+

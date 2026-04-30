@@ -18,3 +18,5 @@ class CurrentUserMiddleware:
             if hasattr(_thread_locals, 'user'):
                  del _thread_locals.user
         return response
+
+

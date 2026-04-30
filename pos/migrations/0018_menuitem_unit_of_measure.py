@@ -16,3 +16,6 @@ class Migration(migrations.Migration):
             field=models.CharField(choices=[('kg', 'Kilograms'), ('g', 'Grams'), ('l', 'Liters'), ('ml', 'Milliliters'), ('pc', 'Pieces')], default='pc', help_text='The unit this item is measured in for inventory purposes.', max_length=10),
         ),
     ]
+
+
+

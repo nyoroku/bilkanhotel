@@ -9,3 +9,5 @@ class PosConfig(AppConfig):
 
     def ready(self):
         import pos.signals
+
+

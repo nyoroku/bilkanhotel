@@ -16,3 +16,6 @@ class Migration(migrations.Migration):
             field=models.CharField(help_text='Always saved in uppercase.', max_length=255, unique=True),
         ),
     ]
+
+
+

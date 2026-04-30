@@ -227,3 +227,5 @@ def booking_checkout(request, pk):
 
     context = {'booking': booking}
     return render(request, 'rooms/booking_checkout.html', context)
+
+

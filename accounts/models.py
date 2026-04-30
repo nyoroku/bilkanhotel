@@ -141,3 +141,5 @@ class User(AbstractBaseUser, PermissionsMixin):
         indexes = [
             models.Index(fields=['email']),
         ]
+
+

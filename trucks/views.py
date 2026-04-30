@@ -1587,3 +1587,4 @@ def get_expense_analysis_by_category(start_date, end_date, expense_level=None):
         total_amount=Sum('amount'),
         expense_count=Count('id')
     ).order_by('expense_level', '-total_amount')
+

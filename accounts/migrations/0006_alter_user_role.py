@@ -16,3 +16,6 @@ class Migration(migrations.Migration):
             field=models.CharField(choices=[('admin', 'Admin'), ('manager', 'Manager'), ('room_manager', 'Room Manager'), ('waiter', 'Waiter'), ('kitchen_staff', 'Kitchen Staff'), ('bar_staff', 'Bar Staff'), ('butcher', 'Butcher'), ('cashier', 'Cashier')], default='waiter', max_length=20),
         ),
     ]
+
+
+

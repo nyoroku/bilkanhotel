@@ -33,3 +33,6 @@ class Migration(migrations.Migration):
             field=models.CharField(choices=[('Pending', 'Pending'), ('Ready', 'Ready'), ('Completed', 'Completed'), ('Cancelled', 'Cancelled')], default='Pending', max_length=20),
         ),
     ]
+
+
+

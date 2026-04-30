@@ -136,3 +136,5 @@ class ShiftStockTake(models.Model):
 
     class Meta:
         unique_together = ('shift', 'item', 'section')
+
+

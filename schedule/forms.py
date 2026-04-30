@@ -105,3 +105,4 @@ class ShiftAssignmentForm(forms.ModelForm):
                 f"{user.get_full_name()} is already assigned to an overlapping shift."
             )
         return user
+

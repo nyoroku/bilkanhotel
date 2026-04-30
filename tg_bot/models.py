@@ -7,3 +7,4 @@ class TelegramUser(models.Model):
     chat_id   = models.BigIntegerField(unique=True)
     first_name= models.CharField(max_length=128, blank=True)
     username  = models.CharField(max_length=128, blank=True)
+

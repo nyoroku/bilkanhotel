@@ -6,3 +6,4 @@ class Command(BaseCommand):
     help = "Start Telegram bot"
     def handle(self, *args, **opts):
         run_bot()
+

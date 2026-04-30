@@ -149,3 +149,4 @@ def shift_stock_report(request, shift_id, section):
     stock_takes = ShiftStockTake.objects.filter(shift=shift, section=section)
     context = {'shift': shift, 'stock_takes': stock_takes, 'section': section}
     return render(request, 'schedule/shift_stock_report.html', context)
+

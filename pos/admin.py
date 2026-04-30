@@ -153,3 +153,4 @@ class OrderItemResource(resources.ModelResource):
     class Meta:
         model = OrderItem
         actions = ['delete_selected']
+

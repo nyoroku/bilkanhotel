@@ -49,3 +49,6 @@ class Migration(migrations.Migration):
             index=models.Index(fields=['email'], name='accounts_us_email_74c8d6_idx'),
         ),
     ]
+
+
+

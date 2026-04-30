@@ -16,3 +16,6 @@ class Migration(migrations.Migration):
             field=models.CharField(choices=[('Active', 'Active'), ('Inactive', 'Inactive')], default='Active', help_text="Set to 'Inactive' to hide from new purchase orders.", max_length=10),
         ),
     ]
+
+
+

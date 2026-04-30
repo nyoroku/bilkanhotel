@@ -62,3 +62,4 @@ class TaxDeductionRuleForm(forms.ModelForm):
             raise forms.ValidationError("Cannot specify both percentage rate and fixed amount.")
 
         return cleaned_data
+

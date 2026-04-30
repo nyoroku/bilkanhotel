@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JuliFarm Sales Report - {{ start_date|date:"d M Y" }} to {{ end_date|date:"d M Y" }}</title>
+    <title>Bilken Hotel Sales Report - {{ start_date|date:"d M Y" }} to {{ end_date|date:"d M Y" }}</title>
     <style>
         @media print {
             body { margin: 0; padding: 15px; }
@@ -207,7 +207,7 @@
     </div>
 
     <div class="report-header">
-        <h1>JuliFarm Sales Report</h1>
+        <h1>Bilken Hotel Sales Report</h1>
         <div class="date-range">
             📅 {{ start_date|date:"d M Y" }} to {{ end_date|date:"d M Y" }}
         </div>
@@ -334,7 +334,7 @@
         {% for method in payment_methods %}
             <tr>
                 <td>
-                    <span class="payment-method-icon {% if 'cash' in method.payment_method|lower %}cash{% elif 'card' %}card{% 'mobile' %}mobile{% else %}other{% endif %}"></span>
+                    <span class="payment-method-icon {% if 'cash' in method.payment_method|lower %}cash{% elif 'card' in method.payment_method|lower %}card{% elif 'mobile' in method.payment_method|lower %}mobile{% else %}other{% endif %}"></span>
                     {{ method.display_name|default:"Unknown Method" }}
                 </td>
                 <td class="col-right">{{ method.sale_count }}</td>
@@ -434,3 +434,4 @@
     </script>
 </body>
 </html>
+

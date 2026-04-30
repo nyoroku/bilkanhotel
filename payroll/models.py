@@ -288,3 +288,4 @@ class Payslip(models.Model):
 
     class Meta:
         ordering = ['-generated_at']
+

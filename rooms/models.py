@@ -87,3 +87,5 @@ class Booking(models.Model):
         else:
             self.payment_status = self.PaymentStatus.PENDING
         super().save(*args, **kwargs)
+
+

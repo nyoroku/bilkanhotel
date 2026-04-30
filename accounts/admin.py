@@ -62,3 +62,4 @@ class CustomGroupAdmin(UnfoldModelAdmin):
     """Group admin with Unfold styling only."""
     list_display = ('name',)
     search_fields = ('name',)
+

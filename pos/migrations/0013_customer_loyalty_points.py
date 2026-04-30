@@ -16,3 +16,6 @@ class Migration(migrations.Migration):
             field=models.PositiveIntegerField(default=0, help_text="The customer's current loyalty point balance."),
         ),
     ]
+
+
+

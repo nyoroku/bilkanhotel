@@ -535,3 +535,4 @@ def redeem_waiter_points(request, entry_id):
             messages.error(request, f"Error redeeming points: {str(e)}")
 
     return redirect('payroll:period_detail', period_id=entry.period.id)
+

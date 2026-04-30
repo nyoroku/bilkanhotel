@@ -15,3 +15,4 @@ class MyAdminSite(UnfoldAdminSite):
         return ctx
 
 admin_site = MyAdminSite(name="pos:pos")
+

@@ -238,3 +238,4 @@ def manually_recalculate_leaderboard():
         error_msg = f"Error recalculating leaderboard: {str(e)}"
         logger.error(f"❌ {error_msg}")
         return False, error_msg
+

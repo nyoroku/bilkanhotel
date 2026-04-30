@@ -838,3 +838,4 @@ class ExpenseCategoryAnalysisForm(forms.Form):
         widget=forms.RadioSelect(),
         initial='summary',
         required=True)
+

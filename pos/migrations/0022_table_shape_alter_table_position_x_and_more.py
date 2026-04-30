@@ -26,3 +26,6 @@ class Migration(migrations.Migration):
             field=models.IntegerField(default=0, help_text='Y-coordinate for drag layout.'),
         ),
     ]
+
+
+

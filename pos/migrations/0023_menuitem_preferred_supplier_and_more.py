@@ -22,3 +22,6 @@ class Migration(migrations.Migration):
             field=models.DecimalField(decimal_places=2, default=10, help_text='The default quantity to order when stock is low.', max_digits=10),
         ),
     ]
+
+
+

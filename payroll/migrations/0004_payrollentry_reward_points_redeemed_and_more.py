@@ -21,3 +21,6 @@ class Migration(migrations.Migration):
             field=models.DecimalField(decimal_places=2, default=0.0, help_text='Cash value of redeemed points', max_digits=10),
         ),
     ]
+
+
+

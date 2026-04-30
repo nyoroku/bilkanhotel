@@ -16,3 +16,6 @@ class Migration(migrations.Migration):
             field=models.DecimalField(decimal_places=2, default=0.0, help_text="The user's gross monthly salary.", max_digits=10),
         ),
     ]
+
+
+

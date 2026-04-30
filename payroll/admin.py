@@ -62,3 +62,4 @@ class PayslipAdmin(admin.ModelAdmin):
     search_fields = ['payslip_number', 'payroll_entry__user__first_name',
                     'payroll_entry__user__last_name']
     readonly_fields = ['payslip_number', 'generated_at']
+

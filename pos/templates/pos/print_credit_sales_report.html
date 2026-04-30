@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JuliFarm Credit Sales Report</title>
+    <title>Bilken Hotel Credit Sales Report</title>
     <style> /* Use the same clean print styles as your other print templates */ </style>
 </head>
 <body onload="window.print();">
 
     <div class="report-header">
-        <h1>JuliFarm Credit Activity Report</h1>
+        <h1>Bilken Hotel Credit Activity Report</h1>
         <h2>For period: {{ start_date|date:"d M Y" }} to {{ end_date|date:"d M Y" }}</h2>
         {% if selected_customer %}
         <h3>Customer: {{ selected_customer.name }}</h3>
@@ -48,3 +48,4 @@
 
 </body>
 </html>
+

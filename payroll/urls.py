@@ -42,3 +42,4 @@ urlpatterns = [
     # Tax rules management
     path('tax-rules/', views.tax_rules_management, name='tax_rules'),
 ]
+

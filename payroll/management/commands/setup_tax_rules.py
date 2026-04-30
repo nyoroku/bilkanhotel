@@ -65,3 +65,4 @@ class Command(BaseCommand):
                 f'Setup complete. Created: {created_count}, Updated: {updated_count} tax rules.'
             )
         )
+

@@ -54,3 +54,5 @@ def event_detail(request, slug):
 
 
 
+
+

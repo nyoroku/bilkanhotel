@@ -16,3 +16,6 @@ class Migration(migrations.Migration):
             field=models.PositiveIntegerField(default=0, help_text="The waiter's current reward point balance."),
         ),
     ]
+
+
+

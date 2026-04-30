@@ -17,3 +17,5 @@ class BookingAdmin(UnfoldModelAdmin):
     list_filter = ['payment_status', 'status']
     search_fields = ['guest_name', 'guest_phone', 'room__number']
     actions = ['delete_selected']
+
+

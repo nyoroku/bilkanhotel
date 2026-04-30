@@ -31,3 +31,6 @@ class Migration(migrations.Migration):
             field=models.PositiveIntegerField(default=300, help_text='Bonus points awarded to 2nd place waiter'),
         ),
     ]
+
+
+

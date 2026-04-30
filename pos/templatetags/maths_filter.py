@@ -27,3 +27,4 @@ def sum_list(value):
         if settings.DEBUG:
             print(f"sum_list error: {e}")
         return 0
+

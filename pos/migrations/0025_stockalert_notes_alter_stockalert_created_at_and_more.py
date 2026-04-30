@@ -48,3 +48,6 @@ class Migration(migrations.Migration):
             index=models.Index(fields=['menu_item', 'status'], name='pos_stockal_menu_it_b9073f_idx'),
         ),
     ]
+
+
+

@@ -60,3 +60,4 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'\n✅ Done: {created} created, {updated} updated'))
         if errors:
             self.stdout.write(self.style.ERROR(f'❌ Errors: {len(errors)}'))
+

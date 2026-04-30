@@ -16,3 +16,7 @@ class Migration(migrations.Migration):
             field=models.CharField(choices=[('food', 'Food'), ('drink', 'Drink')], default='food', max_length=10),
         ),
     ]
+
+
+
+

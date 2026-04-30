@@ -26,3 +26,6 @@ class Migration(migrations.Migration):
             field=models.DecimalField(decimal_places=2, default=0.0, help_text='The cost per unit/Kg at the time of order.', max_digits=10),
         ),
     ]
+
+
+

@@ -29,3 +29,6 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(blank=True, help_text='Waiter who requested cancellation', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='cancellation_requests', to=settings.AUTH_USER_MODEL),
         ),
     ]
+
+
+

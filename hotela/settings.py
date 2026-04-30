@@ -181,8 +181,8 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 UNFOLD = {
-    "SITE_TITLE": "JuliFarm Admin",
-    "SITE_HEADER": "JuliFarm Admin",
+    "SITE_TITLE": "Bilken Hotel Admin",
+    "SITE_HEADER": "Bilken Hotel Admin",
     "SITE_URL": reverse_lazy("pos:pos"),  # uses named URL
     "MENU": [
         {
@@ -194,3 +194,5 @@ UNFOLD = {
     ],
 }
 TELEGRAM_BOT_TOKEN = "8089993818:AAGC6-V5zwCAzTDQ3NzyNJsL_DII9RWrRnU"
+
+

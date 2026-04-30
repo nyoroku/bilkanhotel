@@ -16,3 +16,6 @@ class Migration(migrations.Migration):
             field=models.PositiveIntegerField(default=0, help_text='Current bonus points from leaderboard position (changes dynamically)'),
         ),
     ]
+
+
+

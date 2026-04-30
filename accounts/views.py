@@ -171,3 +171,4 @@ def staff_delete_view(request, pk):
         'item_type': 'Staff Member'
     }
     return render(request, 'accounts/confirm_delete.html', context)
+

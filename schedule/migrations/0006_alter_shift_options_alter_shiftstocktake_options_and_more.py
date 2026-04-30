@@ -30,3 +30,6 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(help_text='The shift the requester wants to give away', on_delete=django.db.models.deletion.CASCADE, to='schedule.shift'),
         ),
     ]
+
+
+

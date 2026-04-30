@@ -1,230 +1,151 @@
 {% extends 'pos/base.html' %}
 {% load static %}
-
-{% block title %}JuliFarm Dashboard{% endblock %}
+{% block title %}Bilken Hotel — Command Centre{% endblock %}
 
 {% block styles %}
 {{ block.super }}
 <style>
-    .module-card {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        backdrop-filter: blur(8px);
-        position: relative;
-        overflow: hidden;
-    }
-    .module-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #10b981, #34d399);
-        transform: scaleX(0);
-        transition: transform 0.3s ease;
-        transform-origin: left;
-    }
-    .module-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
-    }
-    .module-card:hover::before {
-        transform: scaleX(1);
-    }
-    .glass-banner {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        position: relative;
-        overflow: hidden;
-    }
-    .glass-banner::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .glass-banner::after {
-        content: '';
-        position: absolute;
-        bottom: -30%;
-        left: -10%;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(52,211,153,0.1) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .stat-card {
-        transition: all 0.2s ease;
-    }
-    .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-    }
+.dash { max-width:1400px; margin:0 auto; padding:2rem; }
+
+/* Hero */
+.hero {
+    background: linear-gradient(140deg, #1E2761 0%, #2a3585 55%, #1a2060 100%);
+    border:1px solid rgba(64,142,198,.18);
+    border-radius:20px; padding:2.5rem 3rem; margin-bottom:2.5rem;
+    position:relative; overflow:hidden; box-shadow:var(--s2);
+}
+.hero::before {
+    content:''; position:absolute; top:-50%; right:-8%;
+    width:400px; height:400px; border-radius:50%; pointer-events:none;
+    background:radial-gradient(circle, rgba(64,142,198,.14) 0%, transparent 70%);
+}
+.hero::after {
+    content:''; position:absolute; bottom:-40%; left:3%;
+    width:280px; height:280px; border-radius:50%; pointer-events:none;
+    background:radial-gradient(circle, rgba(122,32,72,.12) 0%, transparent 70%);
+}
+.hero-inner { position:relative; z-index:1; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:1.5rem; }
+.hero-tag { font-size:.65rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--blue-lt); margin-bottom:.4rem; }
+.hero-title { font-size:2.6rem; font-weight:700; color:#fff; line-height:1.1; margin-bottom:.35rem; }
+.hero-sub { font-size:.9rem; color:rgba(255,255,255,.58); max-width:520px; }
+.hero-pills { display:flex; gap:.65rem; flex-wrap:wrap; }
+.hero-pill { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.11); border-radius:12px; padding:.5rem 1rem; min-width:110px; text-align:center; }
+.hero-pill-lbl { display:block; font-size:.55rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--blue-lt); margin-bottom:2px; }
+.hero-pill-val { font-size:.95rem; font-weight:700; color:#fff; }
+
+/* Stats */
+.stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; margin-bottom:2.5rem; }
+@media(max-width:1024px){ .stats { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:640px){ .stats { grid-template-columns:1fr; } }
+
+.stat {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:1.4rem 1.5rem;
+    box-shadow:var(--s1); transition:all .22s;
+}
+.stat:hover { transform:translateY(-4px); box-shadow:var(--s2); border-color:rgba(64,142,198,.3); }
+.stat-ico { width:40px; height:40px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:1.05rem; margin-bottom:.9rem; }
+.stat-ico.b { background:rgba(64,142,198,.1); color:var(--blue); }
+.stat-ico.g { background:rgba(184,145,42,.1); color:var(--gold); }
+.stat-lbl { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--txt2); margin-bottom:.3rem; }
+.stat-val { font-size:1.7rem; font-weight:700; color:var(--txt1); line-height:1; margin-bottom:.3rem; }
+.stat-badge { font-size:.62rem; font-weight:600; padding:2px 8px; border-radius:20px; display:inline-block; background:rgba(64,142,198,.1); color:var(--blue); }
+[data-theme="light"] .stat-badge { color:#2f72a8; }
+
+/* Section header */
+.sec-hdr { display:flex; align-items:center; gap:.7rem; margin-bottom:1.4rem; }
+.sec-bar { width:4px; height:22px; background:linear-gradient(180deg,#408EC6,#7A2048); border-radius:4px; flex-shrink:0; }
+.sec-hdr h2 { font-size:1.35rem; font-weight:600; color:var(--txt1); }
+
+/* Modules */
+.mods { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:1.2rem; margin-bottom:2.5rem; }
+.mod {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; padding:1.85rem 1.4rem; text-align:center;
+    text-decoration:none; display:flex; flex-direction:column; align-items:center;
+    transition:all .25s cubic-bezier(.4,0,.2,1); box-shadow:var(--s1);
+}
+.mod:hover { transform:translateY(-7px); box-shadow:var(--s3); border-color:rgba(64,142,198,.3); }
+.mod-ico { width:58px; height:58px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:1.45rem; margin-bottom:1.1rem; color:#fff; box-shadow:0 6px 18px rgba(0,0,0,.22); }
+.mod-ico.nb { background:linear-gradient(135deg,#1E2761,#408EC6); }
+.mod-ico.bg { background:linear-gradient(135deg,#7A2048,#a0385e); }
+.mod-title { font-size:1rem; font-weight:600; color:var(--txt1); margin-bottom:.25rem; }
+.mod-desc { font-size:.72rem; color:var(--txt2); line-height:1.4; }
+
+/* Report links */
+.rlinks { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:1.15rem; margin-bottom:2.5rem; }
+.rlink {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:1.15rem 1.4rem;
+    display:flex; align-items:center; gap:1.1rem;
+    text-decoration:none; transition:all .2s; box-shadow:var(--s1);
+}
+.rlink:hover { border-color:rgba(64,142,198,.3); transform:translateX(4px); box-shadow:var(--s2); }
+.rlink-ico { width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1rem; }
+.rlink-ico.b { background:rgba(64,142,198,.1); color:var(--blue); }
+.rlink-ico.bg { background:rgba(122,32,72,.1); color:var(--burg-lt); }
+[data-theme="light"] .rlink-ico.bg { color:var(--burg); }
+.rlink-title { font-size:.9rem; font-weight:600; color:var(--txt1); margin-bottom:.15rem; }
+.rlink-sub { font-size:.72rem; color:var(--txt2); }
+
+@media(max-width:768px){ .dash{padding:1rem;} .hero{padding:1.5rem;} .hero-title{font-size:1.9rem;} .mods{grid-template-columns:repeat(2,1fr);} }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <!-- Header Banner -->
-    <div class="glass-banner rounded-2xl mb-10 p-8 md:p-10">
-        <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="text-center md:text-left">
-                <p class="text-emerald-400 text-sm font-semibold uppercase tracking-widest mb-2">Welcome back</p>
-                <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-1">
-                    {{ request.user.first_name|default:request.user.username }}
-                </h1>
-                <p class="text-slate-400 text-base">Manage your hospitality operations with precision.</p>
+<div class="dash">
+
+    <div class="hero">
+        <div class="hero-inner">
+            <div>
+                <p class="hero-tag">&#10022; Command Centre</p>
+                <h1 class="hero-title">Welcome, {{ request.user.first_name|default:request.user.username }}</h1>
+                <p class="hero-sub">Bilken Hotel's centralised hospitality management platform.</p>
             </div>
-            <div class="flex flex-wrap justify-center md:justify-end gap-3">
-                <div class="bg-white/5 backdrop-blur-sm px-5 py-3 rounded-xl border border-white/10 text-center min-w-[130px]">
-                    <span class="block text-[0.65rem] font-bold uppercase tracking-widest text-emerald-400 mb-1">Shift</span>
-                    <span class="text-base font-bold text-white">ACTIVE</span>
-                </div>
-                <div class="bg-white/5 backdrop-blur-sm px-5 py-3 rounded-xl border border-white/10 text-center min-w-[130px]">
-                    <span class="block text-[0.65rem] font-bold uppercase tracking-widest text-emerald-400 mb-1">Time</span>
-                    <span class="text-base font-bold text-white" id="current-time">00:00:00</span>
-                </div>
+            <div class="hero-pills">
+                <div class="hero-pill"><span class="hero-pill-lbl">Status</span><span class="hero-pill-val" style="color:#4a9e7f;">&#9679; Live</span></div>
+                <div class="hero-pill"><span class="hero-pill-lbl">Time</span><span class="hero-pill-val" id="bh-time">00:00</span></div>
+                <div class="hero-pill"><span class="hero-pill-lbl">Date</span><span class="hero-pill-val" id="bh-date" style="font-size:.78rem;">—</span></div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg">
-                    <i class="fas fa-dollar-sign"></i>
-                </div>
-                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">+12.5%</span>
-            </div>
-            <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Daily Sales</h3>
-            <p class="text-xl font-black text-slate-900">KES 45,200</p>
-        </div>
-
-        <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-lg">
-                    <i class="fas fa-clipboard-list"></i>
-                </div>
-                <span class="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg">8 Pending</span>
-            </div>
-            <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Active Orders</h3>
-            <p class="text-xl font-black text-slate-900">24</p>
-        </div>
-
-        <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg">
-                    <i class="fas fa-users"></i>
-                </div>
-                <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">4 Shifts</span>
-            </div>
-            <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Staff Present</h3>
-            <p class="text-xl font-black text-slate-900">12 Workers</p>
-        </div>
-
-        <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-lg">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-lg">Low Stock</span>
-            </div>
-            <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Alerts</h3>
-            <p class="text-xl font-black text-slate-900">3</p>
-        </div>
+    <div class="stats">
+        <div class="stat"><div class="stat-ico b"><i class="fas fa-coins"></i></div><div class="stat-lbl">Daily Revenue</div><div class="stat-val">KES —</div><span class="stat-badge">Real-time</span></div>
+        <div class="stat"><div class="stat-ico b"><i class="fas fa-clipboard-list"></i></div><div class="stat-lbl">Active Orders</div><div class="stat-val">—</div><span class="stat-badge">Pending</span></div>
+        <div class="stat"><div class="stat-ico g"><i class="fas fa-users"></i></div><div class="stat-lbl">On-Duty Staff</div><div class="stat-val">—</div><span class="stat-badge" style="background:rgba(184,145,42,.1);color:var(--gold);">Active</span></div>
+        <div class="stat"><div class="stat-ico b"><i class="fas fa-bell"></i></div><div class="stat-lbl">Alerts</div><div class="stat-val">—</div><span class="stat-badge">Normal</span></div>
     </div>
 
-    <!-- Operation Modules -->
-    <h2 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-3">
-        <span class="w-1 h-6 bg-emerald-500 rounded-full"></span>
-        Operational Hub
-    </h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <!-- Sales & POS -->
-        <a href="{% url 'pos:pos' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
-                <i class="fas fa-cash-register"></i>
-            </div>
-            <h3 class="text-base font-bold text-slate-900 mb-1">Sales & POS</h3>
-            <p class="text-slate-400 text-xs">Real-time order management</p>
-        </a>
-
-        <!-- Kitchen Station -->
-        <a href="{% url 'pos:unified_station_view' 'kitchen' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
-                <i class="fas fa-utensils"></i>
-            </div>
-            <h3 class="text-base font-bold text-slate-900 mb-1">Kitchen KDS</h3>
-            <p class="text-slate-400 text-xs">Order preparation tracking</p>
-        </a>
-
-        <!-- Bar Station -->
-        <a href="{% url 'pos:unified_station_view' 'bar' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
-                <i class="fas fa-cocktail"></i>
-            </div>
-            <h3 class="text-base font-bold text-slate-900 mb-1">Bar Display</h3>
-            <p class="text-slate-400 text-xs">Beverage & bottle flow</p>
-        </a>
-
-        <!-- Cashier -->
-        <a href="{% url 'pos:cashier_dashboard' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-700 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
-                <i class="fas fa-money-check-alt"></i>
-            </div>
-            <h3 class="text-base font-bold text-slate-900 mb-1">Cashier Station</h3>
-            <p class="text-slate-400 text-xs">Payment processing</p>
-        </a>
-
-        <!-- Rooms -->
-        <a href="{% url 'rooms:rooms_dashboard' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-700 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
-                <i class="fas fa-door-open"></i>
-            </div>
-            <h3 class="text-base font-bold text-slate-900 mb-1">Rooms</h3>
-            <p class="text-slate-400 text-xs">Guest rooms & bookings</p>
-        </a>
-
-        <!-- Scheduling -->
-        <a href="{% url 'schedule:schedule_list' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-700 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
-                <i class="fas fa-calendar-alt"></i>
-            </div>
-            <h3 class="text-base font-bold text-slate-900 mb-1">Staff Scheduling</h3>
-            <p class="text-slate-400 text-xs">Roster planning & shifts</p>
-        </a>
-
-        <!-- Inventory -->
-        <a href="{% url 'pos:menu_item_list' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-800 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
-                <i class="fas fa-boxes-stacked"></i>
-            </div>
-            <h3 class="text-base font-bold text-slate-900 mb-1">Inventory</h3>
-            <p class="text-slate-400 text-xs">Stock & catalogue control</p>
-        </a>
-
-        <!-- Reports -->
-        <a href="{% url 'pos:sales_report' %}" class="module-card bg-white p-6 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
-            <div class="w-16 h-16 bg-gradient-to-br from-rose-500 to-pink-700 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg mb-5">
-                <i class="fas fa-chart-pie"></i>
-            </div>
-            <h3 class="text-base font-bold text-slate-900 mb-1">Reports</h3>
-            <p class="text-slate-400 text-xs">Sales & profit analytics</p>
-        </a>
+    <div class="sec-hdr"><div class="sec-bar"></div><h2>Operational Hub</h2></div>
+    <div class="mods">
+        <a href="{% url 'pos:pos' %}" class="mod"><div class="mod-ico nb"><i class="fas fa-cash-register"></i></div><div class="mod-title">Sales &amp; POS</div><div class="mod-desc">Orders &amp; checkout</div></a>
+        <a href="{% url 'pos:unified_station_view' 'kitchen' %}" class="mod"><div class="mod-ico bg"><i class="fas fa-utensils"></i></div><div class="mod-title">Kitchen KDS</div><div class="mod-desc">Culinary prep</div></a>
+        <a href="{% url 'pos:unified_station_view' 'bar' %}" class="mod"><div class="mod-ico nb"><i class="fas fa-cocktail"></i></div><div class="mod-title">Bar Station</div><div class="mod-desc">Drink orders</div></a>
+        <a href="{% url 'pos:cashier_dashboard' %}" class="mod"><div class="mod-ico bg"><i class="fas fa-money-check-alt"></i></div><div class="mod-title">Cashier Desk</div><div class="mod-desc">Settlements</div></a>
+        <a href="{% url 'schedule:schedule_list' %}" class="mod"><div class="mod-ico nb"><i class="fas fa-calendar-alt"></i></div><div class="mod-title">Scheduling</div><div class="mod-desc">Shifts &amp; rosters</div></a>
+        <a href="{% url 'pos:menu_item_list' %}" class="mod"><div class="mod-ico bg"><i class="fas fa-boxes-stacked"></i></div><div class="mod-title">Inventory</div><div class="mod-desc">Stock management</div></a>
+        <a href="{% url 'pos:sales_report' %}" class="mod"><div class="mod-ico nb"><i class="fas fa-chart-pie"></i></div><div class="mod-title">Analytics</div><div class="mod-desc">Revenue insights</div></a>
+        <a href="{% url 'payroll:period_list' %}" class="mod"><div class="mod-ico bg"><i class="fas fa-money-check-alt"></i></div><div class="mod-title">Payroll</div><div class="mod-desc">Compensation</div></a>
     </div>
+
+    <div class="sec-hdr"><div class="sec-bar"></div><h2>Executive Reports</h2></div>
+    <div class="rlinks">
+        <a href="{% url 'pos:sales_report' %}" class="rlink"><div class="rlink-ico b"><i class="fas fa-chart-line"></i></div><div><div class="rlink-title">Sales Summary</div><div class="rlink-sub">Full revenue analytics</div></div></a>
+        <a href="{% url 'pos:print_sales_report' %}" class="rlink"><div class="rlink-ico bg"><i class="fas fa-print"></i></div><div><div class="rlink-title">Printable Export</div><div class="rlink-sub">Hardcopy documentation</div></div></a>
+        <a href="{% url 'pos:purchase_order_list' %}" class="rlink"><div class="rlink-ico b"><i class="fas fa-shopping-cart"></i></div><div><div class="rlink-title">Purchase Orders</div><div class="rlink-sub">Supplier &amp; procurement</div></div></a>
+        <a href="{% url 'pos:po_variance_report_all' %}" class="rlink"><div class="rlink-ico bg"><i class="fas fa-balance-scale"></i></div><div><div class="rlink-title">Variance Audit</div><div class="rlink-sub">Stock reconciliation</div></div></a>
+    </div>
+
 </div>
-
 <script>
-    function updateClock() {
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        document.getElementById('current-time').textContent = timeStr;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+function bhClock(){
+    const n=new Date();
+    const t=document.getElementById('bh-time');
+    const d=document.getElementById('bh-date');
+    if(t) t.textContent=n.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    if(d) d.textContent=n.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+}
+setInterval(bhClock,1000); bhClock();
 </script>
 {% endblock %}

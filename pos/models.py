@@ -985,3 +985,4 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.category.name} - {self.amount} KES on {self.expense_date}"
+

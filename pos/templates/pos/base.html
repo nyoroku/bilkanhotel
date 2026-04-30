@@ -1,320 +1,185 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>{% block title %}JuliFarm POS{% endblock %}</title>
-<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-    
+    <title>{% block title %}Bilken Hotel POS{% endblock %}</title>
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            /* Premium Emerald & Charcoal Palette */
-            --sidebar-bg: #0a0f1a;
-            --sidebar-hover: #131b2e;
-            --sidebar-border: #1e293b;
-            --accent: #10b981;
-            --accent-hover: #059669;
-            --accent-glow: rgba(16, 185, 129, 0.15);
-            --text-bright: #f1f5f9;
-            --text-dim: #64748b;
-            --text-muted: #475569;
-            --content-bg: #f8fafc;
-            --card-bg: #ffffff;
-            --sidebar-width: 272px;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --info: #3b82f6;
+        /* BILKEN HOTEL — Design System v4 (single source of truth) */
+
+        /* ── DARK MODE ── */
+        :root,[data-theme="dark"]{
+            --bg:      #0c0e18;
+            --surface: #121525;
+            --raised:  #1a1f38;
+            --border:  #252b48;
+            --txt1:    #dde4f7;
+            --txt2:    #7080aa;
+            --txt3:    #3c4a6e;
+            --blue:    #408EC6;
+            --blue-lt: #6aaedd;
+            --navy:    #1E2761;
+            --burg:    #7A2048;
+            --burg-lt: #a0385e;
+            --gold:    #b8912a;
+            --s1: 0 2px 8px rgba(0,0,0,.45);
+            --s2: 0 8px 28px rgba(0,0,0,.55);
+            --s3: 0 20px 56px rgba(0,0,0,.65);
+            --sb: #09090f;
+            --sb-bdr: rgba(64,142,198,.13);
+        }
+        /* ── LIGHT MODE ── */
+        [data-theme="light"]{
+            --bg:      #edf0fb;
+            --surface: #ffffff;
+            --raised:  #f3f5ff;
+            --border:  #cdd5ea;
+            --txt1:    #14193b;
+            --txt2:    #4d5e8e;
+            --txt3:    #8898c5;
+            --blue-lt: #2f72a8;
+            --s1: 0 2px 8px rgba(30,39,97,.07);
+            --s2: 0 8px 28px rgba(30,39,97,.11);
+            --s3: 0 20px 56px rgba(30,39,97,.15);
+            --sb: #1E2761;
+            --sb-bdr: rgba(255,255,255,.10);
         }
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--content-bg);
-            color: #1e293b;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        /* BASE */
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        html,body{height:100%}
+        html{
+            font-family:'Inter',system-ui,sans-serif;
+            background:var(--bg);color:var(--txt1);
+            -webkit-font-smoothing:antialiased;
+            transition:background .3s,color .3s;
         }
+        h1,h2,h3,h4,h5{font-family:'Cormorant Garamond',Georgia,serif;color:var(--txt1)}
+        [data-theme="light"] h1,[data-theme="light"] h2,[data-theme="light"] h3{color:var(--navy)}
 
-        body, html { height: 100%; }
+        /* LAYOUT */
+        .pos-shell{display:flex;min-height:100vh}
+        .main-wrapper{flex-grow:1;display:flex;flex-direction:column;min-height:100vh;background:var(--bg);transition:background .3s}
+        .main-content-area{flex-grow:1;padding:2rem;overflow-y:auto;color:var(--txt1)}
 
-        .pos-shell { display: flex; min-height: 100vh; }
-
-        .main-wrapper {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            background-color: var(--content-bg);
+        /* SIDEBAR */
+        .sidebar{
+            width:268px;flex-shrink:0;display:flex;flex-direction:column;
+            height:100vh;overflow-y:auto;position:sticky;top:0;
+            border-right:1px solid var(--sb-bdr);
         }
+        [data-theme="dark"] .sidebar{background:linear-gradient(175deg,#08090f,#0d1020)}
+        [data-theme="light"] .sidebar{background:linear-gradient(175deg,#1E2761,#171f55)}
 
-        .main-content-area {
-            flex-grow: 1;
-            padding: 2rem;
-            overflow-y: auto;
+        /* SIDEBAR HEADER */
+        .sidebar-header{padding:1.35rem 1.15rem;border-bottom:1px solid var(--sb-bdr);position:relative}
+        .sidebar-logo{display:flex;align-items:center;gap:.7rem;text-decoration:none}
+        .logo-icon{
+            width:36px;height:36px;flex-shrink:0;border-radius:9px;
+            background:linear-gradient(135deg,#408EC6,#1E2761);
+            display:flex;align-items:center;justify-content:center;
+            font-size:.95rem;color:#fff;box-shadow:0 3px 10px rgba(64,142,198,.28);
         }
+        .logo-text{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:#fff}
+        .logo-sub{display:block;font-size:.5rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(201,168,76,.8);margin-top:1px}
 
-        /* ═══════════════════════════════════════════
-           PREMIUM SIDEBAR
-           ═══════════════════════════════════════════ */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--sidebar-bg);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            height: 100vh;
-            overflow-y: auto;
-            position: sticky;
-            top: 0;
-            border-right: 1px solid var(--sidebar-border);
+        /* THEME BUTTON */
+        .theme-toggle-btn{
+            position:absolute;right:.85rem;top:50%;transform:translateY(-50%);
+            width:28px;height:28px;border-radius:7px;
+            background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+            color:rgba(255,255,255,.65);cursor:pointer;
+            display:flex;align-items:center;justify-content:center;font-size:.75rem;transition:all .2s;
         }
+        .theme-toggle-btn:hover{background:rgba(255,255,255,.14);color:#fff}
 
-        .sidebar-header {
-            padding: 1.75rem 1.5rem;
-            border-bottom: 1px solid var(--sidebar-border);
+        /* NAV */
+        .sidebar-nav{flex-grow:1;padding:.4rem 0}
+        .menu-label{padding:.95rem 1.15rem .28rem;font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.28)}
+        .menu-list{list-style:none}
+        .menu-list a{
+            display:flex;align-items:center;gap:.6rem;padding:.48rem 1.15rem;
+            font-size:.81rem;font-weight:500;color:rgba(255,255,255,.52);
+            text-decoration:none;border-left:3px solid transparent;
+            transition:all .17s;margin:1px 0;
         }
+        .menu-list a i{width:15px;text-align:center;flex-shrink:0;font-size:.8rem;opacity:.65}
+        .menu-list a:hover{background:rgba(255,255,255,.055);color:#fff;border-left-color:#408EC6}
+        .menu-list a:hover i{opacity:1}
+        .menu-list li.is-active>a{background:rgba(64,142,198,.13);color:#82c4ec;font-weight:600;border-left-color:#408EC6}
+        .menu-list li.is-active>a i{opacity:1}
 
-        .sidebar-logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-bright);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+        /* USER BOX */
+        .user-info-box{padding:.9rem 1.15rem;border-top:1px solid var(--sb-bdr)}
+        .user-card{display:flex;align-items:center;gap:.6rem;margin-bottom:.65rem}
+        .user-avatar{
+            width:32px;height:32px;flex-shrink:0;border-radius:8px;
+            background:linear-gradient(135deg,#1E2761,#408EC6);
+            color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;
         }
-
-        .sidebar-logo .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--accent), #34d399);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            color: white;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        .user-details{flex-grow:1;min-width:0}
+        .user-name{display:block;color:#fff;font-size:.76rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .user-role{display:block;color:rgba(100,180,230,.85);font-size:.58rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+        .logout-btn{
+            width:100%;padding:.42rem;border-radius:7px;
+            background:rgba(122,32,72,.15);color:rgba(205,120,150,.9);
+            border:1px solid rgba(122,32,72,.22);font-size:.71rem;font-weight:600;
+            cursor:pointer;display:flex;align-items:center;justify-content:center;
+            gap:.45rem;text-decoration:none;transition:all .18s;
         }
+        .logout-btn:hover{background:#7A2048;color:#fff;border-color:#7A2048}
 
-        .sidebar-logo .logo-text {
-            background: linear-gradient(135deg, #10b981, #34d399);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        /* MOBILE NAV */
+        .mobile-nav{display:none;position:sticky;top:0;z-index:1000;padding:.7rem 1rem;border-bottom:1px solid var(--sb-bdr)}
+        [data-theme="dark"] .mobile-nav{background:#08090f}
+        [data-theme="light"] .mobile-nav{background:#1E2761}
+        .mobile-nav-header{display:flex;justify-content:space-between;align-items:center}
+        .mobile-toggle{
+            width:36px;height:36px;border-radius:8px;
+            background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+            color:#fff;display:flex;align-items:center;justify-content:center;
+            font-size:1rem;cursor:pointer;transition:all .18s;
         }
-
-        .sidebar-nav { flex-grow: 1; padding: 1rem 0; }
-
-        .menu-label {
-            padding: 1.25rem 1.5rem 0.5rem;
-            color: var(--text-muted);
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-weight: 700;
+        .mobile-toggle:hover{background:rgba(255,255,255,.15)}
+        #mobile-nav-menu{
+            display:none;position:absolute;top:100%;left:0;width:100%;
+            box-shadow:0 20px 40px rgba(0,0,0,.5);max-height:80vh;overflow-y:auto;z-index:999;
         }
+        [data-theme="dark"] #mobile-nav-menu{background:#0d1020;border-bottom:1px solid rgba(64,142,198,.12)}
+        [data-theme="light"] #mobile-nav-menu{background:#1E2761}
+        #mobile-nav-menu.is-active{display:block}
 
-        .menu-list { list-style: none; }
+        /* RESPONSIVE */
+        @media(max-width:1024px){.sidebar{display:none}.mobile-nav{display:block}.main-content-area{padding:1rem}}
+        @media(max-width:640px){.main-content-area{padding:.75rem}}
 
-        .menu-list a {
-            color: var(--text-dim);
-            padding: 0.65rem 1.5rem;
-            display: flex;
-            align-items: center;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            font-size: 0.875rem;
-            border-left: 3px solid transparent;
-            gap: 0.75rem;
-        }
+        /* CARD */
+        .bh-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--s1);transition:all .22s}
+        .bh-card:hover{border-color:rgba(64,142,198,.32);box-shadow:var(--s2);transform:translateY(-2px)}
 
-        .menu-list a i {
-            width: 18px;
-            font-size: 0.9rem;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        .menu-list a:hover {
-            background-color: var(--sidebar-hover);
-            color: var(--text-bright);
-            border-left-color: rgba(16, 185, 129, 0.3);
-        }
-
-        .menu-list li.is-active > a {
-            background-color: var(--accent-glow);
-            color: var(--accent);
-            font-weight: 600;
-            border-left-color: var(--accent);
-        }
-
-        /* User Box */
-        .user-info-box {
-            padding: 1.25rem 1.5rem;
-            border-top: 1px solid var(--sidebar-border);
-            background: var(--sidebar-hover);
-        }
-
-        .user-card {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .user-avatar {
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, var(--accent), #34d399);
-            color: white;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
-
-        .user-details { flex-grow: 1; min-width: 0; }
-
-        .user-name {
-            display: block;
-            color: var(--text-bright);
-            font-size: 0.8rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .user-role {
-            display: block;
-            color: var(--text-dim);
-            font-size: 0.65rem;
-            text-transform: capitalize;
-            font-weight: 500;
-        }
-
-        .logout-btn {
-            width: 100%;
-            padding: 0.5rem;
-            border-radius: 8px;
-            background: rgba(239, 68, 68, 0.08);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.15);
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            text-decoration: none;
-        }
-
-        .logout-btn:hover {
-            background: var(--danger);
-            color: white;
-            border-color: var(--danger);
-        }
-
-        /* ═══════════════════════════════════════════
-           MOBILE NAVIGATION
-           ═══════════════════════════════════════════ */
-        .mobile-nav {
-            display: none;
-            background: var(--sidebar-bg);
-            padding: 0.75rem 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid var(--sidebar-border);
-        }
-
-        .mobile-nav-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .mobile-toggle {
-            background: var(--sidebar-hover);
-            border: 1px solid var(--sidebar-border);
-            color: var(--text-bright);
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .mobile-toggle:hover {
-            background: var(--accent-glow);
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        #mobile-nav-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background: var(--sidebar-bg);
-            border-bottom: 1px solid var(--sidebar-border);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            max-height: 80vh;
-            overflow-y: auto;
-            z-index: 999;
-        }
-
-        #mobile-nav-menu.is-active { display: block; }
-
-        @media (max-width: 1024px) {
-            .sidebar { display: none; }
-            .mobile-nav { display: block; }
-            .main-content-area { padding: 1rem; }
-        }
-
-        @media (max-width: 640px) {
-            .main-content-area { padding: 0.75rem; }
-        }
-
-        /* ═══════════════════════════════════════════
-           SCROLLBAR
-           ═══════════════════════════════════════════ */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        /* SCROLLBAR */
+        ::-webkit-scrollbar{width:5px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:rgba(64,142,198,.22);border-radius:10px}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(64,142,198,.42)}
     </style>
     {% block styles %}{% endblock %}
 <script src="https://cdn.tailwindcss.com"></script>
-
 <script>
   tailwind.config = {
     theme: {
       extend: {
         colors: {
-          primary: '#059669',
-          'primary-light': '#10b981',
-          'primary-dark': '#047857',
+          'bh-navy': '#1E2761',
+          'bh-blue': '#408EC6',
+          'bh-burgundy': '#7A2048',
+          'bh-gold': '#C9A84C',
         }
       }
     }
@@ -328,10 +193,16 @@
             <div class="sidebar-header">
                 <a href="{% url 'pos:pos' %}" class="sidebar-logo">
                     <div class="logo-icon">
-                        <i class="fas fa-leaf"></i>
+                        <i class="fas fa-crown"></i>
                     </div>
-                    <span class="logo-text">JuliFarm</span>
+                    <div>
+                        <span class="logo-text">Bilken</span>
+                        <span class="logo-sub">Hotel &amp; Suites</span>
+                    </div>
                 </a>
+                <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Light/Dark">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
             </div>
             
             <nav class="sidebar-nav">
@@ -356,19 +227,19 @@
 
                 <p class="menu-label">Stations</p>
                 <ul class="menu-list">
+                    <li class="{% if 'cashier' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:cashier_dashboard' %}">
+                            <i class="fas fa-cash-register"></i>Cashier Station
+                        </a>
+                    </li>
                     <li class="{% if 'kitchen' in request.path %}is-active{% endif %}">
                         <a href="{% url 'pos:unified_station_view' 'kitchen' %}">
-                            <i class="fas fa-utensils"></i>Kitchen
+                            <i class="fas fa-utensils"></i>Kitchen Station
                         </a>
                     </li>
                     <li class="{% if 'bar' in request.path %}is-active{% endif %}">
                         <a href="{% url 'pos:unified_station_view' 'bar' %}">
-                            <i class="fas fa-cocktail"></i>Bar
-                        </a>
-                    </li>
-                    <li class="{% if 'butchery' in request.path %}is-active{% endif %}">
-                        <a href="{% url 'pos:butchery_section' %}">
-                            <i class="fas fa-drumstick-bite"></i>Butchery
+                            <i class="fas fa-cocktail"></i>Bar Station
                         </a>
                     </li>
                 </ul>
@@ -376,25 +247,26 @@
                 {% if user.is_staff %}
                 <p class="menu-label">Management</p>
                 <ul class="menu-list">
-                    {% if user.role == 'admin' or user.role == 'manager' or user.role == 'room_manager' %}
-                    <li class="{% if 'rooms' in request.path %}is-active{% endif %}">
-                        <a href="{% url 'rooms:rooms_dashboard' %}">
-                            <i class="fas fa-door-open"></i>Rooms
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if user.role == 'admin' %}
-                    <li class="{% if 'audit' in request.path %}is-active{% endif %}">
-                        <a href="{% url 'pos:audit_log' %}">
-                            <i class="fas fa-shield-alt"></i>Audit Logs
-                        </a>
-                    </li>
-                    <li><a href="{% url 'trucks:dashboard_view' %}"><i class="fas fa-truck"></i>Trucks</a></li>
-                    {% endif %}
-                    <li><a href="{% url 'accounts:staff_list' %}"><i class="fas fa-users-cog"></i>Staffing</a></li>
-                    <li><a href="{% url 'pos:menu_item_list' %}"><i class="fas fa-boxes-stacked"></i>Inventory</a></li>
+                    <li><a href="{% url 'accounts:staff_list' %}"><i class="fas fa-user-friends"></i>Staff</a></li>
+                    <li><a href="{% url 'pos:menu_item_list' %}"><i class="fas fa-utensils"></i>Menu Items</a></li>
+                    <li><a href="{% url 'pos:category_list' %}"><i class="fas fa-layer-group"></i>Categories</a></li>
+                    <li><a href="{% url 'pos:supplier_list' %}"><i class="fas fa-truck"></i>Suppliers</a></li>
+                    <li><a href="{% url 'pos:customer_payment_list' %}"><i class="fas fa-user-tag"></i>Customer Payment</a></li>
+                    <li><a href="{% url 'pos:table_list' %}"><i class="fas fa-chair"></i>Tables</a></li>
+                    <li><a href="{% url 'pos:table_layout_editor' %}"><i class="fas fa-th"></i>Table Layout</a></li>
+                    <li><a href="{% url 'pos:expense_category_list' %}"><i class="fas fa-list-ul"></i>Expenses Categories</a></li>
+                    <li><a href="{% url 'pos:expense_list' %}"><i class="fas fa-file-invoice-dollar"></i>Expenses</a></li>
+                    <li><a href="{% url 'payroll:period_list' %}"><i class="fas fa-money-check-alt"></i>Payroll</a></li>
                     <li><a href="{% url 'pos:order_list' %}"><i class="fas fa-receipt"></i>Orders</a></li>
-                    <li><a href="{% url 'pos:sales_report' %}"><i class="fas fa-chart-line"></i>Analytics</a></li>
+                    <li><a href="{% url 'schedule:schedule_list' %}"><i class="fas fa-calendar-alt"></i>Scheduling</a></li>
+                </ul>
+
+                <p class="menu-label">Procurement & Reports</p>
+                <ul class="menu-list">
+                    <li><a href="{% url 'pos:purchase_order_list' %}"><i class="fas fa-shopping-cart"></i>Purchase Orders</a></li>
+                    <li><a href="{% url 'pos:sales_report' %}"><i class="fas fa-chart-line"></i>Sales Report</a></li>
+                    <li><a href="{% url 'pos:print_sales_report' %}"><i class="fas fa-print"></i>Sales Report Print</a></li>
+                    <li><a href="{% url 'pos:po_variance_report_all' %}"><i class="fas fa-balance-scale"></i>Purchase Order Variance</a></li>
                 </ul>
                 {% endif %}
             </nav>
@@ -419,11 +291,11 @@
         <!-- Mobile Navigation -->
         <nav class="mobile-nav">
             <div class="mobile-nav-header">
-                <a href="{% url 'pos:pos' %}" class="sidebar-logo" style="font-size:1.25rem;">
+                <a href="{% url 'pos:pos' %}" class="sidebar-logo" style="font-size:1rem;">
                     <div class="logo-icon" style="width:32px;height:32px;font-size:0.85rem;">
-                        <i class="fas fa-leaf"></i>
+                        <i class="fas fa-crown"></i>
                     </div>
-                    <span class="logo-text">JuliFarm</span>
+                    <span class="logo-text">Bilken Hotel</span>
                 </a>
                 <button class="mobile-toggle" id="mobile-menu-toggle">
                     <i class="fas fa-bars"></i>
@@ -439,19 +311,33 @@
                 </ul>
                 <p class="menu-label">Stations</p>
                 <ul class="menu-list">
-                    <li><a href="{% url 'pos:unified_station_view' 'kitchen' %}"><i class="fas fa-utensils"></i>Kitchen</a></li>
-                    <li><a href="{% url 'pos:unified_station_view' 'bar' %}"><i class="fas fa-cocktail"></i>Bar</a></li>
-                    <li><a href="{% url 'pos:butchery_section' %}"><i class="fas fa-drumstick-bite"></i>Butchery</a></li>
+                    <li><a href="{% url 'pos:cashier_dashboard' %}"><i class="fas fa-cash-register"></i>Cashier Station</a></li>
+                    <li><a href="{% url 'pos:unified_station_view' 'kitchen' %}"><i class="fas fa-utensils"></i>Kitchen Station</a></li>
+                    <li><a href="{% url 'pos:unified_station_view' 'bar' %}"><i class="fas fa-cocktail"></i>Bar Station</a></li>
                 </ul>
                 {% if user.is_staff %}
                 <p class="menu-label">Management</p>
                 <ul class="menu-list">
-                    {% if user.role == 'admin' or user.role == 'manager' or user.role == 'room_manager' %}
-                    <li><a href="{% url 'rooms:rooms_dashboard' %}"><i class="fas fa-door-open"></i>Rooms</a></li>
-                    {% endif %}
-                    <li><a href="{% url 'pos:menu_item_list' %}"><i class="fas fa-boxes-stacked"></i>Inventory</a></li>
+                    <li><a href="{% url 'accounts:staff_list' %}"><i class="fas fa-user-friends"></i>Staff</a></li>
+                    <li><a href="{% url 'pos:menu_item_list' %}"><i class="fas fa-utensils"></i>Menu Items</a></li>
+                    <li><a href="{% url 'pos:category_list' %}"><i class="fas fa-layer-group"></i>Categories</a></li>
+                    <li><a href="{% url 'pos:supplier_list' %}"><i class="fas fa-truck"></i>Suppliers</a></li>
+                    <li><a href="{% url 'pos:customer_payment_list' %}"><i class="fas fa-user-tag"></i>Customer Payment</a></li>
+                    <li><a href="{% url 'pos:table_list' %}"><i class="fas fa-chair"></i>Tables</a></li>
+                    <li><a href="{% url 'pos:table_layout_editor' %}"><i class="fas fa-th"></i>Table Layout</a></li>
+                    <li><a href="{% url 'pos:expense_category_list' %}"><i class="fas fa-list-ul"></i>Expenses Categories</a></li>
+                    <li><a href="{% url 'pos:expense_list' %}"><i class="fas fa-file-invoice-dollar"></i>Expenses</a></li>
+                    <li><a href="{% url 'payroll:period_list' %}"><i class="fas fa-money-check-alt"></i>Payroll</a></li>
                     <li><a href="{% url 'pos:order_list' %}"><i class="fas fa-receipt"></i>Orders</a></li>
-                    <li><a href="{% url 'pos:sales_report' %}"><i class="fas fa-chart-line"></i>Analytics</a></li>
+                    <li><a href="{% url 'schedule:schedule_list' %}"><i class="fas fa-calendar-alt"></i>Scheduling</a></li>
+                </ul>
+
+                <p class="menu-label">Procurement & Reports</p>
+                <ul class="menu-list">
+                    <li><a href="{% url 'pos:purchase_order_list' %}"><i class="fas fa-shopping-cart"></i>Purchase Orders</a></li>
+                    <li><a href="{% url 'pos:sales_report' %}"><i class="fas fa-chart-line"></i>Sales Report</a></li>
+                    <li><a href="{% url 'pos:print_sales_report' %}"><i class="fas fa-print"></i>Sales Report Print</a></li>
+                    <li><a href="{% url 'pos:po_variance_report_all' %}"><i class="fas fa-balance-scale"></i>Purchase Order Variance</a></li>
                 </ul>
                 {% endif %}
                 <div class="user-info-box border-t border-gray-700 mt-2">
@@ -504,6 +390,32 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
     <script>
+        // --- 0. THEME TOGGLE ---
+        (function() {
+            const saved = localStorage.getItem('bh-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('theme-toggle');
+            const icon = document.getElementById('theme-icon');
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('bh-theme', theme);
+                if (icon) {
+                    icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+                }
+            }
+            const current = localStorage.getItem('bh-theme') || 'dark';
+            applyTheme(current);
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                    applyTheme(next);
+                });
+            }
+        });
+
         // --- 1. CSRF Token Setup for HTMX ---
         document.body.addEventListener('htmx:configRequest', (event) => {
             if (event.detail.verb === 'post') {
@@ -592,11 +504,13 @@
   const authorizeModal = document.getElementById("authorize-cancel-modal");
 
   function closeModal(modal) {
+    if (!modal) return;
     modal.classList.remove("is-active");
     clearInterval(countdownInterval);
   }
 
   function openRequestCancelModal(orderId, table, total) {
+    if (!requestModal) return;
     currentOrderId = orderId;
     document.getElementById('cancel-order-id').textContent = orderId;
     document.getElementById('cancel-table').textContent = table || 'Takeaway';
@@ -610,6 +524,7 @@
   }
 
   function openAuthorizeCancelModal(orderId) {
+    if (!authorizeModal) return;
     currentOrderId = orderId;
     authorizeModal.classList.add("is-active");
     document.getElementById("auth-code-input").value = "";
@@ -617,79 +532,76 @@
   }
 
   function showAuthError(message) {
-    document.getElementById("auth-error-message").textContent = message;
-    document.getElementById("auth-error").classList.remove("is-hidden");
+    const errEl = document.getElementById("auth-error-message");
+    const errBox = document.getElementById("auth-error");
+    if (errEl) errEl.textContent = message;
+    if (errBox) errBox.classList.remove("is-hidden");
   }
 
   function startCountdown(seconds) {
     expiryTime = Date.now() + seconds * 1000;
-
+    const timerEl = document.getElementById("time-remaining");
     countdownInterval = setInterval(() => {
       const remaining = Math.max(0, expiryTime - Date.now());
       const m = Math.floor(remaining / 60000);
       const s = Math.floor((remaining % 60000) / 1000);
-
-      document.getElementById("time-remaining").textContent =
-        `${m}:${s.toString().padStart(2, "0")}`;
-
+      if (timerEl) timerEl.textContent = `${m}:${s.toString().padStart(2, "0")}`;
       if (remaining <= 0) {
         clearInterval(countdownInterval);
-        document.getElementById("time-remaining").textContent = "EXPIRED";
+        if (timerEl) timerEl.textContent = "EXPIRED";
       }
     }, 1000);
   }
 
-  // Network calls
-  document.getElementById("request-cancel-btn").addEventListener("click", () => {
-    const url = `{% url 'pos:request_cancellation' 0 %}`.replace('/0/', `/${currentOrderId}/`);
-
-    fetch(url, {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": getCookie("csrftoken"),
-        "Accept": "application/json"
-      }
-    }).then(r => r.json()).then(data => {
-      if (!data.success) {
-        alert(data.message);
-        return;
-      }
-
-      document.getElementById("auth-code-display").textContent = data.auth_code;
-      document.getElementById("request-form-section").classList.add("is-hidden");
-      document.getElementById("auth-code-section").classList.remove("is-hidden");
-      document.getElementById("request-footer").classList.add("is-hidden");
-
-      startCountdown(data.expires_in);
+  // Network calls — only attach if the modal buttons actually exist on this page
+  const requestCancelBtn = document.getElementById("request-cancel-btn");
+  if (requestCancelBtn) {
+    requestCancelBtn.addEventListener("click", () => {
+      const url = `{% url 'pos:request_cancellation' 0 %}`.replace('/0/', `/${currentOrderId}/`);
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+          "Accept": "application/json"
+        }
+      }).then(r => r.json()).then(data => {
+        if (!data.success) { alert(data.message); return; }
+        const displayEl = document.getElementById("auth-code-display");
+        if (displayEl) displayEl.textContent = data.auth_code;
+        document.getElementById("request-form-section")?.classList.add("is-hidden");
+        document.getElementById("auth-code-section")?.classList.remove("is-hidden");
+        document.getElementById("request-footer")?.classList.add("is-hidden");
+        startCountdown(data.expires_in);
+      });
     });
-  });
+  }
 
-  document.getElementById("authorize-btn").addEventListener("click", () => {
-    const authCode = document.getElementById("auth-code-input").value.trim();
-    if (!/^\d{6}$/.test(authCode)) return showAuthError("Enter valid 6-digit code");
+  const authorizeBtn = document.getElementById("authorize-btn");
+  if (authorizeBtn) {
+    authorizeBtn.addEventListener("click", () => {
+      const authCodeInput = document.getElementById("auth-code-input");
+      const authCode = authCodeInput ? authCodeInput.value.trim() : '';
+      if (!/^\d{6}$/.test(authCode)) return showAuthError("Enter valid 6-digit code");
 
-    const btn = document.getElementById("authorize-btn");
-    btn.classList.add("is-loading");
+      authorizeBtn.classList.add("is-loading");
+      const url = `{% url 'pos:authorize_cancellation' 0 %}`.replace('/0/', `/${currentOrderId}/`);
 
-    const url = `{% url 'pos:authorize_cancellation' 0 %}`.replace('/0/', `/${currentOrderId}/`);
-
-    fetch(url, {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": getCookie("csrftoken"),
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: `auth_code=${encodeURIComponent(authCode)}`
-    }).then(r => r.json()).then(data => {
-      btn.classList.remove("is-loading");
-
-      if (!data.success) return showAuthError(data.message);
-
-      closeModal(authorizeModal);
-      alert(`Order cancelled\nAuthorized by: ${data.authorized_by}`);
-      window.location.reload();
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `auth_code=${encodeURIComponent(authCode)}`
+      }).then(r => r.json()).then(data => {
+        authorizeBtn.classList.remove("is-loading");
+        if (!data.success) return showAuthError(data.message);
+        closeModal(authorizeModal);
+        alert(`Order cancelled\nAuthorized by: ${data.authorized_by}`);
+        window.location.reload();
+      });
     });
-  });
+  }
 
   // Close buttons & background
   document.querySelectorAll("[data-close-modal]").forEach(btn => {
@@ -714,3 +626,4 @@ function getCookie(name) {
     {% endblock %}
 </body>
 </html>
+

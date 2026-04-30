@@ -1813,10 +1813,10 @@ def print_order_receipt(request, order_id):
     )
 
     first_item = order.items.first()
-    receipt_title = "JuliFarm"
+    receipt_title = "julifarm"
     if first_item:
         module_name = first_item.menu_item.category.get_module_display()
-        receipt_title = f"JuliFarm {module_name}"
+        receipt_title = f"Bilken Hotel {module_name}"
 
     context = {
         'order': order,
@@ -6116,3 +6116,5 @@ def htmx_refresh_cashier_orders(request):
     }
 
     return render(request, 'pos/partials/_cashier_orders_table_simple.html', context)
+
+

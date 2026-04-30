@@ -39,3 +39,5 @@ for root, _, files in os.walk(directory):
             
             with open(filepath, 'w', encoding='utf-8') as file:
                 file.write(content)
+
+
