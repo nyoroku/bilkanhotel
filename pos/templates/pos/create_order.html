@@ -89,14 +89,11 @@
                     {% endif %}
                     <hr>
 
-                    {# Show appropriate cart summary based on locked section or both for new orders #}
-                    {% if locked_section == 'Kitchen' %}
-                        <div id="kitchen-cart-summary">{% include 'pos/partials/_order_summary.html' with cart=kitchen_cart module="Kitchen" %}</div>
-                    {% elif locked_section == 'Bar' %}
+                    {# Show appropriate cart summary - now Bar only as requested #}
+                    {% if locked_section == 'Bar' %}
                         <div id="bar-cart-summary">{% include 'pos/partials/_order_summary.html' with cart=bar_cart module="Bar" %}</div>
-                    {% else %}
-                        <div id="kitchen-cart-summary">{% include 'pos/partials/_order_summary.html' with cart=kitchen_cart module="Kitchen" %}</div>
-                        <div id="bar-cart-summary" class="mt-4">{% include 'pos/partials/_order_summary.html' with cart=bar_cart module="Bar" %}</div>
+                    {% elif not locked_section %}
+                        <div id="bar-cart-summary">{% include 'pos/partials/_order_summary.html' with cart=bar_cart module="Bar" %}</div>
                     {% endif %}
                 </div>
                 <footer class="border-t border-gray-200 bg-gray-50 flex">

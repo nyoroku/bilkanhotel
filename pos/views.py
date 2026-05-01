@@ -1064,10 +1064,9 @@ def create_order_for_table(request, table_id):
 
     form = OrderCreationForm(initial={'table': table, 'customer': walk_in_customer})
 
-    # This logic should match your main create_order view to ensure consistency
-    sections_to_display = [(Category.Module.KITCHEN, Category.Module.KITCHEN.label),
-                           (Category.Module.BAR, Category.Module.BAR.label)]
-    active_module = Category.Module.KITCHEN
+    # Only show Bar items as requested
+    sections_to_display = [(Category.Module.BAR, Category.Module.BAR.label)]
+    active_module = Category.Module.BAR
     initial_categories = Category.objects.filter(module=active_module).order_by('name')
     initial_menu_items = MenuItem.objects.filter(is_active=True, category__module=active_module,
                                                  selling_price__gt=0).order_by('name')
@@ -1253,12 +1252,12 @@ def create_order(request):
     walk_in_customer, _ = Customer.objects.get_or_create(pk=1, defaults={'name': 'Walking In'})
     form = OrderCreationForm(initial={'customer': walk_in_customer})
 
+    # Only show Bar items as requested
     sections_to_display = [
-        (Category.Module.KITCHEN, Category.Module.KITCHEN.label),
         (Category.Module.BAR, Category.Module.BAR.label),
     ]
 
-    active_module = Category.Module.KITCHEN
+    active_module = Category.Module.BAR
 
     # Fetch initial data for the default "Kitchen" tab
     initial_categories = Category.objects.filter(module=active_module).order_by('name')
@@ -1598,10 +1597,10 @@ def htmx_item_add_modal(request, item_id):
     # Get the menu item
     item = get_object_or_404(MenuItem, id=item_id)
 
-    # Get the module (Kitchen/Bar) from query param
-    module = request.GET.get('module', 'Kitchen')
+    # Get the module (Kitchen/Bar) from query param - default to Bar
+    module = request.GET.get('module', 'Bar')
     if module not in dict(Category.Module.choices):
-        module = 'Kitchen'
+        module = 'Bar'
 
     # Render the modal
     return render(request, 'pos/partials/_item_add_modal.html', {
@@ -1689,7 +1688,7 @@ def htmx_clear_cart(request):
 
 @login_required
 def htmx_menu_panel(request):
-    active_section = request.GET.get('section', 'Kitchen')
+    active_section = request.GET.get('section', 'Bar')
 
     # Get categories relevant for the dropdown
     relevant_categories = Category.objects.filter(module=active_section)
@@ -1709,7 +1708,7 @@ def htmx_menu_panel(request):
 # It's called when a FILTER (search/category) is used.
 @login_required
 def htmx_menu_grid(request):
-    section = request.GET.get('section', 'Kitchen')
+    section = request.GET.get('section', 'Bar')
     category_query = request.GET.get('category', '')
     search_query = request.GET.get('q', '').strip()
 
