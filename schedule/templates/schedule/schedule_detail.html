@@ -435,9 +435,9 @@ table tr:last-child td { border-bottom: none; }
           <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white text-xl px-8 py-4" id="swap-submit-btn" disabled>
             <span class="icon"><i class="fas fa-exchange-alt"></i></span><span>Select staff from both shifts</span>
           </button>
-          <a href="{% url 'schedule:schedule_detail' form.instance.schedule.pk|default:object.schedule.pk %}"
+          <button type="button" onclick="toggleModal('improved-swap-modal')"
              class="inline-flex items-center justify-center px-4 py-2 border rounded-md font-semibold focus:outline-none transition ease-in-out duration-150"
-             style="background: var(--surface); border-color: var(--border); color: var(--txt1);">Cancel</a>
+             style="background: var(--surface); border-color: var(--border); color: var(--txt1);">Cancel</button>
         </div>
       </form>
     </section>
