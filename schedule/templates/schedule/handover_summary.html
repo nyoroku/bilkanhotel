@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+    <div class="shadow-xl rounded-2xl overflow-hidden border" style="background: var(--surface); border-color: var(--border);">
         <!-- Header -->
         <div class="bg-gradient-to-r from-blue-700 to-blue-900 p-8 text-white">
             <div class="flex flex-col md:flex-row justify-between items-center gap-6">
@@ -27,14 +27,14 @@
         <div class="p-8">
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                    <span class="block text-blue-600 text-sm font-bold uppercase mb-1">Total Sales</span>
-                    <span class="text-3xl font-black text-blue-900">{{ total_sales|floatformat:0 }} KES</span>
+                <div class="p-6 rounded-2xl border" style="background: var(--raised); border-color: var(--border);">
+                    <span class="block text-sm font-bold uppercase mb-1" style="color: var(--blue);">Total Sales</span>
+                    <span class="text-3xl font-black" style="color: var(--txt1);">{{ total_sales|floatformat:0 }} KES</span>
                 </div>
                 {% for item in payment_breakdown %}
-                <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                    <span class="block text-gray-500 text-sm font-bold uppercase mb-1">{{ item.payment_method }}</span>
-                    <span class="text-2xl font-bold text-gray-800">{{ item.total|floatformat:0 }} KES</span>
+                <div class="p-6 rounded-2xl border" style="background: var(--raised); border-color: var(--border);">
+                    <span class="block text-sm font-bold uppercase mb-1" style="color: var(--txt2);">{{ item.payment_method }}</span>
+                    <span class="text-2xl font-bold" style="color: var(--txt1);">{{ item.total|floatformat:0 }} KES</span>
                 </div>
                 {% endfor %}
             </div>
@@ -42,22 +42,22 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Waiter Drops -->
                 <div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <i class="fas fa-wallet mr-3 text-blue-600"></i> Waiter Collections (Cash)
+                    <h3 class="text-xl font-bold mb-4 flex items-center" style="color: var(--txt1);">
+                        <i class="fas fa-wallet mr-3" style="color: var(--blue);"></i> Waiter Collections (Cash)
                     </h3>
-                    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="border rounded-xl overflow-hidden shadow-sm" style="background: var(--surface); border-color: var(--border);">
                         <table class="w-full text-left">
-                            <thead class="bg-gray-50 border-b border-gray-200">
+                            <thead class="border-b" style="background: var(--bg); border-color: var(--border);">
                                 <tr>
-                                    <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Waiter</th>
-                                    <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase text-right">To Collect</th>
+                                    <th class="px-6 py-3 text-xs font-bold uppercase" style="color: var(--txt2);">Waiter</th>
+                                    <th class="px-6 py-3 text-xs font-bold uppercase text-right" style="color: var(--txt2);">To Collect</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
                                 {% for drop in waiter_drops %}
-                                <tr>
-                                    <td class="px-6 py-4 font-medium text-gray-900">{{ drop.order__waiter__first_name }} {{ drop.order__waiter__last_name }}</td>
-                                    <td class="px-6 py-4 text-right font-black text-blue-700">{{ drop.total_cash|floatformat:0 }} KES</td>
+                                <tr class="border-b" style="border-color: var(--border);">
+                                    <td class="px-6 py-4 font-medium" style="color: var(--txt1);">{{ drop.order__waiter__first_name }} {{ drop.order__waiter__last_name }}</td>
+                                    <td class="px-6 py-4 text-right font-black" style="color: var(--blue);">{{ drop.total_cash|floatformat:0 }} KES</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
@@ -71,7 +71,7 @@
 
                 <!-- Unresolved Orders -->
                 <div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <h3 class="text-xl font-bold mb-4 flex items-center" style="color: var(--txt1);">
                         <i class="fas fa-exclamation-triangle mr-3 text-orange-500"></i> Unresolved Orders
                     </h3>
                     <div class="space-y-3">
@@ -98,25 +98,25 @@
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
                     <i class="fas fa-box-open mr-3 text-blue-600"></i> Stock Snapshot (Recorded Take)
                 </h3>
-                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                <div class="border rounded-xl overflow-hidden shadow-sm" style="background: var(--surface); border-color: var(--border);">
                     <table class="w-full text-left">
-                        <thead class="bg-gray-50 border-b border-gray-200">
+                        <thead class="border-b" style="background: var(--bg); border-color: var(--border);">
                             <tr>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Item</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase text-center">System</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase text-center">Physical</th>
-                                <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase text-right">Disparity</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase" style="color: var(--txt2);">Item</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-center" style="color: var(--txt2);">System</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-center" style="color: var(--txt2);">Physical</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-right" style="color: var(--txt2);">Disparity</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             {% for take in stock_takes %}
-                            <tr>
+                            <tr class="border-b" style="border-color: var(--border);">
                                 <td class="px-6 py-4">
-                                    <span class="block font-bold text-gray-900">{{ take.item.name }}</span>
-                                    <span class="text-xs text-gray-500 uppercase">{{ take.section }}</span>
+                                    <span class="block font-bold" style="color: var(--txt1);">{{ take.item.name }}</span>
+                                    <span class="text-xs uppercase" style="color: var(--txt3);">{{ take.section }}</span>
                                 </td>
-                                <td class="px-6 py-4 text-center font-mono text-gray-600">{{ take.closing_system|floatformat:0 }}</td>
-                                <td class="px-6 py-4 text-center font-mono text-gray-900 font-bold">{{ take.closing_physical|floatformat:0 }}</td>
+                                <td class="px-6 py-4 text-center font-mono" style="color: var(--txt2);">{{ take.closing_system|floatformat:0 }}</td>
+                                <td class="px-6 py-4 text-center font-mono font-bold" style="color: var(--txt1);">{{ take.closing_physical|floatformat:0 }}</td>
                                 <td class="px-6 py-4 text-right">
                                     <span class="font-bold {% if take.closing_disparity < 0 %}text-red-600{% elif take.closing_disparity > 0 %}text-green-600{% else %}text-gray-400{% endif %}">
                                         {{ take.closing_disparity|floatformat:0 }}
@@ -135,13 +135,13 @@
 
             <!-- Footer / Signature -->
             <div class="mt-12 pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between gap-8 no-print">
-                <div class="flex-1 p-6 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-                    <span class="block text-gray-400 text-xs font-black uppercase mb-8">Outgoing Manager Signature</span>
-                    <div class="border-b-2 border-gray-300 w-2/3"></div>
+                <div class="flex-1 p-6 rounded-2xl border border-dashed" style="background: var(--bg); border-color: var(--border);">
+                    <span class="block text-xs font-black uppercase mb-8" style="color: var(--txt3);">Outgoing Manager Signature</span>
+                    <div class="border-b-2 w-2/3" style="border-color: var(--border);"></div>
                 </div>
-                <div class="flex-1 p-6 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-                    <span class="block text-gray-400 text-xs font-black uppercase mb-8">Incoming Manager Signature</span>
-                    <div class="border-b-2 border-gray-300 w-2/3"></div>
+                <div class="flex-1 p-6 rounded-2xl border border-dashed" style="background: var(--bg); border-color: var(--border);">
+                    <span class="block text-xs font-black uppercase mb-8" style="color: var(--txt3);">Incoming Manager Signature</span>
+                    <div class="border-b-2 w-2/3" style="border-color: var(--border);"></div>
                 </div>
             </div>
 

@@ -8,7 +8,7 @@
 {% block content %}
 <section class="section">
     <div class="container mx-auto px-4 lg:max-w-7xl">
-        <h1 class="text-2xl font-bold text-gray-900 mb-4">
+        <h1 class="text-2xl font-bold mb-4" style="color: var(--txt1);">
             {% if object %}Edit Shift{% else %}Add Shift{% endif %}
         </h1>
 
@@ -23,7 +23,8 @@
                 </div>
                 <div class="relative">
                     <a href="{% url 'schedule:schedule_detail' form.instance.schedule.pk|default:object.schedule.pk %}"
-                       class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition ease-in-out duration-150">Cancel</a>
+                       class="inline-flex items-center justify-center px-4 py-2 border rounded-md font-semibold focus:outline-none transition ease-in-out duration-150"
+                       style="background: var(--surface); border-color: var(--border); color: var(--txt1);">Cancel</a>
                 </div>
             </div>
         </form>

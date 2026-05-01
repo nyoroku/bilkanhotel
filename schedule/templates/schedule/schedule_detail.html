@@ -7,19 +7,19 @@
 <!-- Tom-Select -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.min.css">
 <style>
-/* Enhanced color scheme and styling */
+/* Enhanced color scheme and styling using project variables */
 :root {
-    --primary-blue: #2563eb;
-    --primary-blue-hover: #1d4ed8;
+    --primary-blue: var(--blue);
+    --primary-blue-hover: var(--blue-lt);
     --success-green: #059669;
     --success-green-hover: #047857;
-    --warning-orange: #d97706;
+    --warning-orange: var(--gold);
     --warning-orange-hover: #b45309;
-    --danger-red: #dc2626;
-    --danger-red-hover: #b91c1c;
-    --neutral-gray: #6b7280;
-    --light-gray: #f9fafb;
-    --border-gray: #e5e7eb;
+    --danger-red: var(--burg);
+    --danger-red-hover: var(--burg-lt);
+    --neutral-gray: var(--txt2);
+    --light-gray: var(--raised);
+    --border-gray: var(--border);
 }
 
 /* Swap section styling */
@@ -94,7 +94,7 @@
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: white;
+    background: var(--surface);
 }
 
 .staff-card:hover {
@@ -123,7 +123,7 @@
 
 /* Multi-select enhancement */
 .multi-select-container {
-    background: white;
+    background: var(--surface);
     border: 2px solid var(--border-gray);
     border-radius: 8px;
     padding: 1rem;
@@ -158,7 +158,7 @@
 .user-checkbox-item label {
     cursor: pointer;
     font-weight: 500;
-    color: #374151;
+    color: var(--txt1);
 }
 
 /* Button enhancements */
@@ -238,14 +238,14 @@
 {% block content %}
 <div class="level">
     <div class="level-left">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ schedule.name }}</h1>
-        <p class="text-lg text-gray-600 mb-4">
+        <h1 class="text-3xl font-bold mb-2" style="color: var(--txt1);">{{ schedule.name }}</h1>
+        <p class="text-lg mb-4" style="color: var(--txt2);">
             {{ schedule.start_date|date:"d M Y" }} – {{ schedule.end_date|date:"d M Y" }}
         </p>
     </div>
     <div class="level-right">
         <div class="buttons">
-            <a href="{% url 'schedule:schedule_list' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition ease-in-out duration-150">All Schedules</a>
+            <a href="{% url 'schedule:schedule_list' %}" class="inline-flex items-center justify-center px-4 py-2 border rounded-md font-semibold focus:outline-none transition ease-in-out duration-150" style="background: var(--surface); border-color: var(--border); color: var(--txt1);">All Schedules</a>
             <a href="{% url 'schedule:schedule_edit' schedule.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white">Edit</a>
             <a href="{% url 'schedule:schedule_delete' schedule.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white">Delete</a>
             <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white" onclick="toggleModal('add-shift-modal')">Add Shift</button>
@@ -254,8 +254,8 @@
 </div>
 
 <!-- Shifts -->
-<div class="bg-white rounded-lg shadow-md overflow-hidden">
-  <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between"><p class="text-lg font-bold text-gray-800">Shifts</p></header>
+<div class="rounded-lg shadow-md overflow-hidden" style="background: var(--surface);">
+  <header class="border-b px-6 py-4 flex items-center justify-between" style="border-color: var(--border);"><p class="text-lg font-bold" style="color: var(--txt1);">Shifts</p></header>
   <div class="p-6">
     <table class="min-w-full divide-y divide-gray-200 is-fullwidth">
       <thead><tr><th>Name</th><th>Time</th><th>Assigned Staff</th><th>Actions</th></tr></thead>
@@ -461,11 +461,14 @@
           <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white text-xl px-8 py-4" id="swap-submit-btn" disabled>
             <span class="icon"><i class="fas fa-exchange-alt"></i></span><span>Select staff from both shifts</span>
           </button>
+          <a href="{% url 'schedule:schedule_detail' form.instance.schedule.pk|default:object.schedule.pk %}"
+             class="inline-flex items-center justify-center px-4 py-2 border rounded-md font-semibold focus:outline-none transition ease-in-out duration-150"
+             style="background: var(--surface); border-color: var(--border); color: var(--txt1);">Cancel</a>
         </div>
       </form>
     </section>
-    <footer class="modal-card-foot">
-      <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition ease-in-out duration-150" onclick="toggleModal('improved-swap-modal')">Close</button>
+    <footer class="modal-card-foot bg-[var(--surface)] border-t border-[var(--border)]">
+      <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-[var(--border)] rounded-md font-semibold text-[var(--txt1)] bg-[var(--surface)] hover:bg-[var(--bg)] focus:outline-none transition ease-in-out duration-150" onclick="toggleModal('improved-swap-modal')">Close</button>
     </footer>
   </div>
 </div>
