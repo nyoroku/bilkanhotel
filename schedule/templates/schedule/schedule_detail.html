@@ -4,724 +4,362 @@
 {% block title %}Manage Schedule: {{ schedule.name }}{% endblock %}
 
 {% block extrahead %}
-<!-- Tom-Select -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.min.css">
 <style>
-/* Enhanced color scheme and styling using project variables */
-:root {
-    --primary-blue: var(--blue);
-    --primary-blue-hover: var(--blue-lt);
-    --success-green: #059669;
-    --success-green-hover: #047857;
-    --warning-orange: var(--gold);
-    --warning-orange-hover: #b45309;
-    --danger-red: var(--burg);
-    --danger-red-hover: var(--burg-lt);
-    --neutral-gray: var(--txt2);
-    --light-gray: var(--raised);
-    --border-gray: var(--border);
-}
+    /* --- THEME SYNC --- */
+    :root {
+        --p-blue: var(--blue, #3b82f6);
+        --p-green: #10b981;
+        --p-red: #ef4444;
+        --p-bg: var(--bg, #0b0d17);
+        --p-surface: var(--surface, #141728);
+        --p-border: var(--border, #2d3359);
+        --p-txt1: var(--txt1, #f1f3f9);
+        --p-txt2: var(--txt2, #94a3b8);
+    }
 
-/* Swap section styling */
-.swap-section {
-    background: var(--light-gray);
-    border: 2px solid var(--border-gray);
-    border-radius: 12px;
-    padding: 1.5rem;
-    transition: all 0.3s ease;
-}
+    /* --- CUSTOM UI COMPONENTS --- */
+    .assignment-tag {
+        display: inline-flex; align-items: center;
+        background: rgba(59, 130, 246, 0.1); color: var(--p-blue);
+        padding: 4px 10px; border-radius: 100px; font-size: 13px;
+        border: 1px solid rgba(59, 130, 246, 0.3); margin: 2px;
+    }
+    .assignment-tag .remove-btn {
+        margin-left: 6px; cursor: pointer; color: var(--p-red); opacity: 0.6;
+    }
+    .assignment-tag .remove-btn:hover { opacity: 1; }
 
-.swap-section.active {
-    border-color: var(--primary-blue);
-    background: #eff6ff;
-}
+    /* --- THE "INVINCIBLE" MODAL SYSTEM --- */
+    /* We use an ID-first approach with high specificity to prevent any library from hiding it */
+    .hotel-modal-overlay {
+        display: none; /* Controlled by JS inline styles */
+        position: fixed !important;
+        top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+        width: 100vw !important; height: 100vh !important;
+        z-index: 2147483647 !important;
+        background: rgba(0, 0, 0, 0.8) !important;
+        backdrop-filter: blur(8px) !important;
+        align-items: center; justify-content: center;
+        padding: 20px;
+    }
 
-.swap-arrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    color: var(--primary-blue);
-    animation: pulse 2s infinite;
-}
+    .hotel-modal-card {
+        background: var(--p-surface) !important;
+        border: 1px solid var(--p-border) !important;
+        border-radius: 16px !important;
+        width: 100% !important;
+        max-width: 600px !important;
+        max-height: 90vh !important;
+        display: flex; flex-direction: column;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+        overflow: hidden;
+        animation: modal-pop 0.2s ease-out;
+    }
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-}
+    @keyframes modal-pop {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
 
-/* Assignment tags with better colors */
-.assignment-tag {
-    display: inline-flex;
-    align-items: center;
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-    color: var(--primary-blue);
-    padding: 0.375rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.875rem;
-    border: 1px solid #93c5fd;
-    margin: 0.125rem;
-    font-weight: 500;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-}
+    .modal-header {
+        padding: 16px 20px;
+        background: rgba(255,255,255,0.03);
+        border-bottom: 1px solid var(--p-border);
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
+    .modal-footer {
+        padding: 16px 20px;
+        background: rgba(255,255,255,0.03);
+        border-top: 1px solid var(--p-border);
+        display: flex; gap: 10px; justify-content: flex-end;
+    }
 
-.assignment-tag:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
+    /* Form helpers */
+    .hotel-form-group { margin-bottom: 16px; }
+    .hotel-form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: var(--p-txt2); }
+    .hotel-input {
+        width: 100%; background: var(--p-bg); border: 1px solid var(--p-border);
+        color: var(--p-txt1); padding: 10px 14px; border-radius: 8px; outline: none;
+    }
+    .hotel-input:focus { border-color: var(--p-blue); }
 
-.assignment-tag .remove-btn {
-    margin-left: 0.5rem;
-    cursor: pointer;
-    color: var(--danger-red);
-    font-weight: bold;
-    padding: 0.125rem 0.25rem;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-}
-
-.assignment-tag .remove-btn:hover {
-    background: var(--danger-red);
-    color: white;
-}
-
-/* Enhanced staff selection */
-.staff-card {
-    padding: 0.75rem;
-    margin: 0.5rem 0;
-    border: 2px solid var(--border-gray);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: var(--surface);
-}
-
-.staff-card:hover {
-    border-color: var(--primary-blue);
-    background: #f8fafc;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.staff-card.selected {
-    border-color: var(--success-green);
-    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-    color: var(--success-green);
-    font-weight: 600;
-}
-
-/* --- no-assignments placeholder --- */
-.no-assignments {
-    text-align: center; color: var(--txt2); font-style: italic;
-    padding: 1.5rem; background: var(--bg);
-    border-radius: 8px; border: 2px dashed var(--border);
-}
-
-/* --- multi-select --- */
-.multi-select-container {
-    background: var(--bg); border: 2px solid var(--border);
-    border-radius: 8px; padding: 0.75rem;
-    max-height: 260px; overflow-y: auto;
-}
-.multi-select-container:focus-within { border-color: var(--blue); }
-
-.user-checkbox-item {
-    display: flex; align-items: flex-start;
-    padding: 0.45rem 0.55rem; margin: 0.15rem 0;
-    border-radius: 6px; cursor: pointer;
-    border: 1px solid transparent;
-    transition: background 0.15s;
-}
-.user-checkbox-item:hover { background: var(--raised); border-color: var(--border); }
-.user-checkbox-item input[type="checkbox"] {
-    margin-right: 0.6rem; margin-top: 0.2rem;
-    transform: scale(1.1); accent-color: var(--blue); flex-shrink: 0;
-}
-.user-checkbox-item label { cursor: pointer; font-weight: 500; color: var(--txt1); }
-.user-checkbox-item small { color: var(--txt2); }
-
-.selected-count {
-    background: #059669; color: #fff;
-    padding: 0.15rem 0.45rem; border-radius: 10px;
-    font-size: 0.7rem; font-weight: 700; margin-left: 0.45rem;
-}
-
-/* --- BH MODAL SYSTEM --- */
-.bh-modal {
-    display: none;
-    position: fixed !important;
-    top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-    z-index: 2147483647 !important;
-    align-items: center !important; justify-content: center !important;
-    background: rgba(0,0,0,0.85) !important;
-    backdrop-filter: blur(6px) !important;
-    opacity: 0; visibility: hidden;
-    transition: opacity 0.2s ease;
-}
-.bh-modal.is-active {
-    display: flex !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-.modal-card {
-    position: relative;
-    z-index: 10000;
-    width: 95%; max-width: 600px;
-    border-radius: 16px; overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    background: var(--surface); border: 1px solid var(--border);
-    display: flex; flex-direction: column; max-height: 90vh;
-}
-.modal-card-head {
-    padding: 1rem 1.4rem;
-    background: linear-gradient(135deg, var(--navy), var(--blue));
-    display: flex; align-items: center; justify-content: space-between;
-    flex-shrink: 0;
-}
-.modal-card-title {
-    font-size: 1rem; font-weight: 700; color: #fff;
-    display: flex; align-items: center; gap: 0.5rem; margin: 0;
-}
-.modal-card-body {
-    padding: 1.25rem 1.4rem;
-    overflow-y: auto; flex-grow: 1;
-    background: var(--surface); color: var(--txt1);
-}
-.modal-card-foot {
-    padding: 0.85rem 1.4rem;
-    background: var(--raised); border-top: 1px solid var(--border);
-    display: flex; gap: 0.65rem; align-items: center; flex-shrink: 0;
-}
-.modal-card-head .delete {
-    background: rgba(255,255,255,0.18); border: none; border-radius: 50%;
-    width: 27px; height: 27px; cursor: pointer; color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem; transition: background 0.2s; flex-shrink: 0;
-}
-.modal-card-head .delete::before { content: '\00D7'; }
-.modal-card-head .delete:hover { background: rgba(255,255,255,0.35); }
-
-/* modal form inputs */
-.modal-card-body input, .modal-card-body textarea, .modal-card-body select {
-    background: var(--bg); border: 1px solid var(--border);
-    color: var(--txt1); border-radius: 6px; padding: 0.45rem 0.65rem; width: 100%;
-}
-.modal-card-body label { color: var(--txt1); font-size: 0.88rem; font-weight: 500; }
-
-/* table */
-table th { color: var(--txt2); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.55rem 0.85rem; }
-table td { padding: 0.55rem 0.85rem; color: var(--txt1); border-bottom: 1px solid var(--border); vertical-align: middle; }
-table tr:last-child td { border-bottom: none; }
+    /* Staff list */
+    .staff-list-container {
+        border: 1px solid var(--p-border); border-radius: 8px;
+        background: var(--p-bg); max-height: 300px; overflow-y: auto;
+    }
+    .staff-item {
+        padding: 10px 14px; border-bottom: 1px solid var(--p-border);
+        display: flex; align-items: center; cursor: pointer; transition: background 0.2s;
+    }
+    .staff-item:last-child { border-bottom: none; }
+    .staff-item:hover { background: rgba(255,255,255,0.05); }
+    .staff-item input { margin-right: 12px; width: 18px; height: 18px; cursor: pointer; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="level">
-    <div class="level-left">
-        <h1 class="text-3xl font-bold mb-2" style="color: var(--txt1);">{{ schedule.name }}</h1>
-        <p class="text-lg mb-4" style="color: var(--txt2);">
-            {{ schedule.start_date|date:"d M Y" }} – {{ schedule.end_date|date:"d M Y" }}
-        </p>
-    </div>
-    <div class="level-right">
-        <div class="buttons">
-            <a href="{% url 'schedule:schedule_list' %}" class="inline-flex items-center justify-center px-4 py-2 border rounded-md font-semibold focus:outline-none transition ease-in-out duration-150" style="background: var(--surface); border-color: var(--border); color: var(--txt1);">All Schedules</a>
-            <a href="{% url 'schedule:schedule_edit' schedule.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white">Edit</a>
-            <a href="{% url 'schedule:schedule_delete' schedule.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white">Delete</a>
-            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white" onclick="window.toggleModal('add-shift-modal')">Add Shift</button>
+<div class="flex flex-col gap-6 p-2 md:p-4">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-[var(--p-txt1)]">{{ schedule.name }}</h1>
+            <p class="text-[var(--p-txt2)]">{{ schedule.start_date|date:"d M Y" }} – {{ schedule.end_date|date:"d M Y" }}</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'schedule:schedule_list' %}" class="px-4 py-2 bg-[var(--p-surface)] border border-[var(--p-border)] text-[var(--p-txt1)] rounded-lg hover:bg-[var(--p-bg)] transition">All Schedules</a>
+            <a href="{% url 'schedule:schedule_edit' schedule.pk %}" class="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition">Edit</a>
+            <button onclick="ScheduleApp.openModal('add-shift-modal')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Add Shift</button>
         </div>
     </div>
+
+    <!-- Shifts Table -->
+    <div class="bg-[var(--p-surface)] border border-[var(--p-border)] rounded-xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-black/20 text-[var(--p-txt2)] text-xs uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4 font-bold">Shift Name</th>
+                        <th class="px-6 py-4 font-bold">Time Range</th>
+                        <th class="px-6 py-4 font-bold">Assigned Staff</th>
+                        <th class="px-6 py-4 font-bold text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--p-border)]">
+                    {% for shift in shifts %}
+                    <tr class="hover:bg-white/5 transition">
+                        <td class="px-6 py-4 font-medium text-[var(--p-txt1)]">{{ shift.name }}</td>
+                        <td class="px-6 py-4 text-[var(--p-txt2)]">{{ shift.start_datetime|time:"H:i" }} – {{ shift.end_datetime|time:"H:i" }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap gap-1">
+                                {% for assign in shift.assignments.all %}
+                                <span class="assignment-tag">
+                                    {{ assign.user.get_full_name }}
+                                    <span class="remove-btn" onclick="ScheduleApp.removeAssignment('{{ shift.pk }}', '{{ assign.user.pk }}', '{{ assign.user.get_full_name|escapejs }}')">×</span>
+                                </span>
+                                {% empty %}
+                                <span class="text-xs italic text-[var(--p-txt2)] opacity-50">No staff assigned</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button onclick="ScheduleApp.initAssignment('{{ shift.id }}', '{{ shift.name|escapejs }}')" class="p-2 bg-green-600/20 text-green-400 rounded-lg hover:bg-green-600 hover:text-white transition" title="Assign Staff">👥</button>
+                                <a href="{% url 'schedule:shift_edit' shift.pk %}" class="p-2 bg-sky-600/20 text-sky-400 rounded-lg hover:bg-sky-600 hover:text-white transition" title="Edit">✏️</a>
+                                <a href="{% url 'schedule:shift_delete' shift.pk %}" class="p-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600 hover:text-white transition" title="Delete">🗑</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="px-6 py-12 text-center text-[var(--p-txt2)] italic">No shifts found. Click "Add Shift" to start.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-<!-- Shifts -->
-<div class="rounded-lg shadow-md overflow-hidden" style="background: var(--surface);">
-  <header class="border-b px-6 py-4 flex items-center justify-between" style="border-color: var(--border);"><p class="text-lg font-bold" style="color: var(--txt1);">Shifts</p></header>
-  <div class="p-6">
-    <table class="min-w-full divide-y divide-gray-200 is-fullwidth">
-      <thead><tr><th>Name</th><th>Time</th><th>Assigned Staff</th><th>Actions</th></tr></thead>
-      <tbody>
-      {% for shift in shifts %}
-        <tr>
-          <td>{{ shift.name }}</td>
-          <td>{{ shift.start_datetime|time:"H:i" }}–{{ shift.end_datetime|time:"H:i" }}</td>
-          <td>
-            {% for assign in shift.assignments.all %}
-              <span class="assignment-tag">{{ assign.user.get_full_name }}
-                <span class="remove-btn"
-                      onclick="window.removeAssignment('{{ shift.pk }}', '{{ assign.user.pk }}', '{{ assign.user.get_full_name }}')">×</span>
-              </span>
-            {% empty %}<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Unassigned</span>{% endfor %}
-          </td>
-          <td class="buttons are-small">
-            <a href="{% url 'schedule:shift_edit' shift.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white" title="Edit Shift">✏️</a>
-            <a href="{% url 'schedule:shift_delete' shift.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white" title="Delete Shift">🗑</a>
-            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white" onclick="window.openAssignModal('{{ shift.id }}','{{ shift.name|escapejs }}')" title="Assign Staff">👥</button>
-            <a href="{% url 'schedule:shift_handover_summary' shift.id %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white" title="Handover Report">📋</a>
-          </td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="5" class="text-center py-10 text-gray-400 italic">No shifts found in this schedule. Create one to get started!</td></tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+<!-- ==========================================
+     MODALS (Rendered at root of content block)
+     ========================================== -->
 
-{% if assigned_users %}
-<div class="bg-white rounded-lg shadow-md overflow-hidden mt-5">
-  <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-    <p class="text-lg font-bold text-gray-800"><i class="fas fa-exchange-alt mr-2"></i>Swap Staff Between Shifts</p>
-  </header>
-  <div class="p-6">
-    <button class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition ease-in-out duration-150" onclick="toggleModal('improved-swap-modal')">Open Swap Tool</button>
-  </div>
-</div>
-{% endif %}
-
-<!-- ----------  MODALS  ---------- -->
-
-<!-- Add Shift -->
-<div class="bh-modal" id="add-shift-modal" onclick="if(event.target===this) window.toggleModal('add-shift-modal')">
-  <div class="modal-card">
-    <header class="modal-card-head"><p class="modal-card-title">Add Shift</p><button class="delete" onclick="window.toggleModal('add-shift-modal')"></button></header>
-    <form id="add-shift-form" method="post" action="{% url 'schedule:shift_create' schedule.pk %}">
-      {% csrf_token %}
-      <section class="modal-card-body">
-        <div id="shift-form-errors" class="notification bg-red-600 hover:bg-red-700 text-white" style="display: none;"></div>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ shift_form.name.label }}</label>
-          <div class="relative">
-            {{ shift_form.name }}
-          </div>
-          <div class="help bg-red-600 hover:bg-red-700 text-white" id="name-error" style="display: none;"></div>
+<!-- 1. ASSIGN STAFF MODAL -->
+<div id="assign-modal" class="hotel-modal-overlay" onclick="if(event.target===this) ScheduleApp.closeModal('assign-modal')">
+    <div class="hotel-modal-card">
+        <div class="modal-header">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fas fa-users text-blue-400"></i>
+                Assign to <span id="display-shift-name"></span>
+            </h3>
+            <button onclick="ScheduleApp.closeModal('assign-modal')" class="text-white/50 hover:text-white text-2xl">&times;</button>
         </div>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ shift_form.start_datetime.label }}</label>
-          <div class="relative">
-            {{ shift_form.start_datetime }}
-          </div>
-          <div class="help bg-red-600 hover:bg-red-700 text-white" id="start_datetime-error" style="display: none;"></div>
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ shift_form.end_datetime.label }}</label>
-          <div class="relative">
-            {{ shift_form.end_datetime }}
-          </div>
-          <div class="help bg-red-600 hover:bg-red-700 text-white" id="end_datetime-error" style="display: none;"></div>
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ shift_form.notes.label }}</label>
-          <div class="relative">
-            {{ shift_form.notes }}
-          </div>
-          <div class="help bg-red-600 hover:bg-red-700 text-white" id="notes-error" style="display: none;"></div>
-        </div>
-
-        {{ shift_form.schedule.as_hidden }}
-      </section>
-      <footer class="modal-card-foot">
-        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white" id="shift-submit-btn">
-          <span class="icon"><i class="fas fa-plus"></i></span>
-          <span>Save Shift</span>
-        </button>
-        <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition ease-in-out duration-150" onclick="window.toggleModal('add-shift-modal')">Cancel</button>
-      </footer>
-    </form>
-  </div>
-</div>
-
-<!-- Enhanced Multi-User Assignment Modal -->
-<div class="bh-modal" id="assign-modal" onclick="if(event.target===this) window.toggleModal('assign-modal')">
-  <div class="modal-card" style="max-width: 600px;">
-    <header class="modal-card-head">
-      <p class="modal-card-title">
-        <i class="fas fa-users mr-2"></i>
-        Assign Staff to <span id="assign-shift-name"></span>
-        <span id="selected-count" class="selected-count" style="display: none;">0 selected</span>
-      </p>
-      <button class="delete" onclick="window.toggleModal('assign-modal')"></button>
-    </header>
-    <form method="post" action="{% url 'schedule:shift_assignment_create' %}" id="multi-assign-form">
-      {% csrf_token %}
-      <input type="hidden" name="shift" id="assign-shift-id">
-      <section class="modal-card-body">
-        <div class="p-4 rounded-md bg-blue-50 text-blue-700 border border-blue-200 mb-4">
-          <strong>💡 Pro tip:</strong> Select multiple staff members by checking the boxes. You can assign several people at once!
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Available Staff</label>
-          <div class="relative">
-            <div class="multi-select-container" id="multi-user-select">
-              <!-- Users will be populated here -->
+        <form id="assign-form" method="POST" action="{% url 'schedule:shift_assignment_create' %}">
+            {% csrf_token %}
+            <input type="hidden" name="shift" id="input-shift-id">
+            <div class="modal-body">
+                <div class="hotel-form-group">
+                    <label>Select Staff Members</label>
+                    <div id="staff-loading" class="hidden py-8 text-center text-blue-400">
+                        <i class="fas fa-spinner fa-spin mr-2"></i> Fetching available staff...
+                    </div>
+                    <div id="staff-list" class="staff-list-container">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                <div class="hotel-form-group">
+                    <label>Shift Notes (Optional)</label>
+                    <textarea name="notes" class="hotel-input" rows="2" placeholder="e.g. Report to Manager on arrival"></textarea>
+                </div>
             </div>
-          </div>
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
-          <div class="relative">
-            <textarea name="notes" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" rows="2" placeholder="Add notes that will apply to all selected assignments..."></textarea>
-          </div>
-        </div>
-      </section>
-      <footer class="modal-card-foot">
-        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white" id="assign-submit-btn" disabled>
-          <span class="icon"><i class="fas fa-user-plus"></i></span>
-          <span>Assign Selected Staff</span>
-        </button>
-        <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition ease-in-out duration-150" onclick="window.toggleModal('assign-modal')">Cancel</button>
-      </footer>
-    </form>
-  </div>
+            <div class="modal-footer">
+                <button type="button" onclick="ScheduleApp.closeModal('assign-modal')" class="px-4 py-2 text-[var(--p-txt1)] hover:bg-white/5 rounded-lg">Cancel</button>
+                <button type="submit" id="assign-submit-btn" disabled class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Assign Staff
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
-<!-- Improved Swap Modal -->
-<div class="bh-modal" id="improved-swap-modal" onclick="if(event.target===this) window.toggleModal('improved-swap-modal')">
-  <div class="modal-card" style="width:90%;max-width:1000px;">
-    <header class="modal-card-head">
-      <p class="modal-card-title"><i class="fas fa-exchange-alt mr-2"></i>Swap Staff</p>
-      <button class="delete" onclick="window.toggleModal('improved-swap-modal')"></button>
-    </header>
-    <section class="modal-card-body">
-      <div class="notification bg-sky-500 hover:bg-sky-600 text-white is-light mb-4">
-        <strong>How to swap:</strong> pick one person from each shift, then click the button.
-      </div>
-      <form id="improved-swap-form" method="post" action="{% url 'schedule:shift_swap' %}">
-        {% csrf_token %}
-        <input type="hidden" name="from_shift" id="swap-from-shift-input">
-        <input type="hidden" name="from_user"  id="swap-from-user-input">
-        <input type="hidden" name="to_shift"   id="swap-to-shift-input">
-        <input type="hidden" name="to_user"    id="swap-to-user-input">
-
-        <div class="flex flex-wrap -mx-3">
-          <div class="w-full px-3">
-            <div class="swap-section" id="from-section">
-              <h4 class="text-2xl font-bold text-gray-900 mb-4 is-5 mb-3">From Shift</h4>
-              <div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border is-fullwidth mb-3">
-                <select id="from-shift-select">
-                  <option value="">Select a shift…</option>
-                  {% for shift in shifts %}{% if shift.assignments.exists %}
-                    <option value="{{ shift.pk }}">{{ shift.date|date:"d M" }} – {{ shift.name }}</option>
-                  {% endif %}{% endfor %}
-                </select>
-              </div>
-              <div id="from-staff-list" class="no-assignments">Select a shift</div>
-            </div>
-          </div>
-
-          <div class="w-full px-3 is-narrow">
-            <div class="swap-arrow"><i class="fas fa-exchange-alt"></i></div>
-          </div>
-
-          <div class="w-full px-3">
-            <div class="swap-section" id="to-section">
-              <h4 class="text-2xl font-bold text-gray-900 mb-4 is-5 mb-3">To Shift</h4>
-              <div class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border is-fullwidth mb-3">
-                <select id="to-shift-select">
-                  <option value="">Select a shift…</option>
-                  {% for shift in shifts %}{% if shift.assignments.exists %}
-                    <option value="{{ shift.pk }}">{{ shift.date|date:"d M" }} – {{ shift.name }}</option>
-                  {% endif %}{% endfor %}
-                </select>
-              </div>
-              <div id="to-staff-list" class="no-assignments">Select a shift</div>
-            </div>
-          </div>
+<!-- 2. ADD SHIFT MODAL -->
+<div id="add-shift-modal" class="hotel-modal-overlay" onclick="if(event.target===this) ScheduleApp.closeModal('add-shift-modal')">
+    <div class="hotel-modal-card">
+        <div class="modal-header">
+            <h3 class="text-lg font-bold text-white">Create New Shift</h3>
+            <button onclick="ScheduleApp.closeModal('add-shift-modal')" class="text-white/50 hover:text-white text-2xl">&times;</button>
         </div>
-
-        <div class="text-center mt-4">
-          <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white text-xl px-8 py-4" id="swap-submit-btn" disabled>
-            <span class="icon"><i class="fas fa-exchange-alt"></i></span><span>Select staff from both shifts</span>
-          </button>
-          <button type="button" onclick="window.toggleModal('improved-swap-modal')"
-             class="inline-flex items-center justify-center px-4 py-2 border rounded-md font-semibold focus:outline-none transition ease-in-out duration-150"
-             style="background: var(--surface); border-color: var(--border); color: var(--txt1);">Cancel</button>
-        </div>
-      </form>
-    </section>
-    <footer class="modal-card-foot bg-[var(--surface)] border-t border-[var(--border)]">
-      <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-[var(--border)] rounded-md font-semibold text-[var(--txt1)] bg-[var(--surface)] hover:bg-[var(--bg)] focus:outline-none transition ease-in-out duration-150" onclick="window.toggleModal('improved-swap-modal')">Close</button>
-    </footer>
-  </div>
+        <form id="add-shift-form" method="POST" action="{% url 'schedule:shift_create' schedule.pk %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                {{ shift_form|crispy }}
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="ScheduleApp.closeModal('add-shift-modal')" class="px-4 py-2 text-[var(--p-txt1)] hover:bg-white/5 rounded-lg">Cancel</button>
+                <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Save Shift</button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 {{ block.super }}
 <script>
-// --- Global Functions (Exposed to window) ---
+    /**
+     * BILKEN HOTEL SCHEDULING MODULE v5.0 (Rebuild)
+     * Robust, isolated, and self-correcting.
+     */
+    const ScheduleApp = {
+        // --- Core Modal Logic ---
+        openModal(id) {
+            console.log("[ScheduleApp] Opening modal:", id);
+            const el = document.getElementById(id);
+            if (!el) return console.error("Modal not found:", id);
+            
+            // Move to body to prevent clipping
+            document.body.appendChild(el);
+            
+            el.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scroll
+        },
 
-window.toggleModal = function(id) {
-    const m = document.getElementById(id);
-    if (!m) {
-        console.error("CRITICAL: Modal not found with ID:", id);
-        return;
-    }
-    
-    const isActive = m.classList.toggle('is-active');
-    
-    // Force inline styles to bypass ANY CSS conflict
-    if (isActive) {
-        m.style.setProperty('display', 'flex', 'important');
-        m.style.setProperty('opacity', '1', 'important');
-        m.style.setProperty('visibility', 'visible', 'important');
-    } else {
-        m.style.setProperty('display', 'none', 'important');
-        m.style.setProperty('opacity', '0', 'important');
-        m.style.setProperty('visibility', 'hidden', 'important');
-    }
-    
-    console.log("Toggle executed on", id, "Active:", isActive);
-    console.log("Computed display style:", window.getComputedStyle(m).display);
-    
-    // Cleanup if closing
-    if (!isActive) {
-        if (id === 'improved-swap-modal') if(typeof window.resetSwapModal === 'function') window.resetSwapModal();
-        if (id === 'assign-modal') if(typeof window.resetAssignModal === 'function') window.resetAssignModal();
-        if (id === 'add-shift-modal') if(typeof window.resetShiftModal === 'function') window.resetShiftModal();
-    }
-};
-
-window.openAssignModal = function(shiftId, name) {
-    console.log("openAssignModal initiated for shift:", shiftId, "name:", name);
-    
-    const shiftIdInput = document.getElementById('assign-shift-id');
-    const shiftNameSpan = document.getElementById('assign-shift-name');
-    if (shiftIdInput) shiftIdInput.value = shiftId;
-    if (shiftNameSpan) shiftNameSpan.textContent = name;
-
-    const container = document.getElementById('multi-user-select');
-    if (container) container.innerHTML = '<div class="p-4 text-center">Loading available staff...</div>';
-
-    // Show modal
-    window.toggleModal('assign-modal');
-
-    // Fetch users
-    const url = "{% url 'schedule:get_available_users' 0 %}".replace('0', shiftId);
-    fetch(url)
-        .then(r => {
-            if (!r.ok) throw new Error("HTTP error " + r.status);
-            return r.json();
-        })
-        .then(d => {
-            if (!container) return;
-            container.innerHTML = '';
-            if (!d.users || d.users.length === 0) {
-                container.innerHTML = '<div class="no-assignments text-gray-500 italic p-4 text-center">No available staff for this shift</div>';
-                return;
+        closeModal(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.display = 'none';
+                document.body.style.overflow = '';
             }
-            d.users.forEach(u => {
-                const item = document.createElement('div');
-                item.className = 'user-checkbox-item p-2 hover:bg-gray-50 border-b border-gray-100 flex items-center cursor-pointer';
-                item.innerHTML = `
-                    <input type="checkbox" id="u-${u.id}" name="users" value="${u.id}" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    <label for="u-${u.id}" class="ml-3 block text-sm text-gray-700 cursor-pointer flex-grow">
-                        <span class="font-bold">${u.name}</span>
-                        ${u.email ? `<br><span class="text-xs text-gray-400">${u.email}</span>` : ''}
-                    </label>
-                `;
-                item.onclick = function(e) {
-                    if (e.target.tagName !== 'INPUT') {
-                        const cb = this.querySelector('input');
-                        cb.checked = !cb.checked;
-                        window.updateSelectedCount();
+        },
+
+        // --- Shift Assignment Logic ---
+        initAssignment(shiftId, shiftName) {
+            document.getElementById('input-shift-id').value = shiftId;
+            document.getElementById('display-shift-name').textContent = shiftName;
+            
+            const list = document.getElementById('staff-list');
+            const loader = document.getElementById('staff-loading');
+            const submitBtn = document.getElementById('assign-submit-btn');
+            
+            list.innerHTML = '';
+            loader.classList.remove('hidden');
+            submitBtn.disabled = true;
+
+            this.openModal('assign-modal');
+
+            // Fetch available staff
+            const url = "{% url 'schedule:get_available_users' 0 %}".replace('0', shiftId);
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    loader.classList.add('hidden');
+                    if (data.users && data.users.length > 0) {
+                        data.users.forEach(user => {
+                            const div = document.createElement('div');
+                            div.className = 'staff-item';
+                            div.innerHTML = `
+                                <input type="checkbox" name="users" value="${user.id}" id="user-${user.id}">
+                                <label for="user-${user.id}" class="flex-grow">
+                                    <div class="font-bold text-white">${user.name}</div>
+                                    <div class="text-xs text-gray-400">${user.email || 'No email'}</div>
+                                </label>
+                            `;
+                            div.onclick = (e) => {
+                                if (e.target.tagName !== 'INPUT') {
+                                    const cb = div.querySelector('input');
+                                    cb.checked = !cb.checked;
+                                }
+                                this.updateSubmitState();
+                            };
+                            list.appendChild(div);
+                        });
+                    } else {
+                        list.innerHTML = '<div class="p-8 text-center text-gray-500 italic">No staff available for this shift.</div>';
                     }
+                })
+                .catch(err => {
+                    console.error("Fetch failed:", err);
+                    loader.classList.add('hidden');
+                    list.innerHTML = '<div class="p-8 text-center text-red-400">Error loading staff list.</div>';
+                });
+        },
+
+        updateSubmitState() {
+            const count = document.querySelectorAll('#staff-list input:checked').length;
+            const btn = document.getElementById('assign-submit-btn');
+            btn.disabled = count === 0;
+            btn.innerHTML = `Assign ${count > 0 ? count : ''} Staff Member${count > 1 ? 's' : ''}`;
+        },
+
+        removeAssignment(shiftId, userId, userName) {
+            if (confirm(`Remove ${userName} from this shift?`)) {
+                const url = "{% url 'schedule:shift_assignment_delete' 0 '00000000-0000-0000-0000-000000000000' %}"
+                    .replace('0', shiftId)
+                    .replace('00000000-0000-0000-0000-000000000000', userId);
+                
+                const form = document.createElement('form');
+                form.method = 'POST'; form.action = url;
+                form.innerHTML = `<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        },
+
+        // --- Init Listeners ---
+        init() {
+            console.log("[ScheduleApp] Initializing module...");
+            
+            // Handle AJAX form submission for assignment
+            const assignForm = document.getElementById('assign-form');
+            if (assignForm) {
+                assignForm.onsubmit = (e) => {
+                    e.preventDefault();
+                    const btn = document.getElementById('assign-submit-btn');
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                    fetch(assignForm.action, {
+                        method: 'POST',
+                        body: new FormData(assignForm),
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) window.location.reload();
+                        else alert("Error: " + res.message);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("Network error occurred.");
+                        btn.disabled = false;
+                    });
                 };
-                container.appendChild(item);
-            });
-            window.updateSelectedCount();
-        })
-        .catch(e => {
-            console.error("Error fetching available users:", e);
-            if(container) container.innerHTML = '<div class="p-4 text-red-500 text-center">Error loading staff data. Please try again.</div>';
-        });
-};
-
-window.updateSelectedCount = function() {
-    const count = document.querySelectorAll('#multi-user-select input[type="checkbox"]:checked').length;
-    const countEl = document.getElementById('selected-count');
-    const btn = document.getElementById('assign-submit-btn');
-    if(countEl) {
-        countEl.textContent = count + " selected";
-        countEl.style.display = count > 0 ? 'inline-block' : 'none';
-    }
-    if(btn) {
-        btn.disabled = count === 0;
-        btn.innerHTML = count > 0 ? `<i class="fas fa-user-plus mr-2"></i>Assign ${count} Staff Member${count > 1 ? 's' : ''}` : `<i class="fas fa-user-plus mr-2"></i>Select staff to assign`;
-    }
-};
-
-window.resetAssignModal = function() {
-    const c = document.getElementById('multi-user-select');
-    if(c) c.innerHTML = '';
-    window.updateSelectedCount();
-};
-
-window.resetShiftModal = function() {
-    const f = document.getElementById('add-shift-form');
-    if(f) f.reset();
-};
-
-window.removeAssignment = function(shiftId, userId, userName) {
-    if (confirm(`Remove ${userName} from this shift?`)) {
-        const url = "{% url 'schedule:shift_assignment_delete' 0 '00000000-0000-0000-0000-000000000000' %}"
-            .replace('0', shiftId)
-            .replace('00000000-0000-0000-0000-000000000000', userId);
-        const form = document.createElement('form');
-        form.method = 'POST'; 
-        form.action = url;
-        const csrf = document.createElement('input');
-        csrf.type = 'hidden'; 
-        csrf.name = 'csrfmiddlewaretoken'; 
-        csrf.value = '{{ csrf_token }}';
-        form.appendChild(csrf);
-        document.body.appendChild(form);
-        form.submit();
-    }
-};
-
-// --- Swap Logic ---
-window.shifts_data = {
-    {% for shift in shifts %}
-        "{{ shift.pk }}": [
-            {% for assign in shift.assignments.all %}
-                {id:"{{ assign.user.id }}", name:"{{ assign.user.get_full_name|escapejs }}"}{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ]{% if not forloop.last %},{% endif %}
-    {% endfor %}
-};
-
-window.selectedFromUser = null;
-window.selectedToUser = null;
-
-window.updateStaffList = function(side, shiftId) {
-    const box = document.getElementById(side + '-staff-list');
-    if (!box) return;
-    if (!shiftId) { box.innerHTML = '<div class="p-4 text-center text-gray-500">Select a shift first</div>'; return; }
-    const staff = window.shifts_data[shiftId] || [];
-    if (staff.length === 0) { box.innerHTML = '<div class="p-4 text-center text-gray-500">No staff assigned to this shift</div>'; return; }
-    box.innerHTML = staff.map(u => `
-        <div class="staff-card p-3 mb-2 border-2 border-gray-100 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all" onclick="window.selectStaff(event, '${side}','${u.id}','${u.name}','${shiftId}')">
-            <div class="font-bold">${u.name}</div>
-        </div>
-    `).join('');
-};
-
-window.selectStaff = function(event, side, uid, uname, sid) {
-    document.querySelectorAll('#' + side + '-staff-list .staff-card').forEach(c => {
-        c.classList.remove('selected');
-        c.classList.remove('border-blue-500');
-        c.classList.remove('bg-blue-100');
-    });
-    
-    const target = event.currentTarget;
-    target.classList.add('selected');
-    target.classList.add('border-blue-500');
-    target.classList.add('bg-blue-100');
-
-    if (side === 'from') {
-        window.selectedFromUser = { uid, uname, sid };
-        document.getElementById('swap-from-shift-input').value = sid;
-        document.getElementById('swap-from-user-input').value = uid;
-    } else {
-        window.selectedToUser = { uid, uname, sid };
-        document.getElementById('swap-to-shift-input').value = sid;
-        document.getElementById('swap-to-user-input').value = uid;
-    }
-    window.checkSwapButtonState();
-};
-
-window.checkSwapButtonState = function() {
-    const b = document.getElementById('swap-submit-btn');
-    if (b) {
-        const can = window.selectedFromUser && window.selectedToUser && window.selectedFromUser.sid !== window.selectedToUser.sid;
-        b.disabled = !can;
-        b.innerHTML = can ? `<i class="fas fa-exchange-alt mr-2"></i>Swap ${window.selectedFromUser.uname} ↔ ${window.selectedToUser.uname}` : '<i class="fas fa-exchange-alt mr-2"></i>Select staff from both shifts';
-    }
-};
-
-window.resetSwapModal = function() {
-    window.selectedFromUser = null;
-    window.selectedToUser = null;
-    ['from', 'to'].forEach(s => {
-        const sel = document.getElementById(s + '-shift-select');
-        if (sel) sel.value = '';
-        window.updateStaffList(s, '');
-    });
-};
-
-// --- Event Listeners ---
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("Schedule Detail DOM fully loaded - Moving modals to <body> root");
-    
-    // Move all modals to body root to prevent clipping/z-index issues from parent containers
-    ['assign-modal', 'add-shift-modal', 'improved-swap-modal'].forEach(id => {
-        const m = document.getElementById(id);
-        if (m) {
-            document.body.appendChild(m);
-            console.log("Moved modal to body:", id);
+            }
         }
-    });
+    };
 
-    const fromSel = document.getElementById('from-shift-select');
-    const toSel = document.getElementById('to-shift-select');
-    if (fromSel) fromSel.addEventListener('change', e => window.updateStaffList('from', e.target.value));
-    if (toSel) toSel.addEventListener('change', e => window.updateStaffList('to', e.target.value));
-
-    const addForm = document.getElementById('add-shift-form');
-    if (addForm) {
-        addForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const b = document.getElementById('shift-submit-btn');
-            if (b) b.disabled = true;
-            fetch(this.action, { 
-                method: 'POST', 
-                body: new FormData(this), 
-                headers: {'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': '{{ csrf_token }}'}
-            })
-            .then(r => r.json())
-            .then(d => { 
-                if(d.success) window.location.reload(); 
-                else alert(d.message || "Error saving shift"); 
-                if(b) b.disabled = false; 
-            })
-            .catch(err => {
-                console.error("Shift creation failed:", err);
-                if(b) b.disabled = false;
-            });
-        });
-    }
-
-    const assignForm = document.getElementById('multi-assign-form');
-    if (assignForm) {
-        assignForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const b = document.getElementById('assign-submit-btn');
-            if (b) b.disabled = true;
-            fetch(this.action, { 
-                method: 'POST', 
-                body: new FormData(this), 
-                headers: {'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': '{{ csrf_token }}'}
-            })
-            .then(r => r.json())
-            .then(d => { 
-                if(d.success) window.location.reload(); 
-                else alert(d.message || "Error assigning staff"); 
-                if(b) b.disabled = false; 
-            })
-            .catch(err => {
-                console.error("Staff assignment failed:", err);
-                if(b) b.disabled = false;
-            });
-        });
-    }
-});
+    // Bootstrap
+    document.addEventListener('DOMContentLoaded', () => ScheduleApp.init());
 </script>
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 {% endblock %}
