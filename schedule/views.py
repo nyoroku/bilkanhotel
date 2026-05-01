@@ -24,7 +24,7 @@ from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from pos.models import Sale, OrderItem
+from pos.models import Sale, OrderItem, Order
 from django.db.models import Sum
 from datetime import date, timedelta
 from django.utils import timezone
