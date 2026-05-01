@@ -658,8 +658,17 @@ window.resetSwapModal = function() {
 
 // --- Event Listeners ---
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("Schedule Detail DOM fully loaded");
+    console.log("Schedule Detail DOM fully loaded - Moving modals to <body> root");
     
+    // Move all modals to body root to prevent clipping/z-index issues from parent containers
+    ['assign-modal', 'add-shift-modal', 'improved-swap-modal'].forEach(id => {
+        const m = document.getElementById(id);
+        if (m) {
+            document.body.appendChild(m);
+            console.log("Moved modal to body:", id);
+        }
+    });
+
     const fromSel = document.getElementById('from-shift-select');
     const toSel = document.getElementById('to-shift-select');
     if (fromSel) fromSel.addEventListener('change', e => window.updateStaffList('from', e.target.value));
