@@ -646,10 +646,10 @@ def shift_sales_summary_view(request):
     # 3. Perform a powerful query to get the sales breakdown
     sales_breakdown = sales_in_shift.values(
         'payment_method',
-        'orders__items__menu_item__category__module'  # Group by the section (Kitchen/Bar)
+        'order__items__menu_item__category__module'  # Corrected from 'orders' to 'order'
     ).annotate(
         total=Sum('amount_paid')
-    ).order_by('orders__items__menu_item__category__module', 'payment_method')
+    ).order_by('order__items__menu_item__category__module', 'payment_method')
 
     # 4. Process the query results into a structured format for the template
     summary_data = {
@@ -658,7 +658,7 @@ def shift_sales_summary_view(request):
     }
 
     for item in sales_breakdown:
-        section = item['orders__items__menu_item__category__module']
+        section = item['order__items__menu_item__category__module']
         payment_method = item['payment_method']
         total = item['total'] or 0
 
