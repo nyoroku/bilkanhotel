@@ -50,9 +50,9 @@
         </div>
     </div>
     <footer class="border-t border-gray-200 bg-gray-50 flex">
-        <a href="{% url 'pos:unified_station_view' section_name|lower %}" class="flex-1 text-center py-3 text-blue-600 hover:bg-gray-100">
+        <a href="{% url 'pos:unified_station_view' section_name|lower|default:'bar' %}" class="flex-1 text-center py-3 text-blue-600 hover:bg-gray-100">
             <span class="icon"><i class="fas fa-arrow-left"></i></span>
-            <span>Back to {{ section_name }} Station</span>
+            <span>Back to {{ section_name|default:'Bar' }} Station</span>
         </a>
     </footer>
 </div>
