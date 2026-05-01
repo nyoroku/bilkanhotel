@@ -249,7 +249,7 @@ table tr:last-child td { border-bottom: none; }
           <td class="buttons are-small">
             <a href="{% url 'schedule:shift_edit' shift.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white" title="Edit Shift">✏️</a>
             <a href="{% url 'schedule:shift_delete' shift.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white" title="Delete Shift">🗑</a>
-            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white" onclick="openAssignModal('{{ shift.id }}','{{ shift.name }}')" title="Assign Staff">👥</button>
+            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white" onclick="openAssignModal('{{ shift.id }}','{{ shift.name|escapejs }}')" title="Assign Staff">👥</button>
             <a href="{% url 'schedule:shift_handover_summary' shift.id %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white" title="Handover Report">📋</a>
           </td>
         </tr>
@@ -465,8 +465,14 @@ function toggleModal(id){
   const m=document.getElementById(id);
   m.classList.toggle('is-active');
   if(id==='improved-swap-modal'&&!m.classList.contains('is-active')) resetSwapModal();
-  if(id==='assign-modal'&&!m.classList.contains('is-active')) resetAssignModal();
+  if(id==='assign-modal'&&!m.classList.contains('is-active') && typeof resetAssignModal === 'function') resetAssignModal();
   if(id==='add-shift-modal'&&!m.classList.contains('is-active')) resetShiftModal();
+}
+
+function resetAssignModal() {
+  document.getElementById('multi-user-select').innerHTML = '';
+  document.getElementById('selected-count').style.display = 'none';
+  document.getElementById('assign-submit-btn').disabled = true;
 }
 
 function resetShiftModal() {
