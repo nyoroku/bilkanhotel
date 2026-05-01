@@ -111,9 +111,21 @@
     }
 
     @media (max-width: 1024px) {
-        .order-container { flex-direction: column; height: auto; overflow: visible; }
-        .cart-side { width: 100%; position: static; min-height: 500px; }
-        .menu-side { overflow: visible; }
+        .order-container { flex-direction: column; height: auto; overflow: visible; padding-bottom: 100px; }
+        .cart-side { width: 100%; position: static; order: 2; }
+        .menu-side { order: 1; overflow: visible; }
+        
+        .cart-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: var(--surface);
+            padding: 1.25rem;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.3);
+            border-top: 1px solid var(--border);
+        }
     }
 </style>
 {% endblock %}

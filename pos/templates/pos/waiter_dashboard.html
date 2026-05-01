@@ -486,13 +486,17 @@
     {% include 'schedule/no_shift.html' %}
 {% else %}
     <!-- Dashboard Header -->
-    <div class="dashboard-header">
-        <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Welcome, {{ user.get_full_name }}! 👋</h1>
-        <p class="text-lg text-gray-600 mb-4">
-            <span class="icon"><i class="fas fa-clock"></i></span>
-            Current Shift: {{ shift.start_datetime|date:"g:i A" }} - {{ shift.end_datetime|date:"g:i A" }}
-            ({{ shift.start_datetime|date:"M d, Y" }})
-        </p>
+    <div class="dashboard-header flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-white mb-1">Welcome, {{ user.get_full_name }}! 👋</h1>
+            <p class="text-sm text-white opacity-80">
+                <i class="fas fa-clock mr-1"></i> {{ shift.start_datetime|date:"g:i A" }} - {{ shift.end_datetime|date:"g:i A" }}
+            </p>
+        </div>
+        <a href="{% url 'pos:create_order' %}" class="bg-[var(--gold)] text-[#1e293b] px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-transform flex items-center gap-2">
+            <i class="fas fa-plus-circle"></i>
+            <span>New Order</span>
+        </a>
     </div>
 
     <!-- KPI Cards -->
