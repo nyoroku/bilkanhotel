@@ -777,7 +777,7 @@ def shift_handover_summary(request, shift_id):
     unresolved_orders = Order.objects.filter(
         created_at__gte=shift.start_datetime,
         created_at__lte=shift.end_datetime,
-        status__in=[Order.Status.PENDING, Order.Status.PREPARING, Order.Status.READY]
+        status__in=[Order.Status.PENDING, Order.Status.READY]
     ).select_related('table', 'waiter')
 
     context = {
