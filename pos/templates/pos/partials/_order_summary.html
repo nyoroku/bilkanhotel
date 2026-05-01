@@ -1,63 +1,151 @@
-<div id="{{ module|lower }}-cart-summary">
-    <h4 class="text-2xl font-bold text-gray-900 mb-4 is-6">{{ module }} Order</h4>
+{% comment %}
+  Modern Premium Cart Summary
+  Clean, high-contrast list of items.
+{% endcomment %}
+
+<style>
+    .cart-list { list-style: none; padding: 0; margin: 0; }
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .cart-item:last-child { border-bottom: none; }
+    
+    .cart-item-name {
+        font-weight: 600;
+        color: var(--txt1);
+        font-size: 0.9rem;
+        line-height: 1.2;
+    }
+    
+    .cart-item-sub {
+        font-size: 0.75rem;
+        color: var(--txt3);
+    }
+
+    .qty-controls {
+        display: flex;
+        align-items: center;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .qty-btn {
+        background: transparent;
+        border: none;
+        color: var(--txt1);
+        width: 28px;
+        height: 28px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        transition: background 0.2s;
+    }
+
+    .qty-btn:hover { background: var(--surface); }
+    .qty-val {
+        padding: 0 8px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--gold);
+        min-width: 30px;
+        text-align: center;
+    }
+
+    .remove-all-btn {
+        color: var(--txt3);
+        cursor: pointer;
+        font-size: 0.8rem;
+        margin-left: 0.75rem;
+        padding: 4px;
+        transition: color 0.2s;
+    }
+    .remove-all-btn:hover { color: #ef4444; }
+
+    .cart-empty {
+        text-align: center;
+        padding: 2rem 0;
+        color: var(--txt3);
+        font-style: italic;
+    }
+
+    .cart-summary-footer {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .cart-total-label { color: var(--txt2); font-weight: 600; }
+    .cart-total-val { font-size: 1.25rem; font-weight: 800; color: var(--gold); }
+</style>
+
+<div id="bar-cart-summary">
     {% if cart.items %}
-    <table class="min-w-full divide-y divide-gray-200 is-fullwidth is-size-7">
-        <tbody>
-            {% for item_id, item in cart.items.items %}
-            <tr>
-                <td>
-                    {{ item.name }}
-                    {% if item.custom_amount %}
-                        <br><small class="has-text-grey">(KES {{ item.custom_amount|floatformat:2 }})</small>
-                    {% endif %}
-                </td>
-                <td class="text-right">
-                    <div class="mb-4 has-addons">
-                        <p class="relative">
-                            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5"
-                                    hx-post="{% url 'pos:htmx_remove_order_item' %}"
-                                    hx-vals='{"menu_item_id": "{{ item_id }}", "module": "{{ module }}"}'
-                                    hx-target="#{{ module|lower }}-cart-summary"
-                                    hx-swap="outerHTML">-</button>
-                        </p>
-                        <p class="relative">
-                            <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 text-xs px-2.5 py-1.5 text-center"
-                                   value="{{ item.quantity|floatformat:3 }}" size="3" readonly>
-                        </p>
-                        <p class="relative">
-                            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5"
-                                    hx-post="{% url 'pos:htmx_add_order_item' %}"
-                                    hx-vals='{"menu_item_id": "{{ item_id }}", "module": "{{ module }}"}'
-                                    hx-target="#{{ module|lower }}-cart-summary"
-                                    hx-swap="outerHTML">+</button>
-                        </p>
-                        <p class="relative">
-                            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white bg-transparent border-2"
-                                    hx-post="{% url 'pos:htmx_delete_order_item' %}"
-                                    hx-vals='{"menu_item_id": "{{ item_id }}", "module": "{{ module }}"}'
-                                    hx-target="#{{ module|lower }}-cart-summary"
-                                    hx-swap="outerHTML"
-                                    title="Remove completely">X</button>
-                        </p>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <div class="is-flex is-justify-content-space-between is-align-items-center mt-3">
-        <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white"
+    <ul class="cart-list">
+        {% for item_id, item in cart.items.items %}
+        <li class="cart-item">
+            <div class="flex-grow pr-4">
+                <div class="cart-item-name">{{ item.name }}</div>
+                <div class="cart-item-sub">
+                    KES {{ item.unit_price|floatformat:2 }} 
+                    {% if item.custom_amount %}(Custom: KES {{ item.custom_amount|floatformat:2 }}){% endif %}
+                </div>
+            </div>
+            
+            <div class="flex items-center">
+                <div class="qty-controls">
+                    <button class="qty-btn"
+                            hx-post="{% url 'pos:htmx_remove_order_item' %}"
+                            hx-vals='{"menu_item_id": "{{ item_id }}", "module": "Bar"}'
+                            hx-target="#bar-cart-summary"
+                            hx-swap="outerHTML">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <div class="qty-val">{{ item.quantity|floatformat:0 }}</div>
+                    <button class="qty-btn"
+                            hx-post="{% url 'pos:htmx_add_order_item' %}"
+                            hx-vals='{"menu_item_id": "{{ item_id }}", "module": "Bar"}'
+                            hx-target="#bar-cart-summary"
+                            hx-swap="outerHTML">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
+                <i class="fas fa-trash-alt remove-all-btn"
+                   hx-post="{% url 'pos:htmx_delete_order_item' %}"
+                   hx-vals='{"menu_item_id": "{{ item_id }}", "module": "Bar"}'
+                   hx-target="#bar-cart-summary"
+                   hx-swap="outerHTML"
+                   title="Remove completely"></i>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="cart-summary-footer">
+        <button class="text-xs font-bold text-[var(--txt3)] uppercase tracking-tight hover:text-red-500 transition"
                 hx-post="{% url 'pos:htmx_clear_cart' %}"
-                hx-vals='{"module": "{{ module }}"}'
-                hx-target="#{{ module|lower }}-cart-summary"
+                hx-vals='{"module": "Bar"}'
+                hx-target="#bar-cart-summary"
                 hx-swap="outerHTML">
-            Clear Cart
+            Clear All
         </button>
-        <p class="has-text-weight-bold text-base">
-            Total: {{ cart.total|floatformat:2 }} KES
-        </p>
+        <div class="text-right">
+            <span class="cart-total-label">Total</span>
+            <div class="cart-total-val">{{ cart.total|floatformat:2 }} KES</div>
+        </div>
     </div>
     {% else %}
-    <p class="is-size-7 has-text-grey-light">No {{ module|lower }} items added yet.</p>
+    <div class="cart-empty">
+        <i class="fas fa-shopping-cart mb-2 block opacity-20 text-3xl"></i>
+        Cart is empty
+    </div>
     {% endif %}
 </div>

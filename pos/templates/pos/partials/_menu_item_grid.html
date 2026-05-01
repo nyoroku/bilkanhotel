@@ -1,89 +1,196 @@
-<!-- pos/partials/_menu_item_grid.html -->
-<div class="flex flex-wrap -mx-3 is-multiline is-mobile">
+{% comment %}
+  Modern Premium Menu Grid
+  Optimized for readability and touch interaction.
+{% endcomment %}
+
+<style>
+    .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1rem;
+        padding: 0.5rem 0;
+    }
+
+    .item-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        box-shadow: var(--s1);
+        position: relative;
+    }
+
+    .item-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--blue);
+        box-shadow: var(--s2);
+    }
+
+    .item-card:active {
+        transform: scale(0.98);
+    }
+
+    .item-image-wrapper {
+        width: 100%;
+        aspect-ratio: 1/1;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .item-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .item-initial {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--txt3);
+        opacity: 0.3;
+        font-family: 'Cormorant Garamond', serif;
+    }
+
+    .item-info {
+        padding: 1rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .item-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--txt1);
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .item-category {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--txt2);
+        margin-bottom: 0.75rem;
+    }
+
+    .item-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+    }
+
+    .item-price {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--gold);
+    }
+
+    .item-add-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+    }
+
+    .item-card:hover .item-add-icon {
+        background: var(--blue);
+        color: white;
+    }
+
+    /* Weight-based indicator */
+    .weight-badge {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: var(--blue);
+        color: white;
+        font-size: 0.6rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        z-index: 5;
+    }
+
+    @media (max-width: 640px) {
+        .menu-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 0.75rem;
+        }
+        .item-price { font-size: 1rem; }
+    }
+</style>
+
+<div class="menu-grid">
     {% for item in menu_items %}
-    <div class="w-full px-3 is-one-third-desktop is-half-tablet">
+    <div class="item-card"
+         {% if item.sell_by_weight %}
+            hx-get="{% url 'pos:htmx_item_add_modal' item.id %}?module={{ module }}"
+            hx-target="#modal-container"
+         {% else %}
+            hx-post="{% url 'pos:htmx_add_order_item' %}"
+            hx-vals='{"menu_item_id": "{{ item.id }}", "module": "{{ module }}"}'
+            hx-target="#bar-cart-summary"
+            hx-swap="outerHTML"
+         {% endif %}
+         hx-trigger="click"
+         title="Add {{ item.name }} to order">
+        
         {% if item.sell_by_weight %}
-            <!-- Weight-based item: opens modal -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden has-background-white has-background-white-ter-hover"
-                 style="cursor:pointer; height:100%;"
-                 hx-get="{% url 'pos:htmx_item_add_modal' item.id %}?module={{ module }}"
-                 hx-target="#modal-container"
-                 hx-trigger="click"
-                 title="Set custom amount for {{ item.name }}">
-
-                <div class="p-6 p-3">
-                    <div class="media is-align-items-center">
-                        <div class="media-left">
-                            <figure class="image is-64x64">
-                                {% if item.image %}
-                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" style="object-fit:cover; border-radius:6px;">
-                                {% else %}
-                                    <div class="has-background-grey-lighter is-flex is-align-items-center is-justify-content-center"
-                                         style="width:64px; height:64px; border-radius:6px;">
-                                        <span class="text-2xl font-bold text-gray-900 mb-4 is-3 has-text-grey-light">{{ item.name|first|upper }}</span>
-                                    </div>
-                                {% endif %}
-                            </figure>
-                        </div>
-
-                        <div class="media-content">
-                            <p class="text-2xl font-bold text-gray-900 mb-4 is-6 mb-1">{{ item.name }}</p>
-                            <p class="mb-2">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if item.category.module == 'Kitchen' %}is-warning elif 'Bar' %}is-info else %}is-light{% endif %} is-rounded">
-                                    {{ item.category.name }}
-                                </span>
-                            </p>
-                            <p class="text-base has-text-weight-bold text-[#1e3a8a]">
-                                {{ item.selling_price }} KES/kg
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {% else %}
-            <!-- Standard item: direct add -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden has-background-white has-background-white-ter-hover"
-                 style="height:100%;"
-                 hx-post="{% url 'pos:htmx_add_order_item' %}"
-                 hx-vals='{"menu_item_id": "{{ item.id }}", "module": "{{ module }}"}'
-                 hx-target="#{{ module|lower }}-cart-summary"
-                 hx-swap="outerHTML"
-                 title="Add {{ item.name }} to order">
-
-                <div class="p-6 p-3">
-                    <div class="media is-align-items-center">
-                        <div class="media-left">
-                            <figure class="image is-64x64">
-                                {% if item.image %}
-                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" style="object-fit:cover; border-radius:6px;">
-                                {% else %}
-                                    <div class="has-background-grey-lighter is-flex is-align-items-center is-justify-content-center"
-                                         style="width:64px; height:64px; border-radius:6px;">
-                                        <span class="text-2xl font-bold text-gray-900 mb-4 is-3 has-text-grey-light">{{ item.name|first|upper }}</span>
-                                    </div>
-                                {% endif %}
-                            </figure>
-                        </div>
-
-                        <div class="media-content">
-                            <p class="text-2xl font-bold text-gray-900 mb-4 is-6 mb-1">{{ item.name }}</p>
-                            <p class="mb-2">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if item.category.module == 'Kitchen' %}is-warning elif 'Bar' %}is-info else %}is-light{% endif %} is-rounded">
-                                    {{ item.category.name }}
-                                </span>
-                            </p>
-                            <p class="text-base has-text-weight-bold text-[#1e3a8a]">
-                                {{ item.selling_price }} KES
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <span class="weight-badge">By Weight</span>
         {% endif %}
+
+        <div class="item-image-wrapper">
+            {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="item-image">
+            {% else %}
+                <div class="item-initial">{{ item.name|first|upper }}</div>
+            {% endif %}
+        </div>
+
+        <div class="item-info">
+            <div>
+                <div class="item-category">{{ item.category.name }}</div>
+                <div class="item-name">{{ item.name }}</div>
+            </div>
+            
+            <div class="item-footer">
+                <div class="item-price">
+                    {{ item.selling_price|floatformat:0 }} <span class="text-xs opacity-60">KES</span>
+                    {% if item.sell_by_weight %}<span class="text-xs opacity-60">/kg</span>{% endif %}
+                </div>
+                <div class="item-add-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+            </div>
+        </div>
     </div>
     {% empty %}
-    <div class="w-full px-3">
-        <p class="has-text-grey-light text-center">No items found.</p>
+    <div style="grid-column: 1/-1; padding: 4rem 2rem; text-align: center; color: var(--txt3);">
+        <i class="fas fa-search mb-4 text-4xl opacity-20"></i>
+        <p>No items found in this category.</p>
     </div>
     {% endfor %}
 </div>
