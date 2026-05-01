@@ -670,6 +670,8 @@ def shift_sales_summary_view(request):
     context = {
         'shift': active_assignment.shift,
         'summary_data': summary_data,
+        'section_name': 'Bar',  # Default to Bar for the unified Waiter/Bar view
+        'assignment': active_assignment,
     }
     return render(request, 'schedule/shift_sales_summary.html', context)
 
