@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                 ('image', models.ImageField(blank=True, null=True, upload_to='menu_items/')),
                 ('is_featured', models.BooleanField(default=False)),
                 ('display_order', models.PositiveIntegerField(default=0)),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='items', to='Bilken Hotel.menucategory')),
+                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='items', to='julifarm.menucategory')),
             ],
             options={
                 'ordering': ['display_order'],
