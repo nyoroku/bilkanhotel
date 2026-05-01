@@ -456,7 +456,7 @@ const shifts_data = {};
 {% for shift in shifts %}
   shifts_data[{{ shift.pk }}] = [
     {% for assign in shift.assignments.all %}
-      {id:'{{ assign.user.id }}', name:'{{ assign.user.get_full_name }}', email:'{{ assign.user.email|default:"" }}'}{% if not forloop.last %},{% endif %}
+      {id:'{{ assign.user.id }}', name:'{{ assign.user.get_full_name|escapejs }}', email:'{{ assign.user.email|default:""|escapejs }}'}{% if not forloop.last %},{% endif %}
     {% endfor %}
   ];
 {% endfor %}
@@ -585,15 +585,31 @@ document.getElementById('add-shift-form').addEventListener('submit', function(e)
   });
 });
 
-/* Enhanced multi-user assignment modal */
-function openAssignModal(shiftId, name) {
-  document.getElementById('assign-shift-id').value = shiftId;
-  document.getElementById('assign-shift-name').textContent = name;
+window.openAssignModal = function(shiftId, name) {
+  console.log("openAssignModal called with:", shiftId, name);
+  
+  const shiftIdInput = document.getElementById('assign-shift-id');
+  const shiftNameSpan = document.getElementById('assign-shift-name');
+  if (shiftIdInput) shiftIdInput.value = shiftId;
+  if (shiftNameSpan) shiftNameSpan.textContent = name;
+
+  const container = document.getElementById('multi-user-select');
+  if (container) container.innerHTML = '<div class="p-4 text-center">Loading staff...</div>';
+
+  try {
+      toggleModal('assign-modal');
+  } catch(e) {
+      console.error("Error toggling modal:", e);
+  }
 
   fetch("{% url 'schedule:get_available_users' 0 %}".replace('0', shiftId))
-    .then(r => r.json())
+    .then(r => {
+        if(!r.ok) throw new Error("Server returned " + r.status);
+        return r.json();
+    })
     .then(d => {
-      const container = document.getElementById('multi-user-select');
+      console.log("Received users:", d);
+      if (!container) return;
       container.innerHTML = '';
 
       if (!d.users || d.users.length === 0) {
@@ -618,12 +634,11 @@ function openAssignModal(shiftId, name) {
     })
     .catch(err => {
       console.error('Error loading users:', err);
-      document.getElementById('multi-user-select').innerHTML =
-        '<div class="no-assignments">Error loading available staff</div>';
+      if (container) container.innerHTML = '<div class="no-assignments" style="color:red;">Error loading available staff.</div>';
     });
+};
 
-  toggleModal('assign-modal');
-}
+
 
 function updateSelectedCount() {
   const checkboxes = document.querySelectorAll('#multi-user-select input[type="checkbox"]');
