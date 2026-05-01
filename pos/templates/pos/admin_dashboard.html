@@ -186,7 +186,7 @@
     <div class="container mx-auto px-4 lg:max-w-7xl is-fluid">
         <!-- Welcome Header -->
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Welcome Back, {{ request.user.first_name }}!</h1>
+            <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2">Welcome Back, {{ request.user.first_name|default:request.user.email }}!</h1>
             <p class="text-lg text-gray-600 mb-4 is-5 has-text-grey">Here's a snapshot of your restaurant's performance today, {{ "now"|date:"l, F jS" }}.</p>
         </div>
 
