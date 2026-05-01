@@ -451,27 +451,27 @@ table tr:last-child td { border-bottom: none; }
 {% block scripts %}
 {{ block.super }}
 <script>
-// --- Global Functions (Exposed for onclick) ---
+// --- Global Functions (Exposed to window) ---
 
-function toggleModal(id) {
+window.toggleModal = function(id) {
+    console.log("Toggling modal:", id);
     const m = document.getElementById(id);
     if (!m) {
-        console.error("Modal not found with ID:", id);
+        console.error("CRITICAL: Modal not found with ID:", id);
         return;
     }
     m.classList.toggle('is-active');
     
     // Cleanup if closing
     if (!m.classList.contains('is-active')) {
-        if (id === 'improved-swap-modal') resetSwapModal();
-        if (id === 'assign-modal') resetAssignModal();
-        if (id === 'add-shift-modal') resetShiftModal();
+        if (id === 'improved-swap-modal') if(typeof resetSwapModal === 'function') resetSwapModal();
+        if (id === 'assign-modal') if(typeof resetAssignModal === 'function') resetAssignModal();
+        if (id === 'add-shift-modal') if(typeof resetShiftModal === 'function') resetShiftModal();
     }
-}
+};
 
-function openAssignModal(shiftId, name) {
-    // alert("DEBUG: openAssignModal called for shift " + shiftId);
-    console.log("openAssignModal called", shiftId, name);
+window.openAssignModal = function(shiftId, name) {
+    console.log("openAssignModal initiated for shift:", shiftId, "name:", name);
     
     const shiftIdInput = document.getElementById('assign-shift-id');
     const shiftNameSpan = document.getElementById('assign-shift-name');
@@ -482,40 +482,50 @@ function openAssignModal(shiftId, name) {
     if (container) container.innerHTML = '<div class="p-4 text-center">Loading available staff...</div>';
 
     // Show modal
-    toggleModal('assign-modal');
+    window.toggleModal('assign-modal');
 
     // Fetch users
     const url = "{% url 'schedule:get_available_users' 0 %}".replace('0', shiftId);
     fetch(url)
-        .then(r => r.json())
+        .then(r => {
+            if (!r.ok) throw new Error("HTTP error " + r.status);
+            return r.json();
+        })
         .then(d => {
             if (!container) return;
             container.innerHTML = '';
             if (!d.users || d.users.length === 0) {
-                container.innerHTML = '<div class="no-assignments">No available staff</div>';
+                container.innerHTML = '<div class="no-assignments text-gray-500 italic p-4 text-center">No available staff for this shift</div>';
                 return;
             }
             d.users.forEach(u => {
                 const item = document.createElement('div');
-                item.className = 'user-checkbox-item';
+                item.className = 'user-checkbox-item p-2 hover:bg-gray-50 border-b border-gray-100 flex items-center cursor-pointer';
                 item.innerHTML = `
-                    <input type="checkbox" id="u-${u.id}" name="users" value="${u.id}" onchange="updateSelectedCount()">
-                    <label for="u-${u.id}" class="ml-2">
-                        <strong>${u.name}</strong>
-                        ${u.email ? `<br><small>${u.email}</small>` : ''}
+                    <input type="checkbox" id="u-${u.id}" name="users" value="${u.id}" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <label for="u-${u.id}" class="ml-3 block text-sm text-gray-700 cursor-pointer flex-grow">
+                        <span class="font-bold">${u.name}</span>
+                        ${u.email ? `<br><span class="text-xs text-gray-400">${u.email}</span>` : ''}
                     </label>
                 `;
+                item.onclick = function(e) {
+                    if (e.target.tagName !== 'INPUT') {
+                        const cb = this.querySelector('input');
+                        cb.checked = !cb.checked;
+                        window.updateSelectedCount();
+                    }
+                };
                 container.appendChild(item);
             });
-            updateSelectedCount();
+            window.updateSelectedCount();
         })
         .catch(e => {
-            console.error(e);
-            if(container) container.innerHTML = '<div class="p-4 text-red-500">Error loading staff</div>';
+            console.error("Error fetching available users:", e);
+            if(container) container.innerHTML = '<div class="p-4 text-red-500 text-center">Error loading staff data. Please try again.</div>';
         });
-}
+};
 
-function updateSelectedCount() {
+window.updateSelectedCount = function() {
     const count = document.querySelectorAll('#multi-user-select input[type="checkbox"]:checked').length;
     const countEl = document.getElementById('selected-count');
     const btn = document.getElementById('assign-submit-btn');
@@ -525,38 +535,41 @@ function updateSelectedCount() {
     }
     if(btn) {
         btn.disabled = count === 0;
-        btn.innerHTML = count > 0 ? `<i class="fas fa-user-plus mr-2"></i>Assign ${count} Staff` : `<i class="fas fa-user-plus mr-2"></i>Select staff`;
+        btn.innerHTML = count > 0 ? `<i class="fas fa-user-plus mr-2"></i>Assign ${count} Staff Member${count > 1 ? 's' : ''}` : `<i class="fas fa-user-plus mr-2"></i>Select staff to assign`;
     }
-}
+};
 
-function resetAssignModal() {
+window.resetAssignModal = function() {
     const c = document.getElementById('multi-user-select');
     if(c) c.innerHTML = '';
-    updateSelectedCount();
-}
+    window.updateSelectedCount();
+};
 
-function resetShiftModal() {
+window.resetShiftModal = function() {
     const f = document.getElementById('add-shift-form');
     if(f) f.reset();
-}
+};
 
-function removeAssignment(shiftId, userId, userName) {
-    if (confirm(`Remove ${userName}?`)) {
+window.removeAssignment = function(shiftId, userId, userName) {
+    if (confirm(`Remove ${userName} from this shift?`)) {
         const url = "{% url 'schedule:shift_assignment_delete' 0 '00000000-0000-0000-0000-000000000000' %}"
             .replace('0', shiftId)
             .replace('00000000-0000-0000-0000-000000000000', userId);
         const form = document.createElement('form');
-        form.method = 'POST'; form.action = url;
+        form.method = 'POST'; 
+        form.action = url;
         const csrf = document.createElement('input');
-        csrf.type = 'hidden'; csrf.name = 'csrfmiddlewaretoken'; csrf.value = '{{ csrf_token }}';
+        csrf.type = 'hidden'; 
+        csrf.name = 'csrfmiddlewaretoken'; 
+        csrf.value = '{{ csrf_token }}';
         form.appendChild(csrf);
         document.body.appendChild(form);
         form.submit();
     }
-}
+};
 
 // --- Swap Logic ---
-const shifts_data = {
+window.shifts_data = {
     {% for shift in shifts %}
         "{{ shift.pk }}": [
             {% for assign in shift.assignments.all %}
@@ -566,56 +579,73 @@ const shifts_data = {
     {% endfor %}
 };
 
-let fromUser = null, toUser = null;
+window.selectedFromUser = null;
+window.selectedToUser = null;
 
-function updateStaffList(side, shiftId) {
+window.updateStaffList = function(side, shiftId) {
     const box = document.getElementById(side + '-staff-list');
     if (!box) return;
-    if (!shiftId) { box.innerHTML = 'Select a shift'; return; }
-    const staff = shifts_data[shiftId] || [];
-    if (staff.length === 0) { box.innerHTML = 'No staff assigned'; return; }
+    if (!shiftId) { box.innerHTML = '<div class="p-4 text-center text-gray-500">Select a shift first</div>'; return; }
+    const staff = window.shifts_data[shiftId] || [];
+    if (staff.length === 0) { box.innerHTML = '<div class="p-4 text-center text-gray-500">No staff assigned to this shift</div>'; return; }
     box.innerHTML = staff.map(u => `
-        <div class="staff-card" onclick="selectStaff('${side}','${u.id}','${u.name}','${shiftId}')">
-            ${u.name}
+        <div class="staff-card p-3 mb-2 border-2 border-gray-100 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all" onclick="window.selectStaff(event, '${side}','${u.id}','${u.name}','${shiftId}')">
+            <div class="font-bold">${u.name}</div>
         </div>
     `).join('');
-}
+};
 
-function selectStaff(side, uid, uname, sid) {
-    document.querySelectorAll('#' + side + '-staff-list .staff-card').forEach(c => c.classList.remove('selected'));
-    if (event.currentTarget) event.currentTarget.classList.add('selected');
+window.selectStaff = function(event, side, uid, uname, sid) {
+    document.querySelectorAll('#' + side + '-staff-list .staff-card').forEach(c => {
+        c.classList.remove('selected');
+        c.classList.remove('border-blue-500');
+        c.classList.remove('bg-blue-100');
+    });
+    
+    const target = event.currentTarget;
+    target.classList.add('selected');
+    target.classList.add('border-blue-500');
+    target.classList.add('bg-blue-100');
+
     if (side === 'from') {
-        fromUser = { uid, uname, sid };
+        window.selectedFromUser = { uid, uname, sid };
         document.getElementById('swap-from-shift-input').value = sid;
         document.getElementById('swap-from-user-input').value = uid;
     } else {
-        toUser = { uid, uname, sid };
+        window.selectedToUser = { uid, uname, sid };
         document.getElementById('swap-to-shift-input').value = sid;
         document.getElementById('swap-to-user-input').value = uid;
     }
+    window.checkSwapButtonState();
+};
+
+window.checkSwapButtonState = function() {
     const b = document.getElementById('swap-submit-btn');
     if (b) {
-        const can = fromUser && toUser && fromUser.sid !== toUser.sid;
+        const can = window.selectedFromUser && window.selectedToUser && window.selectedFromUser.sid !== window.selectedToUser.sid;
         b.disabled = !can;
-        b.innerHTML = can ? `Swap ${fromUser.uname} ↔ ${toUser.uname}` : 'Select staff from both shifts';
+        b.innerHTML = can ? `<i class="fas fa-exchange-alt mr-2"></i>Swap ${window.selectedFromUser.uname} ↔ ${window.selectedToUser.uname}` : '<i class="fas fa-exchange-alt mr-2"></i>Select staff from both shifts';
     }
-}
+};
 
-function resetSwapModal() {
-    fromUser = toUser = null;
+window.resetSwapModal = function() {
+    window.selectedFromUser = null;
+    window.selectedToUser = null;
     ['from', 'to'].forEach(s => {
         const sel = document.getElementById(s + '-shift-select');
         if (sel) sel.value = '';
-        updateStaffList(s, '');
+        window.updateStaffList(s, '');
     });
-}
+};
 
 // --- Event Listeners ---
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("Schedule Detail DOM fully loaded");
+    
     const fromSel = document.getElementById('from-shift-select');
     const toSel = document.getElementById('to-shift-select');
-    if (fromSel) fromSel.addEventListener('change', e => updateStaffList('from', e.target.value));
-    if (toSel) toSel.addEventListener('change', e => updateStaffList('to', e.target.value));
+    if (fromSel) fromSel.addEventListener('change', e => window.updateStaffList('from', e.target.value));
+    if (toSel) toSel.addEventListener('change', e => window.updateStaffList('to', e.target.value));
 
     const addForm = document.getElementById('add-shift-form');
     if (addForm) {
@@ -623,8 +653,21 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const b = document.getElementById('shift-submit-btn');
             if (b) b.disabled = true;
-            fetch(this.action, { method: 'POST', body: new FormData(this), headers: {'X-Requested-With': 'XMLHttpRequest'}})
-                .then(r => r.json()).then(d => { if(d.success) window.location.reload(); else alert(d.message || "Error"); if(b) b.disabled = false; });
+            fetch(this.action, { 
+                method: 'POST', 
+                body: new FormData(this), 
+                headers: {'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': '{{ csrf_token }}'}
+            })
+            .then(r => r.json())
+            .then(d => { 
+                if(d.success) window.location.reload(); 
+                else alert(d.message || "Error saving shift"); 
+                if(b) b.disabled = false; 
+            })
+            .catch(err => {
+                console.error("Shift creation failed:", err);
+                if(b) b.disabled = false;
+            });
         });
     }
 
@@ -634,8 +677,21 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const b = document.getElementById('assign-submit-btn');
             if (b) b.disabled = true;
-            fetch(this.action, { method: 'POST', body: new FormData(this), headers: {'X-Requested-With': 'XMLHttpRequest'}})
-                .then(r => r.json()).then(d => { if(d.success) window.location.reload(); else alert(d.message || "Error"); if(b) b.disabled = false; });
+            fetch(this.action, { 
+                method: 'POST', 
+                body: new FormData(this), 
+                headers: {'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': '{{ csrf_token }}'}
+            })
+            .then(r => r.json())
+            .then(d => { 
+                if(d.success) window.location.reload(); 
+                else alert(d.message || "Error assigning staff"); 
+                if(b) b.disabled = false; 
+            })
+            .catch(err => {
+                console.error("Staff assignment failed:", err);
+                if(b) b.disabled = false;
+            });
         });
     }
 });
