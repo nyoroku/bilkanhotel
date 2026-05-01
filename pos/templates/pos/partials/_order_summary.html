@@ -1,151 +1,224 @@
 {% comment %}
-  Modern Premium Cart Summary
-  Clean, high-contrast list of items.
+  Modern Premium Order Summary (V2 - Refined)
+  Focus on high-contrast, structured receipt style.
 {% endcomment %}
 
 <style>
-    .cart-list { list-style: none; padding: 0; margin: 0; }
-    .cart-item {
+    .order-summary-wrapper {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid var(--border);
-    }
-    .cart-item:last-child { border-bottom: none; }
-    
-    .cart-item-name {
-        font-weight: 600;
-        color: var(--txt1);
-        font-size: 0.9rem;
-        line-height: 1.2;
-    }
-    
-    .cart-item-sub {
-        font-size: 0.75rem;
-        color: var(--txt3);
+        flex-direction: column;
+        gap: 1rem;
     }
 
-    .qty-controls {
+    .order-item-list {
         display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .order-item-row {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.85rem;
+        display: flex;
+        justify-content: space-between;
         align-items: center;
+        transition: all 0.2s;
+    }
+
+    .order-item-row:hover {
+        border-color: var(--blue-lt);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .item-main-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        flex-grow: 1;
+        padding-right: 1rem;
+    }
+
+    .item-title {
+        font-weight: 700;
+        color: var(--txt1);
+        font-size: 0.95rem;
+        line-height: 1.2;
+    }
+
+    .item-meta {
+        font-size: 0.75rem;
+        color: var(--txt3);
+        font-weight: 500;
+    }
+
+    .qty-badge {
         background: var(--bg);
         border: 1px solid var(--border);
         border-radius: 8px;
+        display: flex;
+        align-items: center;
         overflow: hidden;
     }
 
-    .qty-btn {
-        background: transparent;
-        border: none;
-        color: var(--txt1);
-        width: 28px;
-        height: 28px;
-        cursor: pointer;
+    .qty-action {
+        width: 32px;
+        height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.8rem;
-        transition: background 0.2s;
+        cursor: pointer;
+        color: var(--txt1);
+        transition: all 0.2s;
+        border: none;
+        background: transparent;
     }
 
-    .qty-btn:hover { background: var(--surface); }
-    .qty-val {
-        padding: 0 8px;
-        font-weight: 700;
-        font-size: 0.85rem;
-        color: var(--gold);
-        min-width: 30px;
+    .qty-action:hover {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--blue-lt);
+    }
+
+    .qty-number {
+        width: 36px;
         text-align: center;
+        font-weight: 800;
+        color: var(--gold);
+        font-size: 0.9rem;
     }
 
-    .remove-all-btn {
+    .delete-item-btn {
+        margin-left: 0.75rem;
         color: var(--txt3);
         cursor: pointer;
-        font-size: 0.8rem;
-        margin-left: 0.75rem;
-        padding: 4px;
         transition: color 0.2s;
-    }
-    .remove-all-btn:hover { color: #ef4444; }
-
-    .cart-empty {
-        text-align: center;
-        padding: 2rem 0;
-        color: var(--txt3);
-        font-style: italic;
+        padding: 4px;
     }
 
-    .cart-summary-footer {
-        margin-top: 1rem;
+    .delete-item-btn:hover {
+        color: #f87171;
+    }
+
+    .order-summary-footer {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 2px dashed var(--border);
+    }
+
+    .total-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin-bottom: 1rem;
     }
-    .cart-total-label { color: var(--txt2); font-weight: 600; }
-    .cart-total-val { font-size: 1.25rem; font-weight: 800; color: var(--gold); }
+
+    .total-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--txt2);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .total-amount {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--gold);
+        text-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+    }
+
+    .clear-order-btn {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 0.6rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--txt3);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+    .clear-order-btn:hover {
+        background: rgba(239, 68, 68, 0.05);
+        color: #f87171;
+    }
+
+    .empty-state {
+        padding: 3rem 1rem;
+        text-align: center;
+        color: var(--txt3);
+    }
 </style>
 
 <div id="bar-cart-summary">
     {% if cart.items %}
-    <ul class="cart-list">
-        {% for item_id, item in cart.items.items %}
-        <li class="cart-item">
-            <div class="flex-grow pr-4">
-                <div class="cart-item-name">{{ item.name }}</div>
-                <div class="cart-item-sub">
-                    KES {{ item.unit_price|floatformat:2 }} 
-                    {% if item.custom_amount %}(Custom: KES {{ item.custom_amount|floatformat:2 }}){% endif %}
+    <div class="order-summary-wrapper">
+        <div class="order-item-list">
+            {% for item_id, item in cart.items.items %}
+            <div class="order-item-row">
+                <div class="item-main-info">
+                    <div class="item-title">{{ item.name }}</div>
+                    <div class="item-meta">
+                        KES {{ item.unit_price|floatformat:0 }} 
+                        {% if item.custom_amount %}| Custom Base: KES {{ item.custom_amount|floatformat:0 }}{% endif %}
+                    </div>
                 </div>
+
+                <div class="flex items-center">
+                    <div class="qty-badge">
+                        <button class="qty-action"
+                                hx-post="{% url 'pos:htmx_remove_order_item' %}"
+                                hx-vals='{"menu_item_id": "{{ item_id }}", "module": "Bar"}'
+                                hx-target="#bar-cart-summary"
+                                hx-swap="outerHTML">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <div class="qty-number">{{ item.quantity|floatformat:0 }}</div>
+                        <button class="qty-action"
+                                hx-post="{% url 'pos:htmx_add_order_item' %}"
+                                hx-vals='{"menu_item_id": "{{ item_id }}", "module": "Bar"}'
+                                hx-target="#bar-cart-summary"
+                                hx-swap="outerHTML">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    
+                    <button class="delete-item-btn"
+                       hx-post="{% url 'pos:htmx_delete_order_item' %}"
+                       hx-vals='{"menu_item_id": "{{ item_id }}", "module": "Bar"}'
+                       hx-target="#bar-cart-summary"
+                       hx-swap="outerHTML">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="order-summary-footer">
+            <div class="total-row">
+                <span class="total-label">Total Payable</span>
+                <span class="total-amount">{{ cart.total|floatformat:0 }} <small class="text-sm">KES</small></span>
             </div>
             
-            <div class="flex items-center">
-                <div class="qty-controls">
-                    <button class="qty-btn"
-                            hx-post="{% url 'pos:htmx_remove_order_item' %}"
-                            hx-vals='{"menu_item_id": "{{ item_id }}", "module": "Bar"}'
-                            hx-target="#bar-cart-summary"
-                            hx-swap="outerHTML">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                    <div class="qty-val">{{ item.quantity|floatformat:0 }}</div>
-                    <button class="qty-btn"
-                            hx-post="{% url 'pos:htmx_add_order_item' %}"
-                            hx-vals='{"menu_item_id": "{{ item_id }}", "module": "Bar"}'
-                            hx-target="#bar-cart-summary"
-                            hx-swap="outerHTML">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                </div>
-                
-                <i class="fas fa-trash-alt remove-all-btn"
-                   hx-post="{% url 'pos:htmx_delete_order_item' %}"
-                   hx-vals='{"menu_item_id": "{{ item_id }}", "module": "Bar"}'
-                   hx-target="#bar-cart-summary"
-                   hx-swap="outerHTML"
-                   title="Remove completely"></i>
-            </div>
-        </li>
-        {% endfor %}
-    </ul>
-
-    <div class="cart-summary-footer">
-        <button class="text-xs font-bold text-[var(--txt3)] uppercase tracking-tight hover:text-red-500 transition"
-                hx-post="{% url 'pos:htmx_clear_cart' %}"
-                hx-vals='{"module": "Bar"}'
-                hx-target="#bar-cart-summary"
-                hx-swap="outerHTML">
-            Clear All
-        </button>
-        <div class="text-right">
-            <span class="cart-total-label">Total</span>
-            <div class="cart-total-val">{{ cart.total|floatformat:2 }} KES</div>
+            <a class="clear-order-btn"
+                    hx-post="{% url 'pos:htmx_clear_cart' %}"
+                    hx-vals='{"module": "Bar"}'
+                    hx-target="#bar-cart-summary"
+                    hx-swap="outerHTML">
+                <i class="fas fa-undo-alt mr-1"></i> Clear Selection
+            </a>
         </div>
     </div>
     {% else %}
-    <div class="cart-empty">
-        <i class="fas fa-shopping-cart mb-2 block opacity-20 text-3xl"></i>
-        Cart is empty
+    <div class="empty-state">
+        <i class="fas fa-receipt mb-4 text-4xl opacity-10"></i>
+        <p class="font-medium text-sm">Select items from the menu to start an order.</p>
     </div>
     {% endif %}
 </div>

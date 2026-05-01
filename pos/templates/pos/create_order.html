@@ -5,12 +5,13 @@
 
 {% block extrahead %}
 <style>
-    /* Premium Order UI Overhaul */
+    /* Premium Order UI Overhaul (Refined V2) */
     .order-container {
         display: flex;
-        gap: 2rem;
-        height: calc(100vh - 100px);
+        gap: 1.5rem;
+        height: calc(100vh - 120px);
         overflow: hidden;
+        padding: 0.5rem;
     }
 
     .menu-side {
@@ -19,19 +20,33 @@
         padding-right: 0.5rem;
     }
 
+    /* GLASSMORPHISM SIDEBAR */
     .cart-side {
-        width: 380px;
-        background: var(--surface);
+        width: 400px;
+        background: linear-gradient(135deg, var(--surface) 0%, rgba(20, 23, 40, 0.95) 100%);
         border: 1px solid var(--border);
-        border-radius: 20px;
+        border-radius: 24px;
         display: flex;
         flex-direction: column;
-        box-shadow: var(--s2);
+        box-shadow: var(--s3);
         overflow: hidden;
+        position: relative;
+    }
+
+    /* Subtle decorative glow */
+    .cart-side::before {
+        content: '';
+        position: absolute;
+        top: -50px; right: -50px;
+        width: 150px; height: 150px;
+        background: var(--blue);
+        filter: blur(80px);
+        opacity: 0.1;
+        pointer-events: none;
     }
 
     .cart-header {
-        padding: 1.5rem;
+        padding: 1.75rem 1.5rem;
         border-bottom: 1px solid var(--border);
         background: rgba(255,255,255,0.02);
     }
@@ -40,100 +55,115 @@
         flex-grow: 1;
         overflow-y: auto;
         padding: 1.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
     }
+
+    .cart-body::-webkit-scrollbar { width: 4px; }
+    .cart-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
     .cart-footer {
         padding: 1.5rem;
         border-top: 1px solid var(--border);
-        background: rgba(255,255,255,0.02);
+        background: rgba(255,255,255,0.03);
     }
 
-    /* Form Overrides */
-    .form-group label {
-        color: var(--txt2) !important;
-        font-size: 0.8rem !important;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.5rem !important;
-    }
-
+    /* Form Design */
     .input-premium {
         background: var(--bg) !important;
         border: 1px solid var(--border) !important;
         color: var(--txt1) !important;
-        border-radius: 10px !important;
-        padding: 0.75rem 1rem !important;
+        border-radius: 12px !important;
+        padding: 0.85rem 1rem !important;
+        font-weight: 500 !important;
+        transition: all 0.2s;
+    }
+
+    .input-premium:focus {
+        border-color: var(--blue) !important;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
     }
 
     .finalize-btn {
         width: 100%;
-        background: var(--blue) !important;
+        background: linear-gradient(135deg, var(--blue) 0%, #1d4ed8 100%) !important;
         color: white !important;
-        padding: 1rem !important;
-        border-radius: 12px !important;
-        font-weight: 700 !important;
-        font-size: 1.1rem !important;
+        padding: 1.1rem !important;
+        border-radius: 16px !important;
+        font-weight: 800 !important;
+        font-size: 1.15rem !important;
         border: none !important;
         cursor: pointer;
-        transition: all 0.2s;
-        box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.5);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 12px 24px -10px rgba(59, 130, 246, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     .finalize-btn:hover {
-        transform: translateY(-2px);
-        background: var(--blue-lt) !important;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px -10px rgba(59, 130, 246, 0.7);
+        filter: brightness(1.1);
     }
 
     .finalize-btn:active {
-        transform: scale(0.98);
+        transform: scale(0.97);
     }
 
     @media (max-width: 1024px) {
         .order-container { flex-direction: column; height: auto; overflow: visible; }
-        .cart-side { width: 100%; position: static; }
+        .cart-side { width: 100%; position: static; min-height: 500px; }
         .menu-side { overflow: visible; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div id="error-toast-container" style="position: fixed; top: 80px; right: 20px; z-index: 1000; width: 350px;"></div>
+<div id="error-toast-container" style="position: fixed; top: 80px; right: 20px; z-index: 2000; width: 350px;"></div>
 
 <form id="create-order-form" method="POST" action="{% url 'pos:finalize_orders' %}">
     {% csrf_token %}
     {% if existing_order %}<input type="hidden" name="existing_order_id" value="{{ existing_order.id }}">{% endif %}
 
     <div class="order-container">
-        {# --- CART SIDEBAR (Left) --- #}
+        {# --- ORDER PANEL (Sidebar) --- #}
         <div class="cart-side">
             <div class="cart-header">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-shopping-basket text-[var(--gold)]"></i>
-                    {% if existing_order %}Add to Order #{{ existing_order.id }}{% else %}Current Order{% endif %}
+                <h2 class="text-xl font-extrabold flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-xl bg-[rgba(245,158,11,0.15)] text-[var(--gold)] flex items-center justify-center">
+                        <i class="fas fa-file-invoice"></i>
+                    </span>
+                    <div class="flex flex-col">
+                        <span class="text-sm text-[var(--txt3)] uppercase tracking-widest font-bold leading-tight">Bilken POS</span>
+                        <span class="leading-tight">{% if existing_order %}Add to Order #{{ existing_order.id }}{% else %}New Order{% endif %}</span>
+                    </div>
                 </h2>
             </div>
 
             <div class="cart-body">
-                {# Customer & Table Info #}
-                <div class="space-y-4 mb-6">
-                    <div>
-                        <label class="block text-xs font-bold text-[var(--txt2)] uppercase tracking-wider mb-1">Customer</label>
+                {# Customer & Table Information #}
+                <div class="grid grid-cols-1 gap-5 mb-8">
+                    <div class="space-y-1">
+                        <label class="text-[0.65rem] font-black text-[var(--txt3)] uppercase tracking-[0.2em] ml-1">Customer Details</label>
                         {% if existing_order %}
-                            <input class="input-premium w-full opacity-60" value="{{ form.initial.customer.get_full_name }}" readonly>
+                            <input class="input-premium w-full opacity-50 cursor-not-allowed" value="{{ form.initial.customer.get_full_name }}" readonly>
                             {{ form.customer.as_hidden }}
                         {% else %}
                             <div class="relative">
-                                <input class="input-premium w-full" type="text" id="customer-search-input" value="{{ default_customer_name }}" hx-get="{% url 'pos:htmx_customer_search' %}" hx-trigger="keyup changed delay:300ms" hx-target="#customer-search-results" autocomplete="off" placeholder="Search...">
-                                <div class="absolute w-full mt-1 z-50"><div id="customer-search-results" class="bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-xl overflow-hidden"></div></div>
+                                <input class="input-premium w-full" type="text" id="customer-search-input" value="{{ default_customer_name }}" hx-get="{% url 'pos:htmx_customer_search' %}" hx-trigger="keyup changed delay:300ms" hx-target="#customer-search-results" autocomplete="off" placeholder="Find or create customer...">
+                                <div class="absolute w-full mt-2 z-[100]"><div id="customer-search-results" class="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-2xl overflow-hidden backdrop-blur-lg"></div></div>
                             </div>
                             {{ form.customer }}
                         {% endif %}
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-[var(--txt2)] uppercase tracking-wider mb-1">Table</label>
+                    <div class="space-y-1">
+                        <label class="text-[0.65rem] font-black text-[var(--txt3)] uppercase tracking-[0.2em] ml-1">Table Selection</label>
                         {% if selected_table or existing_order %}
-                            <input class="input-premium w-full opacity-60" value="{% if selected_table %}{{ selected_table.table_number }}{% else %}{{ form.initial.table.table_number }}{% endif %}" readonly>
+                            <div class="relative">
+                                <input class="input-premium w-full font-bold text-[var(--gold)]" value="TABLE {% if selected_table %}{{ selected_table.table_number }}{% else %}{{ form.initial.table.table_number }}{% endif %}" readonly>
+                                <i class="fas fa-chair absolute right-4 top-1/2 -translate-y-1/2 text-[var(--txt3)]"></i>
+                            </div>
                             {{ form.table.as_hidden }}
                         {% else %}
                             {{ form.table|as_crispy_field }}
@@ -141,7 +171,9 @@
                     </div>
                 </div>
 
-                <div class="border-t border-[var(--border)] pt-4">
+                {# Item Summary List #}
+                <div class="space-y-3">
+                    <label class="text-[0.65rem] font-black text-[var(--txt3)] uppercase tracking-[0.2em] ml-1">Order Summary</label>
                     <div id="bar-cart-summary">
                         {% include 'pos/partials/_order_summary.html' with cart=bar_cart module="Bar" %}
                     </div>
@@ -150,12 +182,12 @@
 
             <div class="cart-footer">
                 <button type="submit" class="finalize-btn">
-                    {% if existing_order %}Confirm Additions{% else %}Send to Kitchen & Bar{% endif %}
+                    {% if existing_order %}Confirm Additions{% else %}Send Order{% endif %}
                 </button>
             </div>
         </div>
 
-        {# --- MENU SIDE (Right) --- #}
+        {# --- MENU SELECTION PANEL (Main) --- #}
         <div class="menu-side">
             <div id="menu-content-wrapper">
                 {% include 'pos/partials/_menu_content.html' with menu_items=initial_menu_items categories=initial_categories active_section=active_module search_query="" selected_category="" %}
@@ -180,11 +212,12 @@
     // Close results when clicking outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.relative')) {
-            document.getElementById('customer-search-results').innerHTML = '';
+            const results = document.getElementById('customer-search-results');
+            if (results) results.innerHTML = '';
         }
     });
 
-    // Re-initialize search on swap
+    // Auto-focus search on section/category switch
     document.body.addEventListener('htmx:afterSwap', function(evt) {
         if (evt.target.id === 'menu-content-wrapper') {
             const searchInput = evt.target.querySelector('input[name="search"]');
