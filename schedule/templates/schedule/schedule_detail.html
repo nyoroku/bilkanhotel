@@ -210,6 +210,11 @@ table tr:last-child td { border-bottom: none; }
 {% endblock %}
 
 {% block content %}
+<style>
+/* High-priority override for modal visibility */
+.bh-modal { display: none !important; }
+.bh-modal.is-active { display: flex !important; }
+</style>
 <div class="level">
     <div class="level-left">
         <h1 class="text-3xl font-bold mb-2" style="color: var(--txt1);">{{ schedule.name }}</h1>
@@ -593,7 +598,14 @@ window.openAssignModal = function(shiftId, name) {
   if (container) container.innerHTML = '<div class="p-4 text-center">Loading staff...</div>';
 
   try {
-      toggleModal('assign-modal');
+      // Fallback visibility toggle
+    const m = document.getElementById('assign-modal');
+    if (m) {
+        m.classList.add('is-active');
+        m.style.setProperty('display', 'flex', 'important');
+    }
+    
+    // window.toggleModal('assign-modal'); // Replaced by direct toggle above for certainty
   } catch(e) {
       console.error("Error toggling modal:", e);
   }
