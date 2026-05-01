@@ -20,6 +20,7 @@ class Category(models.Model):
     """
 
     class Module(models.TextChoices):
+        KITCHEN = 'Kitchen', 'Kitchen'
         BAR = 'Bar', 'Bar'
         BUTCHERY = 'Butchery', 'Butchery'
 
