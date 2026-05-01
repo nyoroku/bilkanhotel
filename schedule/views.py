@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 # pos/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -205,10 +208,6 @@ class ShiftAssignmentCreateView(LoginRequiredMixin, CreateView):
             return self._handle_single_user_assignment(shift, single_user_id, notes)
         else:
             # No users specified
-            error_msg = "No users selected for assignment."
-            if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({'success': False, 'message': error_msg}, status=400)
-            messages.error(self.request, error_msg)
             return self._redirect_to_schedule(shift)
 
     def _handle_multi_user_assignment(self, shift, user_ids, notes):
