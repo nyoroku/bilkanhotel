@@ -149,16 +149,20 @@
 
 /* --- BH MODAL SYSTEM --- */
 .bh-modal {
-    display: none !important;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 9999;
-    align-items: center; justify-content: center;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
+    display: none;
+    position: fixed !important;
+    top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+    z-index: 2147483647 !important;
+    align-items: center !important; justify-content: center !important;
+    background: rgba(0,0,0,0.85) !important;
+    backdrop-filter: blur(6px) !important;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.2s ease;
 }
 .bh-modal.is-active {
     display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 .modal-card {
     position: relative;
@@ -459,12 +463,25 @@ window.toggleModal = function(id) {
         console.error("CRITICAL: Modal not found with ID:", id);
         return;
     }
-    m.classList.toggle('is-active');
-    console.log("Toggle executed on", id, "Active:", m.classList.contains('is-active'));
+    
+    const isActive = m.classList.toggle('is-active');
+    
+    // Force inline styles to bypass ANY CSS conflict
+    if (isActive) {
+        m.style.setProperty('display', 'flex', 'important');
+        m.style.setProperty('opacity', '1', 'important');
+        m.style.setProperty('visibility', 'visible', 'important');
+    } else {
+        m.style.setProperty('display', 'none', 'important');
+        m.style.setProperty('opacity', '0', 'important');
+        m.style.setProperty('visibility', 'hidden', 'important');
+    }
+    
+    console.log("Toggle executed on", id, "Active:", isActive);
     console.log("Computed display style:", window.getComputedStyle(m).display);
     
     // Cleanup if closing
-    if (!m.classList.contains('is-active')) {
+    if (!isActive) {
         if (id === 'improved-swap-modal') if(typeof window.resetSwapModal === 'function') window.resetSwapModal();
         if (id === 'assign-modal') if(typeof window.resetAssignModal === 'function') window.resetAssignModal();
         if (id === 'add-shift-modal') if(typeof window.resetShiftModal === 'function') window.resetShiftModal();
