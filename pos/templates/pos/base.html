@@ -9,48 +9,52 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* BILKEN HOTEL — Design System v4 (single source of truth) */
+        /* ── POS DESIGN SYSTEM v5 — Inter only, token-based ── */
 
-        /* ── DARK MODE ── */
-        :root, [data-theme="dark"] {
-            --bg: #0b0d17;
-            --surface: #141728;
-            --raised: #1c203b;
-            --border: #2d3359;
-            --txt1: #f1f3f9;
-            --txt2: #94a3b8;
-            --txt3: #475569;
-            --blue: #3b82f6;
-            --blue-lt: #60a5fa;
-            --navy: #1e293b;
-            --burg: #881337;
-            --burg-lt: #be123c;
-            --gold: #f59e0b;
-            --s1: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
-            --s2: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-            --s3: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-            --sb: #0f172a;
-            --sb-bdr: rgba(59, 130, 246, 0.2);
+        /* LIGHT (default) */
+        :root {
+            --bg:      #F9FAFB;
+            --surface: #FFFFFF;
+            --border:  #E5E7EB;
+            --txt1:    #111827;
+            --txt2:    #6B7280;
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --primary-lt:    #EEF2FF;
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --error:   #EF4444;
+            --info:    #3B82F6;
+            --s1: 0 1px 3px rgba(0,0,0,.08);
+            --s2: 0 4px 6px rgba(0,0,0,.07);
+            --sb: #111827;
+            --sb-bdr: rgba(0,0,0,.08);
+            /* legacy aliases kept for existing templates */
+            --blue: #4F46E5;
+            --blue-lt: #6366f1;
+            --gold: #F59E0B;
+            --raised: #F3F4F6;
         }
 
-        /* ── LIGHT MODE ── */
-        [data-theme="light"] {
-            --bg: #f8fafc;
-            --surface: #ffffff;
-            --raised: #f1f5f9;
-            --border: #e2e8f0;
-            --txt1: #0f172a;
-            --txt2: #64748b;
-            --txt3: #94a3b8;
-            --blue: #2563eb;
-            --blue-lt: #3b82f6;
-            --s1: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --s2: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --s3: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --sb: #1e293b;
-            --sb-bdr: rgba(255, 255, 255, 0.1);
+        /* DARK */
+        [data-theme="dark"] {
+            --bg:      #0B0F19;
+            --surface: #111827;
+            --border:  #1F2937;
+            --txt1:    #E5E7EB;
+            --txt2:    #9CA3AF;
+            --primary: #6366F1;
+            --primary-hover: #4F46E5;
+            --primary-lt:    #1e1b4b;
+            --s1: 0 1px 3px rgba(0,0,0,.4);
+            --s2: 0 4px 6px rgba(0,0,0,.3);
+            --sb: #0B0F19;
+            --sb-bdr: rgba(255,255,255,.06);
+            --blue: #6366F1;
+            --blue-lt: #818cf8;
+            --raised: #1F2937;
         }
 
         /* BASE */
@@ -60,10 +64,9 @@
             font-family:'Inter',system-ui,sans-serif;
             background:var(--bg);color:var(--txt1);
             -webkit-font-smoothing:antialiased;
-            transition:background .3s,color .3s;
+            font-size:14px;
         }
-        h1,h2,h3,h4,h5{font-family:'Cormorant Garamond',Georgia,serif;color:var(--txt1)}
-        [data-theme="light"] h1,[data-theme="light"] h2,[data-theme="light"] h3{color:var(--navy)}
+        h1,h2,h3,h4,h5{font-family:'Inter',system-ui,sans-serif;color:var(--txt1);font-weight:600;}
 
         /* LAYOUT */
         .pos-shell{display:flex;min-height:100vh}
@@ -76,8 +79,8 @@
             height:100vh;overflow-y:auto;position:sticky;top:0;
             border-right:1px solid var(--sb-bdr);
         }
-        [data-theme="dark"] .sidebar{background:linear-gradient(175deg,#08090f,#0d1020)}
-        [data-theme="light"] .sidebar{background:linear-gradient(175deg,#1E2761,#171f55)}
+        [data-theme="dark"] .sidebar{background:#0B0F19;border-right:1px solid var(--border)}
+        [data-theme="light"] .sidebar{background:#111827;}
 
         /* SIDEBAR HEADER */
         .sidebar-header{padding:1.35rem 1.15rem;border-bottom:1px solid var(--sb-bdr);position:relative}
@@ -106,16 +109,14 @@
         .menu-label{padding:.95rem 1.15rem .28rem;font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.28)}
         .menu-list{list-style:none}
         .menu-list a{
-            display:flex;align-items:center;gap:.6rem;padding:.48rem 1.15rem;
-            font-size:.81rem;font-weight:500;color:rgba(255,255,255,.52);
-            text-decoration:none;border-left:3px solid transparent;
-            transition:all .17s;margin:1px 0;
+            display:flex;align-items:center;gap:.6rem;padding:.5rem 1rem;
+            font-size:.8rem;font-weight:500;color:rgba(255,255,255,.6);
+            text-decoration:none;border-left:2px solid transparent;
+            transition:background .15s,color .15s;border-radius:0 6px 6px 0;margin:1px 8px 1px 0;
         }
-        .menu-list a i{width:15px;text-align:center;flex-shrink:0;font-size:.8rem;opacity:.65}
-        .menu-list a:hover{background:rgba(255,255,255,.055);color:#fff;border-left-color:#408EC6}
-        .menu-list a:hover i{opacity:1}
-        .menu-list li.is-active>a{background:rgba(64,142,198,.13);color:#82c4ec;font-weight:600;border-left-color:#408EC6}
-        .menu-list li.is-active>a i{opacity:1}
+        .menu-list a i{width:14px;text-align:center;flex-shrink:0;font-size:.78rem}
+        .menu-list a:hover{background:rgba(255,255,255,.07);color:#fff;border-left-color:var(--primary)}
+        .menu-list li.is-active>a{background:rgba(99,102,241,.15);color:#a5b4fc;font-weight:600;border-left-color:var(--primary)}
 
         /* USER BOX */
         .user-info-box{padding:.9rem 1.15rem;border-top:1px solid var(--sb-bdr)}
@@ -178,11 +179,25 @@
     theme: {
       extend: {
         colors: {
-          'bh-navy': '#1E2761',
-          'bh-blue': '#408EC6',
-          'bh-burgundy': '#7A2048',
-          'bh-gold': '#C9A84C',
-        }
+          primary: {
+            DEFAULT: '#4F46E5',
+            hover: '#4338CA',
+            light: '#EEF2FF',
+          },
+          success: '#22C55E',
+          warning: '#F59E0B',
+          error:   '#EF4444',
+          info:    '#3B82F6',
+          gray: {
+            bg:     '#F9FAFB',
+            border: '#E5E7EB',
+            text:   '#111827',
+            muted:  '#6B7280',
+          },
+        },
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+        },
       }
     }
   }
