@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-#4$82_!7r+_jz^4==n@%y(b!m_%nbj=+#2v1ql-(29md8z4*qb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['julisfarm.pythonanywhere.com', 'localhost', '127.0.0.1', 'www.julisfarm.pythonanywhere.com']
+ALLOWED_HOSTS = ['*']
 
 MENU_PAGE_SIZE = 10      # adjust as desired
 # Application definition
