@@ -637,8 +637,11 @@ def shift_sales_summary_view(request):
         # If the user is not in an active shift, show a message
         return render(request, 'schedule/no_shift.html')
 
-    # 2. Get all sales recorded during this specific shift assignment
-    sales_in_shift = Sale.objects.filter(assignment=active_assignment)
+    # 2. Get all sales recorded during this specific shift assignment for the current user
+    sales_in_shift = Sale.objects.filter(
+        processed_at__range=(active_assignment.shift.start_datetime, active_assignment.shift.end_datetime),
+        order__waiter=request.user
+    )
 
     # 3. Perform a powerful query to get the sales breakdown
     sales_breakdown = sales_in_shift.values(
