@@ -227,7 +227,7 @@ table tr:last-child td { border-bottom: none; }
             <a href="{% url 'schedule:schedule_list' %}" class="inline-flex items-center justify-center px-4 py-2 border rounded-md font-semibold focus:outline-none transition ease-in-out duration-150" style="background: var(--surface); border-color: var(--border); color: var(--txt1);">All Schedules</a>
             <a href="{% url 'schedule:schedule_edit' schedule.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white">Edit</a>
             <a href="{% url 'schedule:schedule_delete' schedule.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white">Delete</a>
-            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white" onclick="toggleModal('add-shift-modal')">Add Shift</button>
+            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white" onclick="window.toggleModal('add-shift-modal')">Add Shift</button>
         </div>
     </div>
 </div>
@@ -254,7 +254,7 @@ table tr:last-child td { border-bottom: none; }
           <td class="buttons are-small">
             <a href="{% url 'schedule:shift_edit' shift.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-sky-500 hover:bg-sky-600 text-white" title="Edit Shift">✏️</a>
             <a href="{% url 'schedule:shift_delete' shift.pk %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-red-600 hover:bg-red-700 text-white" title="Delete Shift">🗑</a>
-            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white" onclick="openAssignModal('{{ shift.id }}','{{ shift.name|escapejs }}')" title="Assign Staff">👥</button>
+            <button class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-green-600 hover:bg-green-700 text-white" onclick="window.openAssignModal('{{ shift.id }}','{{ shift.name|escapejs }}')" title="Assign Staff">👥</button>
             <a href="{% url 'schedule:shift_handover_summary' shift.id %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold focus:outline-none transition ease-in-out duration-150 bg-blue-600 hover:bg-blue-700 text-white" title="Handover Report">📋</a>
           </td>
         </tr>
@@ -280,10 +280,10 @@ table tr:last-child td { border-bottom: none; }
 <!-- ----------  MODALS  ---------- -->
 
 <!-- Add Shift -->
-<div class="modal" id="add-shift-modal">
-  <div class="modal-background" onclick="toggleModal('add-shift-modal')"></div>
+<div class="bh-modal" id="add-shift-modal">
+  <div class="modal-background" onclick="window.toggleModal('add-shift-modal')"></div>
   <div class="modal-card">
-    <header class="modal-card-head"><p class="modal-card-title">Add Shift</p><button class="delete" onclick="toggleModal('add-shift-modal')"></button></header>
+    <header class="modal-card-head"><p class="modal-card-title">Add Shift</p><button class="delete" onclick="window.toggleModal('add-shift-modal')"></button></header>
     <form id="add-shift-form" method="post" action="{% url 'schedule:shift_create' schedule.pk %}">
       {% csrf_token %}
       <section class="modal-card-body">
@@ -335,8 +335,8 @@ table tr:last-child td { border-bottom: none; }
 </div>
 
 <!-- Enhanced Multi-User Assignment Modal -->
-<div class="modal" id="assign-modal">
-  <div class="modal-background" onclick="toggleModal('assign-modal')"></div>
+<div class="bh-modal" id="assign-modal">
+  <div class="modal-background" onclick="window.toggleModal('assign-modal')"></div>
   <div class="modal-card" style="max-width: 600px;">
     <header class="modal-card-head">
       <p class="modal-card-title">
@@ -344,7 +344,7 @@ table tr:last-child td { border-bottom: none; }
         Assign Staff to <span id="assign-shift-name"></span>
         <span id="selected-count" class="selected-count" style="display: none;">0 selected</span>
       </p>
-      <button class="delete" onclick="toggleModal('assign-modal')"></button>
+      <button class="delete" onclick="window.toggleModal('assign-modal')"></button>
     </header>
     <form method="post" action="{% url 'schedule:shift_assignment_create' %}" id="multi-assign-form">
       {% csrf_token %}
@@ -466,11 +466,20 @@ const shifts_data = {};
   ];
 {% endfor %}
 
-function toggleModal(id){
+window.toggleModal = function(id) {
   const m=document.getElementById(id);
+  if(!m) return;
   m.classList.toggle('is-active');
+  
+  // Direct style toggle as final safety
+  if (m.classList.contains('is-active')) {
+      m.style.setProperty('display', 'flex', 'important');
+  } else {
+      m.style.setProperty('display', 'none', 'important');
+  }
+  
   if(id==='improved-swap-modal'&&!m.classList.contains('is-active')) resetSwapModal();
-  if(id==='assign-modal'&&!m.classList.contains('is-active') && typeof resetAssignModal === 'function') resetAssignModal();
+  if(id==='assign-modal'&&!m.classList.contains('is-active') && typeof window.resetAssignModal === 'function') window.resetAssignModal();
   if(id==='add-shift-modal'&&!m.classList.contains('is-active')) resetShiftModal();
 }
 
@@ -587,25 +596,13 @@ document.getElementById('add-shift-form').addEventListener('submit', function(e)
 });
 
 window.openAssignModal = function(shiftId, name) {
-  console.log("openAssignModal called with:", shiftId, name);
-  
-  const shiftIdInput = document.getElementById('assign-shift-id');
-  const shiftNameSpan = document.getElementById('assign-shift-name');
-  if (shiftIdInput) shiftIdInput.value = shiftId;
-  if (shiftNameSpan) shiftNameSpan.textContent = name;
-
+  document.getElementById('assign-shift-id').value = shiftId;
+  document.getElementById('assign-shift-name').textContent = name;
   const container = document.getElementById('multi-user-select');
   if (container) container.innerHTML = '<div class="p-4 text-center">Loading staff...</div>';
 
   try {
-      // Fallback visibility toggle
-    const m = document.getElementById('assign-modal');
-    if (m) {
-        m.classList.add('is-active');
-        m.style.setProperty('display', 'flex', 'important');
-    }
-    
-    // window.toggleModal('assign-modal'); // Replaced by direct toggle above for certainty
+      window.toggleModal('assign-modal');
   } catch(e) {
       console.error("Error toggling modal:", e);
   }
