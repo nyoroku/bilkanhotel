@@ -5903,7 +5903,7 @@ def authorize_order_cancellation(request, order_id):
                 'success': True,
                 'message': f'Order #{order_id} cancelled successfully',
                 'table_id': table_id,
-                'authorized_by': request.user.get_full_name() or request.user.username
+                'authorized_by': request.user.get_full_name() or request.user.email
             })
 
     except Exception as e:
@@ -5943,17 +5943,13 @@ def cashier_dashboard(request):
     ).order_by('updated_at')
 
     # Separate orders by section and count them
-    kitchen_orders = []
     bar_orders = []
 
     for order in ready_orders:
         first_item = order.items.first()
         if first_item:
             order.section = first_item.menu_item.category.module
-
-            if order.section == Category.Module.KITCHEN:
-                kitchen_orders.append(order)
-            elif order.section == Category.Module.BAR:
+            if order.section == Category.Module.BAR:
                 bar_orders.append(order)
         else:
             order.section = 'Unknown'
@@ -5972,7 +5968,7 @@ def cashier_dashboard(request):
     ).values(
         'order__waiter__first_name', 
         'order__waiter__last_name',
-        'order__waiter__username'
+        'order__waiter__email'
     ).annotate(
         total_cash=Sum('amount_paid')
     ).order_by('order__waiter__first_name')
@@ -5982,7 +5978,6 @@ def cashier_dashboard(request):
         'total_collected': sales_in_shift.aggregate(
             total=Sum('amount_paid')
         )['total'] or Decimal('0.00'),
-        'kitchen_orders_waiting': len(kitchen_orders),
         'bar_orders_waiting': len(bar_orders),
     }
 
