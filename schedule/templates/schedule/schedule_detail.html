@@ -469,11 +469,7 @@ function toggleModal(id){
   if(id==='add-shift-modal'&&!m.classList.contains('is-active')) resetShiftModal();
 }
 
-function resetAssignModal() {
-  document.getElementById('multi-user-select').innerHTML = '';
-  document.getElementById('selected-count').style.display = 'none';
-  document.getElementById('assign-submit-btn').disabled = true;
-}
+
 
 function resetShiftModal() {
   // Clear form errors

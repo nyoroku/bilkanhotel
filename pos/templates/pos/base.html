@@ -14,41 +14,43 @@
         /* BILKEN HOTEL — Design System v4 (single source of truth) */
 
         /* ── DARK MODE ── */
-        :root,[data-theme="dark"]{
-            --bg:      #0c0e18;
-            --surface: #121525;
-            --raised:  #1a1f38;
-            --border:  #252b48;
-            --txt1:    #dde4f7;
-            --txt2:    #7080aa;
-            --txt3:    #3c4a6e;
-            --blue:    #408EC6;
-            --blue-lt: #6aaedd;
-            --navy:    #1E2761;
-            --burg:    #7A2048;
-            --burg-lt: #a0385e;
-            --gold:    #b8912a;
-            --s1: 0 2px 8px rgba(0,0,0,.45);
-            --s2: 0 8px 28px rgba(0,0,0,.55);
-            --s3: 0 20px 56px rgba(0,0,0,.65);
-            --sb: #09090f;
-            --sb-bdr: rgba(64,142,198,.13);
+        :root, [data-theme="dark"] {
+            --bg: #0b0d17;
+            --surface: #141728;
+            --raised: #1c203b;
+            --border: #2d3359;
+            --txt1: #f1f3f9;
+            --txt2: #94a3b8;
+            --txt3: #475569;
+            --blue: #3b82f6;
+            --blue-lt: #60a5fa;
+            --navy: #1e293b;
+            --burg: #881337;
+            --burg-lt: #be123c;
+            --gold: #f59e0b;
+            --s1: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+            --s2: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            --s3: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            --sb: #0f172a;
+            --sb-bdr: rgba(59, 130, 246, 0.2);
         }
+
         /* ── LIGHT MODE ── */
-        [data-theme="light"]{
-            --bg:      #edf0fb;
+        [data-theme="light"] {
+            --bg: #f8fafc;
             --surface: #ffffff;
-            --raised:  #f3f5ff;
-            --border:  #cdd5ea;
-            --txt1:    #14193b;
-            --txt2:    #4d5e8e;
-            --txt3:    #8898c5;
-            --blue-lt: #2f72a8;
-            --s1: 0 2px 8px rgba(30,39,97,.07);
-            --s2: 0 8px 28px rgba(30,39,97,.11);
-            --s3: 0 20px 56px rgba(30,39,97,.15);
-            --sb: #1E2761;
-            --sb-bdr: rgba(255,255,255,.10);
+            --raised: #f1f5f9;
+            --border: #e2e8f0;
+            --txt1: #0f172a;
+            --txt2: #64748b;
+            --txt3: #94a3b8;
+            --blue: #2563eb;
+            --blue-lt: #3b82f6;
+            --s1: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --s2: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --s3: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --sb: #1e293b;
+            --sb-bdr: rgba(255, 255, 255, 0.1);
         }
 
         /* BASE */
@@ -242,26 +244,58 @@
                 {% if user.is_staff %}
                 <p class="menu-label">Management</p>
                 <ul class="menu-list">
-                    <li><a href="{% url 'accounts:staff_list' %}"><i class="fas fa-user-friends"></i>Staff</a></li>
-                    <li><a href="{% url 'pos:menu_item_list' %}"><i class="fas fa-utensils"></i>Menu Items</a></li>
-                    <li><a href="{% url 'pos:category_list' %}"><i class="fas fa-layer-group"></i>Categories</a></li>
-                    <li><a href="{% url 'pos:supplier_list' %}"><i class="fas fa-truck"></i>Suppliers</a></li>
-                    <li><a href="{% url 'pos:customer_payment_list' %}"><i class="fas fa-user-tag"></i>Customer Payment</a></li>
-                    <li><a href="{% url 'pos:table_list' %}"><i class="fas fa-chair"></i>Tables</a></li>
-                    <li><a href="{% url 'pos:table_layout_editor' %}"><i class="fas fa-th"></i>Table Layout</a></li>
-                    <li><a href="{% url 'pos:expense_category_list' %}"><i class="fas fa-list-ul"></i>Expenses Categories</a></li>
-                    <li><a href="{% url 'pos:expense_list' %}"><i class="fas fa-file-invoice-dollar"></i>Expenses</a></li>
-                    <li><a href="{% url 'payroll:period_list' %}"><i class="fas fa-money-check-alt"></i>Payroll</a></li>
-                    <li><a href="{% url 'pos:order_list' %}"><i class="fas fa-receipt"></i>Orders</a></li>
-                    <li><a href="{% url 'schedule:schedule_list' %}"><i class="fas fa-calendar-alt"></i>Scheduling</a></li>
+                    <li class="{% if 'staff' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'accounts:staff_list' %}"><i class="fas fa-user-friends"></i>Staff</a>
+                    </li>
+                    <li class="{% if 'menu-items' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:menu_item_list' %}"><i class="fas fa-utensils"></i>Menu Items</a>
+                    </li>
+                    <li class="{% if 'categories' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:category_list' %}"><i class="fas fa-layer-group"></i>Categories</a>
+                    </li>
+                    <li class="{% if 'suppliers' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:supplier_list' %}"><i class="fas fa-truck"></i>Suppliers</a>
+                    </li>
+                    <li class="{% if 'customer-payment' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:customer_payment_list' %}"><i class="fas fa-user-tag"></i>Customer Payment</a>
+                    </li>
+                    <li class="{% if 'tables' in request.path and 'layout' not in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:table_list' %}"><i class="fas fa-chair"></i>Tables</a>
+                    </li>
+                    <li class="{% if 'table-layout' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:table_layout_editor' %}"><i class="fas fa-th"></i>Table Layout</a>
+                    </li>
+                    <li class="{% if 'expense-categories' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:expense_category_list' %}"><i class="fas fa-list-ul"></i>Expenses Categories</a>
+                    </li>
+                    <li class="{% if 'expenses' in request.path and 'category' not in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:expense_list' %}"><i class="fas fa-file-invoice-dollar"></i>Expenses</a>
+                    </li>
+                    <li class="{% if 'payroll' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'payroll:period_list' %}"><i class="fas fa-money-check-alt"></i>Payroll</a>
+                    </li>
+                    <li class="{% if 'orders' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:order_list' %}"><i class="fas fa-receipt"></i>Orders</a>
+                    </li>
+                    <li class="{% if 'schedule' in request.path and 'my-schedule' not in request.path %}is-active{% endif %}">
+                        <a href="{% url 'schedule:schedule_list' %}"><i class="fas fa-calendar-alt"></i>Scheduling</a>
+                    </li>
                 </ul>
 
                 <p class="menu-label">Procurement & Reports</p>
                 <ul class="menu-list">
-                    <li><a href="{% url 'pos:purchase_order_list' %}"><i class="fas fa-shopping-cart"></i>Purchase Orders</a></li>
-                    <li><a href="{% url 'pos:sales_report' %}"><i class="fas fa-chart-line"></i>Sales Report</a></li>
-                    <li><a href="{% url 'pos:print_sales_report' %}"><i class="fas fa-print"></i>Sales Report Print</a></li>
-                    <li><a href="{% url 'pos:po_variance_report_all' %}"><i class="fas fa-balance-scale"></i>Purchase Order Variance</a></li>
+                    <li class="{% if 'purchase-orders' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:purchase_order_list' %}"><i class="fas fa-shopping-cart"></i>Purchase Orders</a>
+                    </li>
+                    <li class="{% if 'sales-report' in request.path and 'print' not in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:sales_report' %}"><i class="fas fa-chart-line"></i>Sales Report</a>
+                    </li>
+                    <li class="{% if 'print-sales-report' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:print_sales_report' %}"><i class="fas fa-print"></i>Sales Report Print</a>
+                    </li>
+                    <li class="{% if 'po-variance' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:po_variance_report_all' %}"><i class="fas fa-balance-scale"></i>Purchase Order Variance</a>
+                    </li>
                 </ul>
                 {% endif %}
             </nav>
@@ -300,38 +334,80 @@
             <div id="mobile-nav-menu">
                 <p class="menu-label">Operational</p>
                 <ul class="menu-list">
-                    <li><a href="{% url 'pos:pos' %}"><i class="fas fa-th-large"></i>Dashboard</a></li>
-                    <li><a href="{% url 'pos:waiter_dashboard' %}"><i class="fas fa-user-friends"></i>Waiter View</a></li>
-                    <li><a href="{% url 'schedule:my_schedule' %}"><i class="fas fa-calendar-alt"></i>My Schedule</a></li>
+                    <li class="{% if request.resolver_match.view_name == 'pos:pos' or request.resolver_match.view_name == 'pos:pos_index' %}is-active{% endif %}">
+                        <a href="{% url 'pos:pos' %}"><i class="fas fa-th-large"></i>Dashboard</a>
+                    </li>
+                    <li class="{% if 'waiter_dashboard' in request.resolver_match.view_name %}is-active{% endif %}">
+                        <a href="{% url 'pos:waiter_dashboard' %}"><i class="fas fa-user-friends"></i>Waiter View</a>
+                    </li>
+                    <li class="{% if 'my_schedule' in request.resolver_match.view_name %}is-active{% endif %}">
+                        <a href="{% url 'schedule:my_schedule' %}"><i class="fas fa-calendar-alt"></i>My Schedule</a>
+                    </li>
                 </ul>
                 <p class="menu-label">Stations</p>
                 <ul class="menu-list">
-                    <li><a href="{% url 'pos:cashier_dashboard' %}"><i class="fas fa-cash-register"></i>Cashier Station</a></li>
-                    <li><a href="{% url 'pos:unified_station_view' 'bar' %}"><i class="fas fa-cocktail"></i>Bar Station</a></li>
+                    <li class="{% if 'cashier' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:cashier_dashboard' %}"><i class="fas fa-cash-register"></i>Cashier Station</a>
+                    </li>
+                    <li class="{% if 'bar' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:unified_station_view' 'bar' %}"><i class="fas fa-cocktail"></i>Bar Station</a>
+                    </li>
                 </ul>
                 {% if user.is_staff %}
                 <p class="menu-label">Management</p>
                 <ul class="menu-list">
-                    <li><a href="{% url 'accounts:staff_list' %}"><i class="fas fa-user-friends"></i>Staff</a></li>
-                    <li><a href="{% url 'pos:menu_item_list' %}"><i class="fas fa-utensils"></i>Menu Items</a></li>
-                    <li><a href="{% url 'pos:category_list' %}"><i class="fas fa-layer-group"></i>Categories</a></li>
-                    <li><a href="{% url 'pos:supplier_list' %}"><i class="fas fa-truck"></i>Suppliers</a></li>
-                    <li><a href="{% url 'pos:customer_payment_list' %}"><i class="fas fa-user-tag"></i>Customer Payment</a></li>
-                    <li><a href="{% url 'pos:table_list' %}"><i class="fas fa-chair"></i>Tables</a></li>
-                    <li><a href="{% url 'pos:table_layout_editor' %}"><i class="fas fa-th"></i>Table Layout</a></li>
-                    <li><a href="{% url 'pos:expense_category_list' %}"><i class="fas fa-list-ul"></i>Expenses Categories</a></li>
-                    <li><a href="{% url 'pos:expense_list' %}"><i class="fas fa-file-invoice-dollar"></i>Expenses</a></li>
-                    <li><a href="{% url 'payroll:period_list' %}"><i class="fas fa-money-check-alt"></i>Payroll</a></li>
-                    <li><a href="{% url 'pos:order_list' %}"><i class="fas fa-receipt"></i>Orders</a></li>
-                    <li><a href="{% url 'schedule:schedule_list' %}"><i class="fas fa-calendar-alt"></i>Scheduling</a></li>
+                    <li class="{% if 'staff' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'accounts:staff_list' %}"><i class="fas fa-user-friends"></i>Staff</a>
+                    </li>
+                    <li class="{% if 'menu-items' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:menu_item_list' %}"><i class="fas fa-utensils"></i>Menu Items</a>
+                    </li>
+                    <li class="{% if 'categories' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:category_list' %}"><i class="fas fa-layer-group"></i>Categories</a>
+                    </li>
+                    <li class="{% if 'suppliers' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:supplier_list' %}"><i class="fas fa-truck"></i>Suppliers</a>
+                    </li>
+                    <li class="{% if 'customer-payment' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:customer_payment_list' %}"><i class="fas fa-user-tag"></i>Customer Payment</a>
+                    </li>
+                    <li class="{% if 'tables' in request.path and 'layout' not in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:table_list' %}"><i class="fas fa-chair"></i>Tables</a>
+                    </li>
+                    <li class="{% if 'table-layout' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:table_layout_editor' %}"><i class="fas fa-th"></i>Table Layout</a>
+                    </li>
+                    <li class="{% if 'expense-categories' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:expense_category_list' %}"><i class="fas fa-list-ul"></i>Expenses Categories</a>
+                    </li>
+                    <li class="{% if 'expenses' in request.path and 'category' not in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:expense_list' %}"><i class="fas fa-file-invoice-dollar"></i>Expenses</a>
+                    </li>
+                    <li class="{% if 'payroll' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'payroll:period_list' %}"><i class="fas fa-money-check-alt"></i>Payroll</a>
+                    </li>
+                    <li class="{% if 'orders' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:order_list' %}"><i class="fas fa-receipt"></i>Orders</a>
+                    </li>
+                    <li class="{% if 'schedule' in request.path and 'my-schedule' not in request.path %}is-active{% endif %}">
+                        <a href="{% url 'schedule:schedule_list' %}"><i class="fas fa-calendar-alt"></i>Scheduling</a>
+                    </li>
                 </ul>
 
                 <p class="menu-label">Procurement & Reports</p>
                 <ul class="menu-list">
-                    <li><a href="{% url 'pos:purchase_order_list' %}"><i class="fas fa-shopping-cart"></i>Purchase Orders</a></li>
-                    <li><a href="{% url 'pos:sales_report' %}"><i class="fas fa-chart-line"></i>Sales Report</a></li>
-                    <li><a href="{% url 'pos:print_sales_report' %}"><i class="fas fa-print"></i>Sales Report Print</a></li>
-                    <li><a href="{% url 'pos:po_variance_report_all' %}"><i class="fas fa-balance-scale"></i>Purchase Order Variance</a></li>
+                    <li class="{% if 'purchase-orders' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:purchase_order_list' %}"><i class="fas fa-shopping-cart"></i>Purchase Orders</a>
+                    </li>
+                    <li class="{% if 'sales-report' in request.path and 'print' not in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:sales_report' %}"><i class="fas fa-chart-line"></i>Sales Report</a>
+                    </li>
+                    <li class="{% if 'print-sales-report' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:print_sales_report' %}"><i class="fas fa-print"></i>Sales Report Print</a>
+                    </li>
+                    <li class="{% if 'po-variance' in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:po_variance_report_all' %}"><i class="fas fa-balance-scale"></i>Purchase Order Variance</a>
+                    </li>
                 </ul>
                 {% endif %}
                 <div class="user-info-box border-t border-gray-700 mt-2">

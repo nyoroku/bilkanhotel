@@ -793,21 +793,4 @@ def shift_handover_summary(request, shift_id):
     return render(request, 'schedule/handover_summary.html', context)
 
 
-@login_required
-@staff_member_required
-def get_available_users_for_shift(request, shift_id):
-    """AJAX view to get users who are not yet assigned to the given shift."""
-    shift = get_object_or_404(Shift, pk=shift_id)
-    already_assigned = shift.assignments.values_list('user_id', flat=True)
-    
-    users = User.objects.filter(is_active=True).exclude(id__in=already_assigned).order_by('first_name', 'last_name')
-    
-    user_data = []
-    for user in users:
-        user_data.append({
-            'id': str(user.id),
-            'name': user.get_full_name(),
-            'email': user.email
-        })
-        
-    return JsonResponse({'success': True, 'users': user_data})
+
