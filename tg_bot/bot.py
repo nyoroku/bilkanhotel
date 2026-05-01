@@ -105,7 +105,7 @@ async def pick_supplier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     except Supplier.DoesNotExist:
         return SELECT_SUPPLIER
 
-    sections = ["Kitchen", "Bar", "Butchery"]
+    sections = ["Bar", "Butchery"]
     kb = [[s] for s in sections]
     await update.message.reply_text(
         "For which section?",

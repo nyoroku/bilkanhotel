@@ -232,11 +232,6 @@
                             <i class="fas fa-cash-register"></i>Cashier Station
                         </a>
                     </li>
-                    <li class="{% if 'kitchen' in request.path %}is-active{% endif %}">
-                        <a href="{% url 'pos:unified_station_view' 'kitchen' %}">
-                            <i class="fas fa-utensils"></i>Kitchen Station
-                        </a>
-                    </li>
                     <li class="{% if 'bar' in request.path %}is-active{% endif %}">
                         <a href="{% url 'pos:unified_station_view' 'bar' %}">
                             <i class="fas fa-cocktail"></i>Bar Station
@@ -312,7 +307,6 @@
                 <p class="menu-label">Stations</p>
                 <ul class="menu-list">
                     <li><a href="{% url 'pos:cashier_dashboard' %}"><i class="fas fa-cash-register"></i>Cashier Station</a></li>
-                    <li><a href="{% url 'pos:unified_station_view' 'kitchen' %}"><i class="fas fa-utensils"></i>Kitchen Station</a></li>
                     <li><a href="{% url 'pos:unified_station_view' 'bar' %}"><i class="fas fa-cocktail"></i>Bar Station</a></li>
                 </ul>
                 {% if user.is_staff %}

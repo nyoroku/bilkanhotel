@@ -20,7 +20,6 @@ class Category(models.Model):
     """
 
     class Module(models.TextChoices):
-        KITCHEN = 'Kitchen', 'Kitchen'
         BAR = 'Bar', 'Bar'
         BUTCHERY = 'Butchery', 'Butchery'
 
@@ -536,7 +535,6 @@ class PurchaseOrder(models.Model):
         FULLY_RECEIVED = 'Fully Received', 'Fully Received'
 
     class Section(models.TextChoices):
-        KITCHEN = 'Kitchen', 'Kitchen'
         BAR = 'Bar', 'Bar'
         BUTCHERY = 'Butchery', 'Butchery'
 
@@ -650,7 +648,6 @@ class StockTransfer(models.Model):
 
     class Section(models.TextChoices):
         BUTCHERY = 'Butchery', 'Butchery'
-        KITCHEN = 'Kitchen', 'Kitchen'
         GRILL = 'Grill', 'Grill'
         BAR = 'Bar', 'Bar'
 

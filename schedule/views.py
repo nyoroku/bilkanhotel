@@ -650,7 +650,6 @@ def shift_sales_summary_view(request):
 
     # 4. Process the query results into a structured format for the template
     summary_data = {
-        'Kitchen': {'Cash': 0, 'Mpesa': 0, 'Credit': 0, 'total': 0},
         'Bar': {'Cash': 0, 'Mpesa': 0, 'Credit': 0, 'total': 0},
         'grand_total': 0
     }
@@ -681,7 +680,6 @@ def section_shift_summary_view(request, section):
 
     # 1. Map the URL section to the corresponding User role
     role_map = {
-        'kitchen': 'kitchen_staff',
         'bar': 'bar_staff',
     }
 

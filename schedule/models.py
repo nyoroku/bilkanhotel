@@ -107,7 +107,6 @@ class SwapRequest(models.Model):
 
 class ShiftStockTake(models.Model):
     SECTION_CHOICES = (
-        ('Kitchen', 'Kitchen'),
         ('Bar',     'Bar'),
     )
     shift   = models.ForeignKey(Shift, on_delete=models.CASCADE, related_name='stock_takes')

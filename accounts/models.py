@@ -49,7 +49,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('manager', 'Manager'),
         ('room_manager', 'Room Manager'),
         ('waiter', 'Waiter'),
-        ('kitchen_staff', 'Kitchen Staff'),
         ('bar_staff', 'Bar Staff'),
         ('butcher', 'Butcher'),
         ('cashier', 'Cashier'),

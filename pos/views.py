@@ -64,7 +64,7 @@ def poss(request):
 
 def _base_menu_queryset(request):
     """Shared logic: returns queryset + filtering info."""
-    section   = request.GET.get('section', Category.Module.KITCHEN)
+    section   = request.GET.get('section', Category.Module.BAR)
     category  = request.GET.get('category', '')
     search    = request.GET.get('search', '').strip()
     page      = request.GET.get('page', 1)
@@ -103,8 +103,8 @@ def public_menu_landing(request):
     """Public, read-only, mobile-first digital menu."""
     ctx = _base_menu_queryset(request)
 
-    # Hide Butchery tab
-    ctx['sections'] = [s for s in Category.Module.choices if s[0] != 'Butchery']
+    # Hide Butchery and Kitchen tabs
+    ctx['sections'] = [s for s in Category.Module.choices if s[0] not in ['Butchery', 'Kitchen']]
 
     return render(request, 'pos/our-menu.html', ctx)
 
@@ -595,7 +595,7 @@ def purchase_order_create(request):
             return redirect('pos:purchase_order_detail', pk=po.id)
     else:
         form = PurchaseOrderForm(initial={
-            'requested_for_section': PurchaseOrder.Section.KITCHEN,
+            'requested_for_section': PurchaseOrder.Section.BAR,
             'order_date': timezone.now().date()
         })
         formset = PurchaseOrderItemFormSet(prefix='items')
@@ -2005,7 +2005,7 @@ def process_order_payment(request, order_id):
 
     def get_section_from_category(menu_item):
         mapping = {
-            Category.Module.KITCHEN: PurchaseOrder.Section.KITCHEN,
+            
             Category.Module.BAR: PurchaseOrder.Section.BAR,
             Category.Module.BUTCHERY: PurchaseOrder.Section.BUTCHERY,
         }
