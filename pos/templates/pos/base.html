@@ -388,6 +388,7 @@
                 {% endif %}
             </nav>
 
+            {% if user.is_authenticated %}
             <div class="user-info-box">
                 <div class="user-card">
                     <div class="user-avatar">
@@ -403,6 +404,7 @@
                     Sign Out
                 </a>
             </div>
+            {% endif %}
         </aside>
 
         <!-- Mobile Navigation -->
@@ -501,6 +503,7 @@
                     </li>
                 </ul>
                 {% endif %}
+                {% if user.is_authenticated %}
                 <div class="user-info-box border-t border-gray-700 mt-2">
                     <div class="user-card">
                         <div class="user-avatar">{{ user.get_short_name|first|upper }}</div>
@@ -513,6 +516,7 @@
                         <i class="fas fa-arrow-right-from-bracket"></i> Sign Out
                     </a>
                 </div>
+                {% endif %}
             </div>
         </nav>
 

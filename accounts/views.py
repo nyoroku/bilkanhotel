@@ -20,7 +20,6 @@ def pin_login_view(request):
     """
     # FIX: The query now includes all three roles.
     operational_staff = User.objects.filter(
-        role__in=['waiter', 'kitchen_staff', 'bar_staff', 'butcher', 'cashier'],
         is_active=True
     ).order_by('role', 'first_name')
 

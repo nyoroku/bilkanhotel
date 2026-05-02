@@ -370,7 +370,7 @@
                 <img src="{{ staff_member.profile_image.url }}" alt="{{ staff_member.get_full_name }}" class="profile-image">
             {% else %}
                 <div class="profile-placeholder">
-                    {{ staff_member.first_name|first }}
+                    {{ staff_member.get_short_name|first|upper }}
                 </div>
             {% endif %}
             <p class="user-name">{{ staff_member.get_full_name }}</p>
