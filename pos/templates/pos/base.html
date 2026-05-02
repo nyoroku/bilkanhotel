@@ -332,6 +332,9 @@
                     <li class="{% if 'staff' in request.path %}is-active{% endif %}">
                         <a href="{% url 'accounts:staff_list' %}"><i class="fas fa-user-friends"></i>Staff</a>
                     </li>
+                    <li class="{% if 'customers' in request.path and 'payment' not in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:customer_list' %}"><i class="fas fa-users"></i>Customers</a>
+                    </li>
                     <li class="{% if 'menu-items' in request.path %}is-active{% endif %}">
                         <a href="{% url 'pos:menu_item_list' %}"><i class="fas fa-utensils"></i>Menu Items</a>
                     </li>
@@ -443,6 +446,9 @@
                 <ul class="menu-list">
                     <li class="{% if 'staff' in request.path %}is-active{% endif %}">
                         <a href="{% url 'accounts:staff_list' %}"><i class="fas fa-user-friends"></i>Staff</a>
+                    </li>
+                    <li class="{% if 'customers' in request.path and 'payment' not in request.path %}is-active{% endif %}">
+                        <a href="{% url 'pos:customer_list' %}"><i class="fas fa-users"></i>Customers</a>
                     </li>
                     <li class="{% if 'menu-items' in request.path %}is-active{% endif %}">
                         <a href="{% url 'pos:menu_item_list' %}"><i class="fas fa-utensils"></i>Menu Items</a>
