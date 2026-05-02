@@ -326,7 +326,7 @@
                     </li>
                 </ul>
 
-                {% if user.is_staff %}
+                {% if user.is_staff or user.role == 'admin' %}
                 <p class="menu-label">Management</p>
                 <ul class="menu-list">
                     <li class="{% if 'staff' in request.path %}is-active{% endif %}">
@@ -443,7 +443,7 @@
                         <a href="{% url 'pos:unified_station_view' 'bar' %}"><i class="fas fa-cocktail"></i>Bar Station</a>
                     </li>
                 </ul>
-                {% if user.is_staff %}
+                {% if user.is_staff or user.role == 'admin' %}
                 <p class="menu-label">Management</p>
                 <ul class="menu-list">
                     <li class="{% if 'staff' in request.path %}is-active{% endif %}">
