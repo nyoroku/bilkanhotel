@@ -634,43 +634,45 @@ def shift_sales_summary_view(request):
     ).select_related('shift').first()
 
     if not active_assignment:
-        # If the user is not in an active shift, show a message
         return render(request, 'schedule/no_shift.html')
 
-    # 2. Get all sales recorded during this specific shift assignment for the current user
+    shift = active_assignment.shift
+
+    # 2. Get all sales recorded during this specific shift for the current waiter
     sales_in_shift = Sale.objects.filter(
-        processed_at__range=(active_assignment.shift.start_datetime, active_assignment.shift.end_datetime),
+        processed_at__range=(shift.start_datetime, shift.end_datetime),
         order__waiter=request.user
-    )
+    ).distinct()
 
-    # 3. Perform a powerful query to get the sales breakdown
-    sales_breakdown = sales_in_shift.values(
-        'payment_method',
-        'order__items__menu_item__category__module'  # Corrected from 'orders' to 'order'
-    ).annotate(
-        total=Sum('amount_paid')
-    ).order_by('order__items__menu_item__category__module', 'payment_method')
-
-    # 4. Process the query results into a structured format for the template
+    # 3. Financial Summary
     summary_data = {
-        'Bar': {'Cash': 0, 'Mpesa': 0, 'Credit': 0, 'total': 0},
-        'grand_total': 0
+        'Cash': sales_in_shift.filter(payment_method='Cash').aggregate(total=Sum('amount_paid'))['total'] or 0,
+        'Mpesa': sales_in_shift.filter(payment_method='Mpesa').aggregate(total=Sum('amount_paid'))['total'] or 0,
+        'Credit': sales_in_shift.filter(payment_method='Credit').aggregate(total=Sum('amount_paid'))['total'] or 0,
     }
+    summary_data['grand_total'] = summary_data['Cash'] + summary_data['Mpesa'] + summary_data['Credit']
 
-    for item in sales_breakdown:
-        section = item['order__items__menu_item__category__module']
-        payment_method = item['payment_method']
-        total = item['total'] or 0
+    # 4. Category Breakdown
+    category_breakdown = OrderItem.objects.filter(
+        order__sales__in=sales_in_shift
+    ).values('menu_item__category__name').annotate(
+        total=Sum('subtotal')
+    ).order_by('-total')
 
-        if section in summary_data and payment_method in summary_data[section]:
-            summary_data[section][payment_method] += total
-            summary_data[section]['total'] += total
-            summary_data['grand_total'] += total
+    # 5. Popular Items
+    popular_items = OrderItem.objects.filter(
+        order__sales__in=sales_in_shift
+    ).values('menu_item__name').annotate(
+        quantity=Sum('quantity'),
+        total=Sum('subtotal')
+    ).order_by('-quantity')[:5]
 
     context = {
-        'shift': active_assignment.shift,
+        'shift': shift,
         'summary_data': summary_data,
-        'section_name': 'Bar',  # Default to Bar for the unified Waiter/Bar view
+        'category_breakdown': category_breakdown,
+        'popular_items': popular_items,
+        'section_name': 'My Personal',
         'assignment': active_assignment,
     }
     return render(request, 'schedule/shift_sales_summary.html', context)
@@ -680,71 +682,96 @@ def shift_sales_summary_view(request):
 def section_shift_summary_view(request, section):
     """
     Displays a sales summary for the entire section's currently active shift.
+    Used primarily by Cashiers and Managers to see station performance.
     """
     now = timezone.localtime()
 
-    # 1. Map the URL section to the corresponding User role
+    # 1. Map the URL section to the corresponding User roles/modules
     role_map = {
         'bar': 'bar_staff',
+        'kitchen': 'waiter', # In some setups waiters handle kitchen orders
+        'butchery': 'butcher',
     }
 
-    target_role = role_map.get(section)
-    if not target_role:
-        return render(request, 'schedule/no_shift.html', {
-            'message': f"Invalid section specified: {section}"
-        })
+    section_module_map = {
+        'bar': 'Bar',
+        'kitchen': 'Kitchen',
+        'butchery': 'Butchery',
+    }
 
-    # 2. Find the currently active shift assignment for ANY user with the target role
+    target_role = role_map.get(section.lower())
+    target_module = section_module_map.get(section.lower(), section.capitalize())
+
+    # 2. Find the currently active shift
+    # First try by role
     active_assignment = ShiftAssignment.objects.filter(
         user__role=target_role,
         shift__start_datetime__lte=now,
         shift__end_datetime__gte=now,
     ).select_related('shift', 'user').first()
 
+    # Fallback: Find ANY active shift if role-based lookup fails
+    if not active_assignment:
+        active_assignment = ShiftAssignment.objects.filter(
+            shift__start_datetime__lte=now,
+            shift__end_datetime__gte=now,
+        ).select_related('shift', 'user').first()
+
     if not active_assignment:
         return render(request, 'schedule/no_shift.html', {
-            'message': f"No active shift for {section.capitalize()} station"
+            'message': f"No active shift found for the {section.capitalize()} station."
         })
 
     shift = active_assignment.shift
 
-    # 3. Filter sales based on timestamp and the section of items
-    section_name_for_filter = section.capitalize()
-
-    # 4. Get sales breakdown by payment method with proper distinct handling
-    # First get the unique sale IDs to avoid counting duplicates from JOIN
-    unique_sale_ids = Sale.objects.filter(
+    # 3. Get all sales for this section during the shift
+    # We filter by items belonging to the target module
+    sales_in_shift = Sale.objects.filter(
         processed_at__range=(shift.start_datetime, shift.end_datetime),
-        order__items__menu_item__category__module=section_name_for_filter
-    ).distinct().values_list('id', flat=True)
+        order__items__menu_item__category__module=target_module
+    ).distinct()
 
-    # Then aggregate only those unique sales
-    sales_breakdown = Sale.objects.filter(
-        id__in=unique_sale_ids
-    ).values('payment_method').annotate(
-        total=Sum('amount_paid')
-    ).order_by('payment_method')
-
-    # 5. Process the results into summary data
+    # 4. Financial Summary
     summary_data = {
-        'Cash': 0,
-        'Mpesa': 0,
-        'Credit': 0,
-        'grand_total': 0
+        'Cash': sales_in_shift.filter(payment_method='Cash').aggregate(total=Sum('amount_paid'))['total'] or 0,
+        'Mpesa': sales_in_shift.filter(payment_method='Mpesa').aggregate(total=Sum('amount_paid'))['total'] or 0,
+        'Credit': sales_in_shift.filter(payment_method='Credit').aggregate(total=Sum('amount_paid'))['total'] or 0,
     }
+    summary_data['grand_total'] = summary_data['Cash'] + summary_data['Mpesa'] + summary_data['Credit']
 
-    for item in sales_breakdown:
-        payment_method = item['payment_method']
-        total = item['total'] or 0
-        if payment_method in summary_data:
-            summary_data[payment_method] += total
-        summary_data['grand_total'] += total
+    # 5. Waiter Breakdown
+    waiter_breakdown = sales_in_shift.values(
+        'order__waiter__first_name', 'order__waiter__last_name'
+    ).annotate(
+        total=Sum('amount_paid'),
+        count=Sum('id') # Approximate order count
+    ).order_by('-total')
+
+    # 6. Category Breakdown
+    category_breakdown = OrderItem.objects.filter(
+        order__sales__in=sales_in_shift,
+        menu_item__category__module=target_module
+    ).values('menu_item__category__name').annotate(
+        total=Sum('subtotal')
+    ).order_by('-total')
+
+    # 7. Popular Items
+    popular_items = OrderItem.objects.filter(
+        order__sales__in=sales_in_shift,
+        menu_item__category__module=target_module
+    ).values('menu_item__name').annotate(
+        quantity=Sum('quantity'),
+        total=Sum('subtotal')
+    ).order_by('-quantity')[:5]
 
     context = {
         'shift': shift,
         'assignment': active_assignment,
         'summary_data': summary_data,
-        'section_name': section.capitalize(),
+        'waiter_breakdown': waiter_breakdown,
+        'category_breakdown': category_breakdown,
+        'popular_items': popular_items,
+        'section_name': target_module,
     }
 
     return render(request, 'schedule/shift_sales_summary.html', context)

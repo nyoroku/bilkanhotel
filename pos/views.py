@@ -1812,7 +1812,7 @@ def print_order_receipt(request, order_id):
     )
 
     first_item = order.items.first()
-    receipt_title = "julifarm"
+    receipt_title = "Bilken Hotel"
     if first_item:
         module_name = first_item.menu_item.category.get_module_display()
         receipt_title = f"Bilken Hotel {module_name}"

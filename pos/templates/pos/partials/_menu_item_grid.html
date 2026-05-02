@@ -156,6 +156,7 @@
             hx-swap="outerHTML"
          {% endif %}
          hx-trigger="click"
+         hx-on:click="showToast('{{ item.name|escapejs }} added to cart', 'is-success')"
          title="Add {{ item.name }} to order">
         
         {% if item.sell_by_weight %}

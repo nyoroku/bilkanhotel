@@ -1,17 +1,32 @@
 {% extends 'pos/base.html' %}
 
-{% block title %}No Active Shift{% endblock %}
+{% block title %}No Active Shift — Bilken Hotel{% endblock %}
 
 {% block content %}
-<div class="section text-center">
-    <div class="bg-white rounded-lg shadow-md p-6 mb-4" style="max-width: 500px; margin: 0 auto;">
-        <span class="icon text-xl px-8 py-4 text-yellow-500">
-            <i class="fas fa-exclamation-triangle fa-3x"></i>
-        </span>
-        <h1 class="text-2xl font-bold text-gray-900 mb-4 is-2 mt-4">No Active Shift</h1>
-        <p class="text-lg text-gray-600 mb-4">You are not currently assigned to any running shift.</p>
-        <p class="mt-5">Please contact your manager to be assigned to a shift before continuing.</p>
+<div class="flex items-center justify-center min-h-[70vh]">
+    <div class="bh-card p-12 text-center max-w-lg mx-auto shadow-2xl">
+        <div class="w-20 h-20 bg-orange-100 text-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-inner">
+            <i class="fas fa-calendar-times fa-3x"></i>
+        </div>
+        <h1 class="text-3xl font-black text-[var(--txt1)] uppercase tracking-tight mb-4">No Active Shift</h1>
+        <p class="text-lg text-[var(--txt2)] font-medium mb-8 leading-relaxed">
+            {{ message|default:"You are not currently assigned to any active running shift for this station." }}
+        </p>
+        
+        <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-8">
+            <p class="text-sm text-[var(--txt3)] font-bold italic">
+                Please contact your manager to ensure your schedule is published and you are correctly assigned.
+            </p>
+        </div>
 
+        <div class="flex gap-4 justify-center">
+            <a href="{% url 'pos:waiter_dashboard' %}" class="px-8 py-3 bg-indigo-600 text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-indigo-700 transition-all">
+                Dashboard
+            </a>
+            <button onclick="window.history.back()" class="px-8 py-3 border border-[var(--border)] text-[var(--txt1)] rounded-xl font-black uppercase tracking-widest text-xs hover:bg-gray-100 transition-all">
+                Go Back
+            </button>
+        </div>
     </div>
 </div>
 {% endblock %}

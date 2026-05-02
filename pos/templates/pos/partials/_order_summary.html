@@ -205,12 +205,26 @@
                 <span class="total-label">Total Payable</span>
                 <span class="total-amount">{{ cart.total|floatformat:0 }} <small class="text-sm">KES</small></span>
             </div>
+
+            <button type="submit" class="finalize-btn" style="margin-top: 1rem;">
+                <div class="btn-text-group">
+                    <span class="btn-subtext">CONFIRM & SERVE</span>
+                    <span>
+                        {% if existing_order %}Finalize Additions{% else %}Finalize Order{% endif %}
+                        • KES {{ cart.total|floatformat:0 }}
+                    </span>
+                </div>
+                <div class="btn-icon-circle">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </button>
             
             <a class="clear-order-btn"
                     hx-post="{% url 'pos:htmx_clear_cart' %}"
                     hx-vals='{"module": "Bar"}'
                     hx-target="#bar-cart-summary"
-                    hx-swap="outerHTML">
+                    hx-swap="outerHTML"
+                    style="margin-top: 1rem;">
                 <i class="fas fa-undo-alt mr-1"></i> Clear Selection
             </a>
         </div>

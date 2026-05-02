@@ -1,60 +1,274 @@
 {% extends 'pos/base.html' %}
 
-{% block title %}{{ section_name }} Shift Sales Summary{% endblock %}
+{% block title %}{{ section_name }} Shift Summary — Bilken Hotel{% endblock %}
+
+{% block styles %}
+<style>
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .summary-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        box-shadow: var(--s1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--s2);
+    }
+
+    .card-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .icon-total { background: rgba(79, 70, 229, 0.1); color: #4f46e5; }
+    .icon-cash { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .icon-mpesa { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .icon-credit { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+    .card-info { display: flex; flex-direction: column; }
+    .card-label { font-size: 0.75rem; font-weight: 700; color: var(--txt2); uppercase; letter-spacing: 0.05em; }
+    .card-value { font-size: 1.5rem; font-weight: 800; color: var(--txt1); }
+
+    .breakdown-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+        .breakdown-section { grid-template-columns: 1fr; }
+    }
+
+    .premium-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .premium-table th {
+        background: var(--bg);
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: var(--txt3);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .premium-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.9rem;
+    }
+
+    .premium-table tr:last-child td { border-bottom: none; }
+
+    .badge-pill {
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .header-info {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--s1);
+    }
+
+    .station-badge {
+        background: var(--primary);
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 8px;
+        font-weight: 800;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-lg shadow-md overflow-hidden">
-    <header class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <p class="text-lg font-bold text-gray-800 text-2xl font-semibold">
-            Sales Summary for {{ section_name }} Station
-        </p>
-    </header>
-    <div class="p-6">
-        <div class="content">
-            <p>
-                Showing all sales for the current active shift: <strong>{{ shift.name }}</strong>
-                <br>
-                <small>Staff on Duty: {{ assignment.user.get_full_name }} | Shift Started: {{ shift.start_datetime|date:"d M, H:i" }}</small>
-            </p>
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    
+    <!-- HEADER SECTION -->
+    <div class="header-info">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                <i class="fas fa-chart-line fa-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-black text-[var(--txt1)] uppercase tracking-tight">{{ section_name }} Shift Summary</h1>
+                <p class="text-sm text-[var(--txt2)] font-medium">
+                    Shift: <span class="text-indigo-600 font-bold">{{ shift.name }}</span> | 
+                    Active: {{ shift.start_datetime|date:"H:i" }} — {{ shift.end_datetime|date:"H:i" }}
+                </p>
+            </div>
         </div>
-
-        <div class="bg-white rounded-lg shadow-md p-6 mb-4">
-            <table class="min-w-full divide-y divide-gray-200 is-fullwidth bg-white">
-                <thead>
-                    <tr>
-                        <th>Payment Method</th>
-                        <th class="text-right">Total Sales</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Cash Sales</td>
-                        <td class="text-right">{{ summary_data.Cash|floatformat:2 }} KES</td>
-                    </tr>
-                    <tr>
-                        <td>M-Pesa Sales</td>
-                        <td class="text-right">{{ summary_data.Mpesa|floatformat:2 }} KES</td>
-                    </tr>
-                    <tr>
-                        <td>Credit Sales</td>
-                        <td class="text-right">{{ summary_data.Credit|floatformat:2 }} KES</td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th class="text-xl font-medium">Grand Total for Shift</th>
-                        <th class="text-right text-xl font-medium">{{ summary_data.grand_total|floatformat:2 }} KES</th>
-                    </tr>
-                </tfoot>
-            </table>
+        <div class="flex items-center gap-3">
+            <span class="station-badge">{{ section_name }} STATION</span>
+            <button onclick="window.print()" class="w-10 h-10 rounded-lg border border-[var(--border)] flex items-center justify-center hover:bg-gray-100 transition-colors">
+                <i class="fas fa-print"></i>
+            </button>
         </div>
     </div>
-    <footer class="border-t border-gray-200 bg-gray-50 flex">
-        <a href="{% url 'pos:unified_station_view' section_name|lower|default:'bar' %}" class="flex-1 text-center py-3 text-blue-600 hover:bg-gray-100">
-            <span class="icon"><i class="fas fa-arrow-left"></i></span>
-            <span>Back to {{ section_name|default:'Bar' }} Station</span>
-        </a>
-    </footer>
+
+    <!-- KPI GRID -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="card-icon icon-total"><i class="fas fa-wallet"></i></div>
+            <div class="card-info">
+                <span class="card-label">Total Sales</span>
+                <span class="card-value">{{ summary_data.grand_total|floatformat:0 }} <small class="text-xs opacity-60">KES</small></span>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="card-icon icon-cash"><i class="fas fa-money-bill-wave"></i></div>
+            <div class="card-info">
+                <span class="card-label">Cash Collected</span>
+                <span class="card-value">{{ summary_data.Cash|floatformat:0 }} <small class="text-xs opacity-60">KES</small></span>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="card-icon icon-mpesa"><i class="fas fa-mobile-alt"></i></div>
+            <div class="card-info">
+                <span class="card-label">M-Pesa Sales</span>
+                <span class="card-value">{{ summary_data.Mpesa|floatformat:0 }} <small class="text-xs opacity-60">KES</small></span>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="card-icon icon-credit"><i class="fas fa-user-clock"></i></div>
+            <div class="card-info">
+                <span class="card-label">Credit / Unpaid</span>
+                <span class="card-value">{{ summary_data.Credit|floatformat:0 }} <small class="text-xs opacity-60">KES</small></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="breakdown-section">
+        <!-- WAITER PERFORMANCE -->
+        {% if waiter_breakdown %}
+        <div class="bh-card p-6">
+            <h3 class="text-sm font-black text-[var(--txt3)] uppercase tracking-widest mb-4 flex items-center gap-2">
+                <i class="fas fa-users text-indigo-500"></i>
+                Sales by Waiter
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Waiter Name</th>
+                            <th class="text-center">Orders</th>
+                            <th class="text-right">Total Contribution</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for waiter in waiter_breakdown %}
+                        <tr>
+                            <td class="font-bold">{{ waiter.order__waiter__first_name }} {{ waiter.order__waiter__last_name }}</td>
+                            <td class="text-center"><span class="badge-pill bg-gray-100">{{ waiter.count }}</span></td>
+                            <td class="text-right font-black text-indigo-600">{{ waiter.total|floatformat:0 }} KES</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- CATEGORY BREAKDOWN -->
+        <div class="bh-card p-6">
+            <h3 class="text-sm font-black text-[var(--txt3)] uppercase tracking-widest mb-4 flex items-center gap-2">
+                <i class="fas fa-tags text-emerald-500"></i>
+                Category Performance
+            </h3>
+            <div class="space-y-4">
+                {% for cat in category_breakdown %}
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="font-bold uppercase tracking-wide text-xs">{{ cat.menu_item__category__name }}</span>
+                        <span class="font-black">{{ cat.total|floatformat:0 }} KES</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                        <div class="bg-indigo-500 h-full rounded-full transition-all duration-1000" 
+                             style="width: {% widthratio cat.total summary_data.grand_total 100 %}%"></div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-sm text-gray-400 italic">No category data available for this shift.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- POPULAR ITEMS & ACTION -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bh-card p-6">
+            <h3 class="text-sm font-black text-[var(--txt3)] uppercase tracking-widest mb-4 flex items-center gap-2">
+                <i class="fas fa-fire text-orange-500"></i>
+                Top 5 Best Selling Items
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for item in popular_items %}
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs">
+                            {{ forloop.counter }}
+                        </div>
+                        <span class="font-bold text-sm">{{ item.menu_item__name }}</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs font-black">{{ item.quantity|floatformat:0 }} Sold</div>
+                        <div class="text-[0.65rem] text-gray-400 uppercase font-bold">{{ item.total|floatformat:0 }} KES</div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-sm text-gray-400 italic">No item data yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="bh-card p-6 flex flex-col justify-between bg-gradient-to-br from-indigo-600 to-indigo-800 text-white">
+            <div>
+                <h3 class="text-xs font-black uppercase tracking-widest opacity-80 mb-2">Shift Handover</h3>
+                <p class="text-sm leading-relaxed mb-6">
+                    Use this summary to verify physical cash drops and M-Pesa statements before closing the shift.
+                </p>
+            </div>
+            <a href="{% url 'pos:unified_station_view' section_name|lower|default:'bar' %}" 
+               class="w-full py-4 bg-white text-indigo-600 rounded-xl font-black text-center uppercase tracking-widest text-xs hover:bg-opacity-90 transition-all">
+               Return to Station
+            </a>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
