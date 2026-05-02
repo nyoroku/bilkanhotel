@@ -51,7 +51,7 @@ class CustomUserAdmin(BaseUserAdmin, UnfoldModelAdmin):
             'classes': ('wide',),
             'fields': (
                 'first_name', 'last_name', 'email', 'role',
-                'password1', 'password2', 'pin'
+                'password', 'password_confirm', 'pin', 'pin_confirm'
             ),
         }),
     )
